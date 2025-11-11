@@ -1,0 +1,12 @@
+#requirements.txt
+streamlit
+requests
+pandas
+pytz
+sqlalchemy
+psycopg[binary,pool]      
+apscheduler
+python-dotenv
+streamlit-card
+streamlit-autorefresh  
+streamlit-js-eval          
