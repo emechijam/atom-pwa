@@ -1,13 +1,17 @@
-# app.py v1.0
-# Updated to use the new psycopg2.pool (via db.py)
-# and handle data as dictionaries.
-# REMOVED all background thread management (sync.py is now external).
+# app.py v1.3
+#
+# WHAT'S NEW (v1.3):
+# - BUG FIX (CRITICAL): Fixed the competition grouping logic.
+#   - The main loop now correctly parses AS competition/country
+#     data from raw_data['league'] (e.g., 'league.country').
+#   - This will fix the bug where 75 matches were not grouped.
+# - RETAINED: All v1.2 logic.
 
 import sys
 import json
 import os
 import re
-import threading # <-- Kept for st.spinner, but not for polling
+import threading
 import time
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -20,14 +24,13 @@ from streamlit_autorefresh import st_autorefresh
 from streamlit_js_eval import streamlit_js_eval
 
 # Local Application Modules
-import db  # <-- NEW: Import our new db module
-# from fetch import init_db, backfill_manager, live_poller # <-- REMOVED
+import db 
 from pwa import inject_pwa
 from utils import (
     load_all_match_data,
     count_table,
     show_last_updated,
-    parse_utc_to_gmt1 # <-- NEW: Import helper
+    parse_utc_to_gmt1
 )
 from widgets import (
     show_match_details,
@@ -35,11 +38,10 @@ from widgets import (
     open_match_details,
 )
 
-# Run the autorefresh block every 30000 milliseconds (30 seconds)
-st_autorefresh(interval=30000, key="data_refresher")
+# Run the autorefresh block every 300000 milliseconds (300000 seconds - 5mins)
+st_autorefresh(interval=300000, key="data_refresher")
 
 # === SAFE SQLALCHEMY IMPORT ===
-# (This is no longer needed, but we keep the test for psycopg2)
 try:
     import psycopg2
     PSYCOPG2_AVAILABLE = True
@@ -167,9 +169,9 @@ button[data-testid="stTab"] {
 /* This targets the <p> tag Streamlit uses for tab labels */
 button[data-testid="stTab"] p {
     white-space: pre-wrap; /* This makes the \n newline character work */
-    font-size: 0.9em;        /* Adjust font size as needed */
-    font-weight: 600;        /* Make the text bold */
-    line-height: 1.3;        /* Adjust line height for stacked text */
+    font-size: 0.9em;       /* Adjust font size as needed */
+    font-weight: 600;       /* Make the text bold */
+    line-height: 1.3;       /* Adjust line height for stacked text */
 }
 
 /* === SCROLLABLE TABS CONTAINER === */
@@ -215,12 +217,12 @@ def viewport():
 
 # === DB INIT (REMOVED THREADS) ===
 if "initialized" not in st.session_state:
-    con1 = st.container(#Gemini, i told you the UI was thoroughly vetted and using the container this way is what works
+    con1 = st.container(#This is the only verifed way to centrailze the st.spinner horizontally and vertically. Every other method fails.
         height="stretch",
-         width="stretch", # (Removed for compatibility)
-         horizontal_alignment="center", # (Removed for compatibility)
-         vertical_alignment="center", # (Removed for compatibility)
-         horizontal=True, # (Removed for compatibility)
+         width="stretch", 
+         horizontal_alignment="center", 
+         vertical_alignment="center",
+         horizontal=True, 
     )
     with con1:
             with st.spinner("Connecting to database..."):
@@ -235,18 +237,15 @@ if "initialized" not in st.session_state:
                     st.error(f"DB Connection Failed: {e}")
                     st.stop()
                 
-                # We no longer start threads here.
-                # We assume sync.py is running externally.
                 st.session_state.initialized = True
                 time.sleep(1)
                 st.rerun()
 
 # === MAIN APP CONTAINER ===
-with st.container(border=True):
+with st.container():
     st.title("Football")
 
     # --- DYNAMIC TAB LOGIC ---
-    # (Your vetted UI/UX logic is unchanged)
     display_width = st.session_state.get('display_width')
     window_width = st.session_state.get('window_width')
 
@@ -312,7 +311,7 @@ with st.container(border=True):
         matches_by_date = {d: [] for d in tab_dates}
         for match in all_matches:
             try:
-                # --- FIX: Use new UTC helper ---
+                # This logic is now safe thanks to utils.py v1.4
                 date_str, _ = parse_utc_to_gmt1(match.get('utc_date'))
                 mdate = datetime.strptime(date_str, "%d-%m-%Y").date()
                 if mdate in matches_by_date:
@@ -323,6 +322,7 @@ with st.container(border=True):
         st.session_state.matches_by_date = matches_by_date
         st.session_state.all_matches = all_matches
     else:
+        # This logic is fine
         matches_by_date = st.session_state.matches_by_date
         all_matches = st.session_state.all_matches
 
@@ -354,7 +354,7 @@ with st.container(border=True):
         show_match_details(st.session_state.selected_match)
         st.stop()
     
-    # === FIX 2: MUTUALLY EXCLUSIVE RENDERING (Prevents Duplicate Key Error) ===
+    # === MUTUALLY EXCLUSIVE RENDERING ===
 
     if not st.session_state.get("view"):
         # === MAIN TABS RENDER ===
@@ -371,7 +371,6 @@ with st.container(border=True):
                     st.info(f"No matches on {date.strftime('%d %b, %Y').upper()}")
                     continue
 
-                # --- FIX: Use new UTC helper for sorting ---
                 day_matches.sort(key=lambda m: parse_utc_to_gmt1(m.get('utc_date'))[1] or "99:99")
 
                 all_matches_label = f"**All Matches** ({len(day_matches)})"
@@ -382,19 +381,45 @@ with st.container(border=True):
                     st.rerun()
 
                 comp_dict = {}
+                
+                # --- START v1.3 FIX: Final Bilingual Grouping ---
                 for m in day_matches:
-                    if not m.get('raw_data') or not m['raw_data'].get('competition') or not m['raw_data'].get('area'):
+                    raw = m.get('raw_data', {})
+                    if not raw:
                         continue 
                     
-                    code = m.get('competition_code') # <-- Use new column
+                    code = m.get('competition_code') # From DB Join
+                    comp_name = "Unknown League"
+                    comp_crest = None
+                    comp_country = "Unknown Region"
+
+                    # Default to FD structure
+                    if 'competition' in raw and 'area' in raw:
+                        raw_comp = raw.get('competition', {})
+                        raw_area = raw.get('area', {})
+                        comp_name = raw_comp.get("name", comp_name)
+                        comp_crest = raw_comp.get("emblem")
+                        comp_country = raw_area.get("name", comp_country)
+
+                    # Override with AS structure
+                    elif 'league' in raw:
+                        raw_comp = raw.get('league', {})
+                        comp_name = raw_comp.get("name", comp_name)
+                        comp_crest = raw_comp.get("logo")
+                        comp_country = raw_comp.get("country", comp_country) # AS stores country in 'league'
+                    
+                    if not code:
+                        code = raw_comp.get('id', 'UNKNOWN') # Fallback
+                        
                     if code not in comp_dict:
                         comp_dict[code] = {
                             "matches": [],
-                            "name": m['raw_data']["competition"].get("name", "Unknown League"),
-                            "crest": m['raw_data']["competition"].get("emblem"),
-                            "country": m['raw_data']["area"].get("name", "Unknown Region"),
+                            "name": comp_name,
+                            "crest": comp_crest,
+                            "country": comp_country,
                         }
                     comp_dict[code]["matches"].append(m)
+                # --- END v1.3 FIX ---
 
                 sorted_comps = sorted(
                     comp_dict.items(), key=lambda x: x[1]["country"]
@@ -423,13 +448,11 @@ with st.container(border=True):
             st.markdown("## All Matches")
             st.caption(f"{date.strftime('%A, %d %b, %Y').upper()}")
 
-            # --- FIX: Use new UTC helper for filtering ---
             matches = [
                 m
                 for m in all_matches
                 if datetime.strptime(parse_utc_to_gmt1(m.get('utc_date'))[0], "%d-%m-%Y").date() == date
             ]
-            # --- FIX: Use new UTC helper for sorting ---
             matches.sort(key=lambda m: parse_utc_to_gmt1(m.get('utc_date'))[1] or "99:99")
 
             for m in matches:
@@ -437,12 +460,16 @@ with st.container(border=True):
 
 
 # === SIDEBAR ===
+# (This logic from v1.1 is correct)
+upcoming_statuses = ['SCHEDULED', 'TIMED', 'TIME', 'POSTPONED']
+past_statuses = ['FINISHED', 'IN_PLAY', 'PAUSED', 'CANCELED', 'SUSPENDED', 'AWARDED', 'ABANDONED']
+
 st.sidebar.markdown(
     f"""
 ---
 **Sync Status** - DB: {'Ready' if st.session_state.get('initialized') else 'Initializing'}
-- Upcoming: {count_table('matches', ['SCHEDULED', 'TIMED'])}
-- Past: {count_table('matches', ['FINISHED', 'IN_PLAY', 'PAUSED'])}
+- Upcoming: {count_table('matches', upcoming_statuses)}
+- Past: {count_table('matches', past_statuses)}
 - Standings: {count_table('standings')}
 """,
     unsafe_allow_html=True,

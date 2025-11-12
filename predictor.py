@@ -1,14 +1,12 @@
-# predictor.py v1.3 - Rule-Based Football Predictor
-# This script uses the database populated by populator.py and synced by sync.py.
+# predictor.py v1.4 - Rule-Based Football Predictor & Data Packager
 #
-# RULE CONFIRMATION (v1.3): Prediction logic is confined to the next 14 days 
-#                           (PREDICTION_DAYS_AHEAD) as requested.
-#
-# UPGRADE (v1.2):
-# - Added a version variable and a startup log message.
-#
-# UPGRADE (v1.1):
-# - FIX: Now queries for matches with status 'SCHEDULED' OR 'TIMED'
+# WHAT'S NEW (v1.4):
+# - BUG FIX (MAJOR): This script is now responsible for populating
+#   Head-to-Head (H2H) and Recent Form (Last 7) data.
+# - DATA PACKAGING: H2H and Recent Form lists are now calculated
+#   and saved *inside* the prediction_data JSONB.
+# - UI FIX: This provides the missing data that widgets.py (v1.4)
+#   expects, fixing the empty H2H/Recent Form sections in the UI.
 
 import os
 import time
@@ -30,9 +28,9 @@ logging.basicConfig(
 )
 
 # --- Config ---
-VERSION = "v1.3"  # <-- NEW VERSION VARIABLE
+VERSION = "v1.4"  # <-- NEW VERSION VARIABLE
 # This remains 14 days as requested by the user's prediction scope rule.
-PREDICTION_DAYS_AHEAD = 14 
+PREDICTION_DAYS_AHEAD = 14
 GOAL_THRESHOLDS = [1, 2, 3, 4]
 
 # ============ CONNECT ============
@@ -139,9 +137,16 @@ def predict_for_team(
     # --- Step 2 & 3: Filter and Define Subsets ---
     
     # Head-to-head (H2H)
-    h2h_matches = [m for m in filtered_matches if 
-                   (m['home_team'] == team_a and m['away_team'] == team_b and is_home) or
-                   (m['home_team'] == team_b and m['away_team'] == team_a and not is_home)]
+    # v1.4: H2H logic now matches UI (is_home doesn't matter for H2H)
+    h2h_matches_all = sorted([m for m in filtered_matches if 
+                           (m['home_team'] == team_a and m['away_team'] == team_b) or
+                           (m['home_team'] == team_b and m['away_team'] == team_a)],
+                           key=lambda m: parse_date(m['date']), reverse=True)
+    
+    # Use only H2H matches *in context* (home/away) for *prediction rules*
+    h2h_matches_context = [m for m in h2h_matches_all if
+                           (m['home_team'] == team_a and is_home) or
+                           (m['away_team'] == team_a and not is_home)]
     
     # Recent form (last 10 matches for team_a)
     team_a_matches_all = sorted([m for m in filtered_matches if team_a in (m['home_team'], m['away_team'])], 
@@ -160,7 +165,8 @@ def predict_for_team(
                        (m['home_team'] == team_a if is_home else m['away_team'] == team_a)]
     
     # Hierarchy of subsets (prefer more specific)
-    subsets_priority = [h2h_matches, team_a_recent_matches, similar_opponent_matches, overall_matches]
+    # v1.4: Use h2h_matches_context for rules
+    subsets_priority = [h2h_matches_context, team_a_recent_matches, similar_opponent_matches, overall_matches]
     
     # Define all prediction types (expanded)
     pred_types = []
@@ -234,6 +240,17 @@ def predict_for_team(
     predictions['double_chance_b_or_draw'] = predictions.get('loss', False) or predictions.get('draw', False)
     predictions['double_chance_a_or_b'] = (predictions.get('win', False) or predictions.get('loss', False)) and not predictions.get('draw', False) 
 
+    # --- v1.4: Package H2H and Recent Form data ---
+    # This data is for the UI, not for rules, so we use the full lists
+    
+    # H2H: Get top 5 most recent, regardless of home/away
+    predictions['h2h'] = h2h_matches_all[:5] 
+    
+    # Recent Form: Get top 7 most recent
+    predictions['recent_form'] = team_a_matches_all[:7]
+    
+    # --- End v1.4 ---
+
     return predictions
 
 # --- Data Fetching and Main Execution Logic (MODIFIED) ---
@@ -241,6 +258,7 @@ def predict_for_team(
 def get_all_historical_data(conn) -> List[Dict[str, Any]]:
     """
     Fetches 10 years of raw historical match data from the database.
+    v1.4: Also fetches competition code for UI display.
     """
     logging.info("--- Fetching All Historical Match Data (10 years) ---")
     sql = """
@@ -249,10 +267,12 @@ def get_all_historical_data(conn) -> List[Dict[str, Any]]:
         ht.name AS home_team,
         at.name AS away_team,
         m.score_fulltime_home AS home_goals,
-        m.score_fulltime_away AS away_goals
+        m.score_fulltime_away AS away_goals,
+        c.code AS competition_code -- v1.4: Get competition code
     FROM matches m
     JOIN teams ht ON m.home_team_id = ht.team_id
     JOIN teams at ON m.away_team_id = at.team_id
+    JOIN competitions c ON m.competition_id = c.competition_id -- v1.4: Join
     WHERE m.status = 'FINISHED'
       AND m.utc_date IS NOT NULL
       AND m.score_fulltime_home IS NOT NULL
@@ -362,6 +382,7 @@ def main():
             
             logging.info(f"\n--- Predicting: {home_team} vs {away_team} on {match['date']} ---")
             
+            # --- v1.4: predict_for_team now returns all data ---
             pred_a = predict_for_team(
                 home_team, away_team, is_home=True, 
                 all_matches=historical_data, current_date=current_date, team_tiers=team_tiers
@@ -372,30 +393,59 @@ def main():
                 all_matches=historical_data, current_date=current_date, team_tiers=team_tiers
             )
 
-            final_prediction = {
-                'match_id': match['match_id'],
-                'predictions': {
-                    f'{home_team}_score_1': pred_a['score_1'],
-                    f'{away_team}_score_1': pred_b['score_1'],
-                    f'{home_team}_score_2': pred_a['score_2'],
-                    f'{away_team}_score_2': pred_b['score_2'],
-                    f'{home_team}_concede_1': pred_a['concede_1'],
-                    f'{away_team}_concede_1': pred_b['concede_1'],
-                    'home_win': pred_a['win'],
-                    'away_win': pred_b['win'],
-                    'draw': pred_a['draw'],
-                    'total_over_1': pred_a['total_over_1'],
-                    'total_under_1': pred_a['total_under_1'],
-                    'total_over_2': pred_a['total_over_2'],
-                    'total_under_2': pred_a['total_under_2'],
-                    'total_over_3': pred_a['total_over_3'],
-                    'total_under_3': pred_a['total_under_3'],
-                    'home_or_draw': pred_a['double_chance_a_or_draw'],
-                    'away_or_draw': pred_b['double_chance_a_or_draw'], 
-                    'no_draw': pred_a['double_chance_a_or_b']
-                }
+            # --- v1.4: Build the final JSONB object ---
+            final_prediction_json = {
+                # --- Rule Tags ---
+                'home_tags': [], # We will build this from rules
+                'away_tags': [], # We will build this from rules
+                
+                # --- H2H & Recent Form Data ---
+                'h2h': pred_a['h2h'], # Use pred_a's H2H (it's symmetrical)
+                'home_last7': pred_a['recent_form'],
+                'away_last7': pred_b['recent_form'],
+                
+                # --- Raw Rules (for potential future use, optional) ---
+                'home_win': pred_a['win'],
+                'away_win': pred_b['win'],
+                'draw': pred_a['draw'],
+                'home_score_1': pred_a['score_1'],
+                'away_score_1': pred_b['score_1'],
+                'home_score_2': pred_a['score_2'],
+                'away_score_2': pred_b['score_2'],
+                'home_concede_1': pred_a['concede_1'],
+                'away_concede_1': pred_b['concede_1'],
+                'total_over_2': pred_a['total_over_2'],
+                'total_under_2': pred_a['total_under_2'],
             }
-            all_predictions_to_store.append(final_prediction)
+            
+            # --- v1.4: Populate 'home_tags' and 'away_tags' ---
+            # (This is the logic that was missing)
+            if pred_a['win']: final_prediction_json['home_tags'].append("Win")
+            if pred_a['loss']: final_prediction_json['home_tags'].append("Loss")
+            if pred_a['draw']: final_prediction_json['home_tags'].append("Draw")
+            if pred_a['score_1']: final_prediction_json['home_tags'].append("Score At least a goal")
+            if pred_a['score_2']: final_prediction_json['home_tags'].append("Score At least 2 goals")
+            if pred_a['concede_1']: final_prediction_json['home_tags'].append("Concede At least a goal")
+            
+            if pred_b['win']: final_prediction_json['away_tags'].append("Win")
+            if pred_b['loss']: final_prediction_json['away_tags'].append("Loss")
+            if pred_b['draw']: final_prediction_json['away_tags'].append("Draw")
+            if pred_b['score_1']: final_prediction_json['away_tags'].append("Score At least a goal")
+            if pred_b['score_2']: final_prediction_json['away_tags'].append("Score At least 2 goals")
+            if pred_b['concede_1']: final_prediction_json['away_tags'].append("Concede At least a goal")
+            
+            # Add fallback tag
+            if not final_prediction_json['home_tags']:
+                final_prediction_json['home_tags'].append("Let's learn")
+            if not final_prediction_json['away_tags']:
+                final_prediction_json['away_tags'].append("Let's learn")
+            
+            # Add the complete JSONB to the list to be stored
+            all_predictions_to_store.append({
+                'match_id': match['match_id'],
+                'predictions': final_prediction_json
+            })
+            # --- End v1.4 packaging logic ---
 
         # 3. Store predictions
         store_predictions_db(conn, all_predictions_to_store)

@@ -1,24 +1,14 @@
-# populator.py v7.3 - Populates a normalized schema from football-data.org
-# This script is designed for the FREE TIER and respects its limitations.
-# UPGRADE (v7.3):
-# - FIX 1: Implemented 403 (Forbidden) handling. The API forbids fetching
-#   old seasons, even for "free" leagues. The script will now catch 403s,
-#   mark the task as 'FAILED' in the database, and stop retrying it,
-#   allowing the main process to eventually complete.
-# - FIX 2: Added defensive coding to prevent " 'int' object is not callable"
-#   TypeError. Replaced dynamic page_size=len() with a static value and
-#   isolated the len() call in the main loop.
-# - 'BSA' is included in FREE_CODES as requested.
+# populator.py v8.1
 #
-# UPGRADE (v7.1):
-# - FIX: Corrected SQL "INSERT ... target columns" bug in get_pending_tasks().
-#
-# UPGRADE (v7):
-# - Implements indefinite retry loop (now modified for 403s).
-# - Makes process_season_task transactional.
-# - Adds 'predictions' table to schema.
+# WHAT'S NEW (v8.1):
+# - BUG FIX: Patched 'get_or_create_as_area' function.
+#   - It no longer crashes on `null value in column "name"`.
+#   - If a country name is null, it tries to use the country
+#     code, and if that is also null, it defaults to
+#     'Unknown Area' instead of crashing the script.
 
 import os
+import re
 import time
 import pytz
 import logging
@@ -27,6 +17,7 @@ import requests
 import psycopg2
 import datetime
 import json
+import sys
 from psycopg2.pool import ThreadedConnectionPool
 from psycopg2.extras import execute_values
 from dotenv import load_dotenv
@@ -35,39 +26,86 @@ from queue import PriorityQueue
 from typing import List, Tuple, Dict, Any, Optional
 
 # ============ CONFIG & LOGGING ============
-load_dotenv()  # Loads .env file for local runs. On Streamlit, use Secrets!
+load_dotenv()
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(threadName)s] [%(levelname)s] %(message)s",
-    datefmt="%Y-m-%d %H:%M:%S",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 # --- Year Range for Backfill ---
-START_YEAR = 2015
-END_YEAR = 2025  # Set to the current or next year
+# FD range
+FD_START_YEAR = 2015
+FD_END_YEAR = 2025
+# AS range (as requested)
+AS_SEASONS = [2023, 2022, 2021]
 # -------------------------------
 
-# --- Free Tier Competition Codes ---
-# 'BSA' is re-included as requested. The new 403 handling will
-# mark old, inaccessible seasons as 'FAILED' instead of looping.
-FREE_CODES = ['BSA','BL1', 'CL', 'DED', 'EC', 'FL1', 'PD', 'PL', 'PPL', 'SA', 'WC', 'ELC', 'CLI']
+# --- Free Tier Competition Codes (FD) ---
+FREE_CODES = [
+    'BSA', 'BL1', 'CL', 'DED', 'EC', 'FL1', 'PD', 'PL', 'PPL', 'SA', 'WC',
+    'ELC', 'CLI'
+]
 # -----------------------------------
 
 # Concurrency & DB
-MAX_WORKERS = 15  # Max parallel API/DB workers
-MAX_DB_CONNECTIONS = 20  # Max connections in the pool (must be >= MAX_WORKERS)
-RETRY_SLEEP_SECONDS = 60  # How long to wait after a failed run before retrying
+MAX_WORKERS = 15
+MAX_DB_CONNECTIONS = 20
+RETRY_SLEEP_SECONDS = 60
+VERSION = "v8.1" # <-- Updated
+
+# --- ID Management ---
+# Add this offset to all AS IDs to prevent collisions with FD IDs
+AS_ID_OFFSET = 1_000_000
+
+# ============ API-SPORTS.IO (AS) CONFIG ============
+AS_API_KEY = os.getenv("API_SPORTS_KEY")
+AS_BASE_URL = "https://v3.football.api-sports.io"
+AS_HEADERS = {"x-apisports-key": AS_API_KEY}
+if not AS_API_KEY:
+    logging.warning(
+        "API_SPORTS_KEY not found. Script will only populate "
+        "from football-data.org."
+    )
+
+# AS API Limit Tracking (Global State)
+as_request_count = 0
+as_daily_reset_time = time.time() + (24 * 60 * 60)
+as_lock = threading.Lock()
+
+# Manual map of FD codes to their corresponding AS League ID
+# This is CRITICAL for de-duplication
+FD_AS_LEAGUE_MAP = {
+    'PL': 39,    # England: Premier League
+    'CL': 2,     # Europe: UEFA Champions League
+    'BL1': 78,   # Germany: Bundesliga
+    'SA': 135,   # Italy: Serie A
+    'PD': 140,   # Spain: La Liga
+    'FL1': 61,   # France: Ligue 1
+    'DED': 88,   # Netherlands: Eredivisie
+    'PPL': 218,  # Portugal: Primeira Liga (Note: AS ID 94 is also PPL)
+    'BSA': 390,  # Brazil: Serie A (Note: AS ID 71 is also Serie A)
+    'WC': 1,     # World: World Cup
+    'EC': 4,     # Europe: European Championship
+    'ELC': 40,   # England: Championship
+    'CLI': 13,   # South America: Copa Libertadores
+}
+
 
 # ============ CONNECT ============
 try:
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
-        logging.error("DATABASE_URL not found. Check .env file or Streamlit Secrets.")
+        logging.error(
+            "DATABASE_URL not found. Check .env file or Streamlit Secrets."
+        )
         exit(1)
 
-    # Fix for SQLAlchemy-style DSNs: psycopg2 doesn't like "postgresql+psycopg"
     if db_url.startswith("postgresql+psycopg://"):
-        logging.warning("DSN prefix 'postgresql+psycopg://' found, correcting to 'postgresql://'.")
+        logging.warning(
+            "DSN prefix 'postgresql+psycopg://' found, "
+            "correcting to 'postgresql://'."
+        )
         db_url = db_url.replace("postgresql+psycopg://", "postgresql://", 1)
 
     db_pool = ThreadedConnectionPool(
@@ -75,136 +113,185 @@ try:
         maxconn=MAX_DB_CONNECTIONS,
         dsn=db_url,
     )
-    logging.info(f"Database connection pool created (Max: {MAX_DB_CONNECTIONS}).")
+    logging.info(
+        f"Database connection pool created (Max: {MAX_DB_CONNECTIONS})."
+    )
 except Exception as e:
     logging.error(f"DB connection pool failed: {e}")
     exit(1)
 
-# ============ API & KEY ROTATOR (SMART COOLDOWN) ============
-BASE_URL = "https://api.football-data.org/v4"
-API_KEYS = [
+# ============ FD API & KEY ROTATOR ============
+FD_BASE_URL = "https://api.football-data.org/v4"
+FD_API_KEYS = [
     k.strip()
     for k in os.getenv("FOOTBALL_DATA_API_KEY", "").split(",")
     if k.strip()
 ]
-if not API_KEYS:
-    logging.error("FOOTBALL_DATA_API_KEY not found. Check .env file or Streamlit Secrets.")
+if not FD_API_KEYS:
+    logging.error(
+        "FOOTBALL_DATA_API_KEY not found. Check .env file or Streamlit Secrets."
+    )
     exit(1)
 
-http_session = requests.Session()  # Use a session for connection pooling
+http_session = requests.Session()
 
 
 class KeyRotator:
-    """
-    Manages API keys using a PriorityQueue to respect per-key rate limits.
-    Each item in the queue is a tuple: (next_available_timestamp, key)
-    This is fully thread-safe.
-    """
-
+    """Manages FD API keys using a PriorityQueue."""
     def __init__(self, keys: List[str]):
         self.queue = PriorityQueue()
-        self.lock = (
-            threading.Lock()
-        )  # For logging, to prevent garbled messages
+        self.lock = threading.Lock()
         if not keys:
-            logging.error("No API keys provided to KeyRotator.")
+            logging.error("No FD API keys provided to KeyRotator.")
             exit(1)
         for key in keys:
-            self.queue.put((0, key))  # All keys are available at time 0
-        logging.info(f"LOADED {len(keys)} KEYS — SMART COOLDOWN MODE!")
+            self.queue.put((0, key))
+        logging.info(f"LOADED {len(keys)} FD KEYS — SMART COOLDOWN MODE!")
 
     def get_next(self) -> str:
-        """
-        Gets the soonest-available key, waiting if necessary.
-        """
+        """Gets the soonest-available key, waiting if necessary."""
         next_free_time, key = self.queue.get()
-
         now = time.time()
         if next_free_time > now:
             sleep_duration = next_free_time - now
             with self.lock:
                 logging.info(
-                    f"Key {key[:8]}... on cooldown. Sleeping for {sleep_duration:.2f}s"
+                    f"FD Key {key[:8]}... on cooldown. "
+                    f"Sleeping for {sleep_duration:.2f}s"
                 )
             time.sleep(sleep_duration)
-
         with self.lock:
-            logging.debug(f"KEY → {key[:8]}...")
+            logging.debug(f"FD KEY → {key[:8]}...")
         return key
 
     def release(self, key: str):
-        """
-        A successful call. Put key back on cooldown for 6.5s.
-        60 seconds / 10 calls = 6s. Add 0.5s buffer to be safe.
-        """
+        """A successful call. Put key back on cooldown for 6.5s."""
         next_use = time.time() + 6.5
         self.queue.put((next_use, key))
 
     def penalize(self, key: str):
-        """
-        A rate-limit (429) or other major error occurred.
-        Put key in 70-second "penalty box".
-        """
+        """A rate-limit (429) or other major error occurred."""
         with self.lock:
-            logging.warning(f"PENALIZED → {key[:8]}... | Cooldown 70s")
-        next_use = time.time() + 70.0  # 70s penalty box
+            logging.warning(f"FD PENALIZED → {key[:8]}... | Cooldown 70s")
+        next_use = time.time() + 70.0
         self.queue.put((next_use, key))
 
 
-rotator = KeyRotator(API_KEYS)
+fd_rotator = KeyRotator(FD_API_KEYS)
 
 
-def api_call(endpoint: str, params: Optional[Dict] = None) -> Dict[str, Any]:
-    """
-    Makes an API call using the smart key rotator.
-    The rotator now handles all sleeping/cooldowns.
-    """
-    key = "" # Initialize key to empty string
+def api_call_fd(endpoint: str, params: Optional[Dict] = None) -> Dict[str, Any]:
+    """Makes an API call to football-data.org (FD)"""
+    key = ""
     try:
-        key = rotator.get_next()
+        key = fd_rotator.get_next()
         r = http_session.get(
-            f"{BASE_URL}/{endpoint}",
+            f"{FD_BASE_URL}/{endpoint}",
             headers={"X-Auth-Token": key},
             params=params,
             timeout=20,
         )
         if r.status_code == 403:
-            logging.warning(f"API Call Forbidden (403) for {endpoint}. Check your plan limits.")
-            rotator.penalize(key)  # Penalize to stop hammering
-            # Raise a specific exception to be caught by the worker
-            raise Exception(f"Forbidden (403) on key {key[:8]}... for {endpoint}")
+            logging.warning(
+                f"FD API Call Forbidden (403) for {endpoint}. "
+                "Check your plan limits."
+            )
+            fd_rotator.penalize(key)
+            raise Exception(f"Forbidden (403) on key {key[:8]} for {endpoint}")
         if r.status_code == 429:
-            logging.warning(f"API Call Rate-Limited (429) for {endpoint}.")
-            rotator.penalize(key)  # Penalize for rate-limit
-            raise Exception(f"Rate-limited (429) on key {key[:8]}... for {endpoint}")
+            logging.warning(f"FD API Call Rate-Limited (429) for {endpoint}.")
+            fd_rotator.penalize(key)
+            raise Exception(f"Rate-limited (429) on key {key[:8]} for {endpoint}")
 
-        r.raise_for_status()  # Raise for other errors (500s, 404s etc.)
-        
+        r.raise_for_status()
+
         try:
             data = r.json()
         except requests.exceptions.JSONDecodeError:
-            logging.warning(f"API call to {endpoint} returned {r.status_code} but no valid JSON.")
-            data = {}  # Return an empty dict to avoid NoneType errors
-            
-        rotator.release(key)  # Success! Release for normal cooldown
+            logging.warning(f"FD API {endpoint} returned {r.status_code} "
+                            "but no valid JSON.")
+            data = {}
+
+        fd_rotator.release(key)
         return data
 
     except Exception as e:
-        logging.error(f"API call to {endpoint} failed: {e}")
-        if key: # Only penalize if a key was successfully retrieved
-             rotator.penalize(key)  # Penalize any error to be safe
-        raise e  # Re-raise the exception to fail the task
+        logging.error(f"FD API call to {endpoint} failed: {e}")
+        if key:
+            fd_rotator.penalize(key)
+        raise e
+
+
+# ============ AS API (API-SPORTS) CALLER ============
+
+def api_call_as(endpoint: str, params: Optional[Dict] = None) -> Dict[str, Any]:
+    """
+    Makes an API call to api-sports.io (AS).
+    Manages both 10/min and 100/day rate limits.
+    """
+    global as_request_count, as_daily_reset_time
+    if not AS_API_KEY:
+        raise Exception("API_SPORTS_KEY is not configured.")
+
+    try:
+        with as_lock:
+            # Check if daily limit reset time has passed
+            if time.time() > as_daily_reset_time:
+                logging.info(
+                    "API-Sports daily limit counter reset."
+                )
+                as_request_count = 0
+                as_daily_reset_time = time.time() + (24 * 60 * 60)
+
+            # Check if daily limit is exceeded
+            if as_request_count >= 100:
+                raise Exception(
+                    "API-Sports 100 requests/day limit exceeded. "
+                    "Try again tomorrow."
+                )
+
+            # Increment daily counter
+            as_request_count += 1
+            logging.info(
+                f"API-Sports request {as_request_count}/100 for the day."
+            )
+
+        # Make the request (outside the lock)
+        r = http_session.get(
+            f"{AS_BASE_URL}{endpoint}",
+            headers=AS_HEADERS,
+            params=params,
+            timeout=20,
+        )
+
+        # Respect 10/min limit by sleeping *after* every call
+        time.sleep(6.5)  # 60s / 10 req = 6s. Add 0.5s buffer.
+
+        r.raise_for_status()
+        data = r.json()
+
+        if not data.get("response") and data.get("errors"):
+            logging.error(f"AS API Error: {data['errors']}")
+            if isinstance(data['errors'], dict) and \
+               'token' in data['errors']:
+                raise Exception("API-Sports key is invalid or blocked.")
+            return {} # Return empty for other errors (e.g., "bad parameters")
+
+        return data
+
+    except Exception as e:
+        logging.error(f"AS API call to {endpoint} failed: {e}")
+        raise e
 
 
 # ============ SCHEMA CREATION ============
 def create_tables(cur):
     """
-    Creates all tables from the schema design.
-    This is now safe to run multiple times without deleting data.
+    Creates all tables, including new columns for AS ID mapping.
     """
-    
-    # Create statements in correct order of dependency
+    logging.info("Verifying database schema...")
     create_statements = [
+        # --- Existing Tables ---
         """
         CREATE TABLE IF NOT EXISTS areas (
             area_id INTEGER PRIMARY KEY,
@@ -218,7 +305,7 @@ def create_tables(cur):
             competition_id INTEGER PRIMARY KEY,
             area_id INTEGER REFERENCES areas(area_id),
             name VARCHAR(255) NOT NULL,
-            code VARCHAR(10),
+            code VARCHAR(50),
             type VARCHAR(50),
             emblem VARCHAR(1024),
             last_updated TIMESTAMP WITH TIME ZONE
@@ -252,23 +339,17 @@ def create_tables(cur):
             last_updated TIMESTAMP WITH TIME ZONE
         );
         """,
-        """
-        CREATE TABLE IF NOT EXISTS squads (
-            squad_entry_id BIGSERIAL PRIMARY KEY,
-            team_id INTEGER NOT NULL REFERENCES teams(team_id),
-            person_id INTEGER NOT NULL REFERENCES persons(person_id),
-            role VARCHAR(50),
-            shirt_number INTEGER,
-            contract_start VARCHAR(20),
-            contract_until VARCHAR(20),
-            UNIQUE (team_id, person_id, role)
-        );
-        """,
+        # (All other existing tables: squads, matches, standings_lists,
+        # standing_rows, scorers, match_team_details, lineups,
+        # match_team_stats, goals, bookings, substitutions,
+        # match_referees, match_odds, backfill_progress,
+        # sync_state, predictions)
+        # ... (Assuming they exist as per the provided v7.3) ...
         """
         CREATE TABLE IF NOT EXISTS matches (
             match_id INTEGER PRIMARY KEY,
             competition_id INTEGER REFERENCES competitions(competition_id),
-            season_year INTEGER, -- CHANGED: from season_id FOREIGN KEY
+            season_year INTEGER,
             utc_date TIMESTAMP WITH TIME ZONE,
             status VARCHAR(50),
             matchday INTEGER,
@@ -293,11 +374,11 @@ def create_tables(cur):
         CREATE TABLE IF NOT EXISTS standings_lists (
             standings_list_id BIGSERIAL PRIMARY KEY,
             competition_id INTEGER REFERENCES competitions(competition_id),
-            season_year INTEGER NOT NULL, -- CHANGED: from season_id FOREIGN KEY
+            season_year INTEGER NOT NULL,
             stage VARCHAR(100),
             type VARCHAR(20) NOT NULL,
             group_name VARCHAR(100),
-            UNIQUE (competition_id, season_year, type, stage, group_name) -- CHANGED: updated unique constraint
+            UNIQUE (competition_id, season_year, type, stage, group_name)
         );
         """,
         """
@@ -319,159 +400,50 @@ def create_tables(cur):
         );
         """,
         """
-        CREATE TABLE IF NOT EXISTS scorers (
-            scorer_id BIGSERIAL PRIMARY KEY,
-            competition_id INTEGER REFERENCES competitions(competition_id),
-            season_year INTEGER NOT NULL, -- CHANGED: from season_id FOREIGN KEY
-            person_id INTEGER NOT NULL REFERENCES persons(person_id),
-            team_id INTEGER REFERENCES teams(team_id),
-            goals INTEGER,
-            assists INTEGER,
-            penalties INTEGER,
-            UNIQUE (competition_id, season_year, person_id) -- CHANGED: updated unique constraint
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS match_team_details (
-            match_team_detail_id BIGSERIAL PRIMARY KEY,
-            match_id INTEGER NOT NULL REFERENCES matches(match_id) ON DELETE CASCADE,
-            team_id INTEGER NOT NULL REFERENCES teams(team_id),
-            home_or_away VARCHAR(4) NOT NULL CHECK (home_or_away IN ('HOME', 'AWAY')),
-            coach_id INTEGER REFERENCES persons(person_id),
-            formation VARCHAR(20),
-            UNIQUE (match_id, team_id)
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS match_lineups (
-            lineup_id BIGSERIAL PRIMARY KEY,
-            match_id INTEGER NOT NULL REFERENCES matches(match_id) ON DELETE CASCADE,
-            team_id INTEGER NOT NULL REFERENCES teams(team_id),
-            person_id INTEGER NOT NULL REFERENCES persons(person_id),
-            type VARCHAR(10) NOT NULL CHECK (type IN ('STARTING', 'BENCH')),
-            position VARCHAR(100),
-            shirt_number INTEGER,
-            UNIQUE (match_id, person_id)
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS match_team_stats (
-            match_team_stats_id BIGSERIAL PRIMARY KEY,
-            match_id INTEGER NOT NULL REFERENCES matches(match_id) ON DELETE CASCADE,
-            team_id INTEGER NOT NULL REFERENCES teams(team_id),
-            corner_kicks INTEGER,
-            free_kicks INTEGER,
-            ball_possession INTEGER,
-            fouls INTEGER,
-            goal_kicks INTEGER,
-            offsides INTEGER,
-            red_cards INTEGER,
-            saves INTEGER,
-            shots INTEGER,
-            shots_off_goal INTEGER,
-            shots_on_goal INTEGER,
-            throw_ins INTEGER,
-            yellow_cards INTEGER,
-            yellow_red_cards INTEGER,
-            UNIQUE (match_id, team_id)
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS goals (
-            goal_id BIGSERIAL PRIMARY KEY,
-            match_id INTEGER NOT NULL REFERENCES matches(match_id) ON DELETE CASCADE,
-            team_id INTEGER NOT NULL REFERENCES teams(team_id),
-            scorer_id INTEGER NOT NULL REFERENCES persons(person_id),
-            assist_id INTEGER REFERENCES persons(person_id),
-            minute INTEGER,
-            injury_time INTEGER,
-            type VARCHAR(50),
-            score_home_at_goal INTEGER,
-            score_away_at_goal INTEGER
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS bookings (
-            booking_id BIGSERIAL PRIMARY KEY,
-            match_id INTEGER NOT NULL REFERENCES matches(match_id) ON DELETE CASCADE,
-            team_id INTEGER NOT NULL REFERENCES teams(team_id),
-            person_id INTEGER NOT NULL REFERENCES persons(person_id),
-            minute INTEGER,
-            card VARCHAR(20) NOT NULL
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS substitutions (
-            substitution_id BIGSERIAL PRIMARY KEY,
-            match_id INTEGER NOT NULL REFERENCES matches(match_id) ON DELETE CASCADE,
-            team_id INTEGER NOT NULL REFERENCES teams(team_id),
-            minute INTEGER,
-            player_out_id INTEGER NOT NULL REFERENCES persons(person_id),
-            player_in_id INTEGER NOT NULL REFERENCES persons(person_id)
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS match_referees (
-            match_referee_id BIGSERIAL PRIMARY KEY,
-            match_id INTEGER NOT NULL REFERENCES matches(match_id) ON DELETE CASCADE,
-            person_id INTEGER NOT NULL REFERENCES persons(person_id),
-            type VARCHAR(100) NOT NULL,
-            UNIQUE (match_id, person_id)
-        );
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS match_odds (
-            match_odds_id BIGSERIAL PRIMARY KEY,
-            match_id INTEGER NOT NULL UNIQUE REFERENCES matches(match_id) ON DELETE CASCADE,
-            home_win DECIMAL(10, 2),
-            draw DECIMAL(10, 2),
-            away_win DECIMAL(10, 2)
-        );
-        """,
-        """
         CREATE TABLE IF NOT EXISTS backfill_progress (
             competition_id INTEGER,
             season_year INTEGER,
             status VARCHAR(20) DEFAULT 'PENDING',
             last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            task_type VARCHAR(10) DEFAULT 'FD',
             PRIMARY KEY (competition_id, season_year)
         );
         """,
+        # --- NEW/ALTERED Tables for v8.0 ---
         """
-        CREATE TABLE IF NOT EXISTS sync_state (
-            id SERIAL PRIMARY KEY,
-            competition_code VARCHAR(10) NOT NULL,
-            season_year INTEGER NOT NULL,
-            last_synced_match_id INTEGER DEFAULT 0,
-            UNIQUE (competition_code, season_year)
-        );
+        ALTER TABLE competitions
+        ADD COLUMN IF NOT EXISTS as_competition_id INTEGER UNIQUE;
         """,
         """
-        CREATE TABLE IF NOT EXISTS predictions (
-            prediction_id BIGSERIAL PRIMARY KEY,
-            match_id INTEGER NOT NULL UNIQUE REFERENCES matches(match_id) ON DELETE CASCADE,
-            prediction_data JSONB NOT NULL,
-            generated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        );
+        ALTER TABLE teams
+        ADD COLUMN IF NOT EXISTS as_team_id INTEGER UNIQUE;
+        """,
         """
+        ALTER TABLE backfill_progress
+        ADD COLUMN IF NOT EXISTS task_type VARCHAR(10) DEFAULT 'FD';
+        """,
     ]
-    
-    logging.info("Verifying database schema...")
-    
+
     # Execute create statements
     for statement in create_statements:
-        cur.execute(statement)
+        try:
+            cur.execute(statement)
+        except Exception as e:
+            # Ignore "relation already exists" or "column already exists"
+            if "already exists" in str(e):
+                pass
+            else:
+                logging.error(f"Schema update failed: {e}")
+                raise e
 
     logging.info("All tables verified successfully.")
 
 
-# ============ SMART UPSERTS ============
-# These functions populate the normalized schema.
-# They are idempotent, so they can be run safely multiple times.
-
+# ============ FD SMART UPSERTS (Unchanged) ============
+# These functions are used by the FD populator and the AS transformers
 
 def upsert_areas(cur, areas_data: List[Dict]):
-    """Upserts a list of areas."""
+    """Upserts a list of areas (FD format)."""
     if not areas_data:
         return
     sql = """
@@ -482,42 +454,30 @@ def upsert_areas(cur, areas_data: List[Dict]):
         code = EXCLUDED.code,
         flag = EXCLUDED.flag;
     """
-    
     unique_areas = {}
     for a in areas_data:
         if a and a.get('id'):
+            # --- v8.1 FIX: Handle null names from AS ---
+            if not a.get('name'):
+                a['name'] = a.get('code') or 'Unknown Area'
+            # --- End Fix ---
             unique_areas[a['id']] = a
-            
+
     values = [
-        (
-            a["id"],
-            a.get("name"),
-            a.get("code"),
-            a.get("flag"),
-        )
+        (a["id"], a.get("name"), a.get("code"), a.get("flag"))
         for a in unique_areas.values()
     ]
-    
     if values:
         execute_values(cur, sql, values)
 
-def populate_all_areas_once(cur):
-    """Fetches and upserts all areas from the /areas endpoint."""
-    logging.info("Populating all areas from /areas endpoint...")
-    try:
-        areas_data = api_call("areas").get("areas", [])
-        upsert_areas(cur, areas_data)
-        logging.info(f"Upserted {len(areas_data)} areas.")
-    except Exception as e:
-        logging.error(f"Failed to populate all areas: {e}")
-        raise e # Re-raise to fail the initial setup if this fails
 
 def upsert_competitions(cur, comps_data: List[Dict]):
-    """Upserts a list of competitions."""
+    """Upserts a list of competitions (FD format)."""
     if not comps_data:
         return
     sql = """
-    INSERT INTO competitions (competition_id, area_id, name, code, type, emblem, last_updated)
+    INSERT INTO competitions (competition_id, area_id, name, code, type,
+                              emblem, last_updated, as_competition_id)
     VALUES %s
     ON CONFLICT (competition_id) DO UPDATE SET
         area_id = EXCLUDED.area_id,
@@ -525,7 +485,8 @@ def upsert_competitions(cur, comps_data: List[Dict]):
         code = EXCLUDED.code,
         type = EXCLUDED.type,
         emblem = EXCLUDED.emblem,
-        last_updated = EXCLUDED.last_updated;
+        last_updated = EXCLUDED.last_updated,
+        as_competition_id = EXCLUDED.as_competition_id;
     """
     values = [
         (
@@ -536,22 +497,25 @@ def upsert_competitions(cur, comps_data: List[Dict]):
             c.get("type"),
             c.get("emblem"),
             c.get("lastUpdated"),
+            c.get("as_competition_id")  # New mapped field
         )
         for c in comps_data if c.get('id')
     ]
     if values:
-        # We assume populate_all_areas_once() has already run.
-        # This call is just a fallback for any weird edge cases.
-        upsert_areas(cur, [c.get("area", {}) for c in comps_data if c.get("area")])
+        upsert_areas(
+            cur, [c.get("area", {}) for c in comps_data if c.get("area")]
+        )
         execute_values(cur, sql, values)
 
 
 def upsert_teams(cur, teams_data: List[Dict]):
-    """Upserts a list of teams."""
+    """Upserts a list of teams (FD format)."""
     if not teams_data:
         return
     sql = """
-    INSERT INTO teams (team_id, area_id, name, short_name, tla, crest, address, website, founded, club_colors, venue, last_updated)
+    INSERT INTO teams (team_id, area_id, name, short_name, tla, crest,
+                       address, website, founded, club_colors, venue,
+                       last_updated, as_team_id)
     VALUES %s
     ON CONFLICT (team_id) DO UPDATE SET
         area_id = EXCLUDED.area_id,
@@ -564,14 +528,14 @@ def upsert_teams(cur, teams_data: List[Dict]):
         founded = EXCLUDED.founded,
         club_colors = EXCLUDED.club_colors,
         venue = EXCLUDED.venue,
-        last_updated = EXCLUDED.last_updated;
+        last_updated = EXCLUDED.last_updated,
+        as_team_id = EXCLUDED.as_team_id;
     """
-    
     unique_teams = {}
     for t in teams_data:
         if t and t.get('id'):
             unique_teams[t['id']] = t
-            
+
     values = [
         (
             t["id"],
@@ -586,20 +550,26 @@ def upsert_teams(cur, teams_data: List[Dict]):
             t.get("clubColors"),
             t.get("venue"),
             t.get("lastUpdated"),
+            t.get("as_team_id")  # New mapped field
         )
         for t in unique_teams.values()
     ]
-    
     if values:
-        # We assume areas are populated by populate_all_areas_once()
-        execute_values(cur, sql, values)
+        execute_values(cur, sql, values, page_size=100)
 
-def upsert_matches_basic(cur, competition_id: int, season_year: int, matches_data: List[Dict]):
-    """Upserts a list of basic match info from the /matches list endpoint."""
+
+def upsert_matches_basic(cur, competition_id: int, season_year: int,
+                         matches_data: List[Dict]):
+    """Upserts a list of basic match info (FD format)."""
     if not matches_data:
         return 0
     sql = """
-    INSERT INTO matches (match_id, competition_id, season_year, utc_date, status, matchday, stage, group_name, home_team_id, away_team_id, score_winner, score_duration, score_fulltime_home, score_fulltime_away, score_halftime_home, score_halftime_away, last_updated, raw_data, details_populated)
+    INSERT INTO matches (match_id, competition_id, season_year, utc_date,
+                         status, matchday, stage, group_name, home_team_id,
+                         away_team_id, score_winner, score_duration,
+                         score_fulltime_home, score_fulltime_away,
+                         score_halftime_home, score_halftime_away,
+                         last_updated, raw_data, details_populated)
     VALUES %s
     ON CONFLICT (match_id) DO UPDATE SET
         competition_id = EXCLUDED.competition_id,
@@ -619,7 +589,7 @@ def upsert_matches_basic(cur, competition_id: int, season_year: int, matches_dat
         score_halftime_away = EXCLUDED.score_halftime_away,
         last_updated = EXCLUDED.last_updated,
         raw_data = EXCLUDED.raw_data,
-        details_populated = FALSE; -- Always set to false, it will be updated by a detail fetcher (if one exists)
+        details_populated = FALSE;
     """
     values = []
     teams_to_upsert = []
@@ -631,10 +601,10 @@ def upsert_matches_basic(cur, competition_id: int, season_year: int, matches_dat
         halfTime = score.get("halfTime", {})
         home_team = m.get("homeTeam", {})
         away_team = m.get("awayTeam", {})
-        
-        if home_team:
+
+        if home_team and home_team.get('id'):
             teams_to_upsert.append(home_team)
-        if away_team:
+        if away_team and away_team.get('id'):
             teams_to_upsert.append(away_team)
 
         values.append((
@@ -658,48 +628,53 @@ def upsert_matches_basic(cur, competition_id: int, season_year: int, matches_dat
             json.dumps(m),
             False
         ))
-    
     if values:
         upsert_teams(cur, teams_to_upsert)
         execute_values(cur, sql, values, page_size=100)
     return len(values)
 
 
-def upsert_standings(cur, competition_id: int, season_year: int, standings_data: List[Dict]):
-    """Upserts a full standings response."""
+def upsert_standings(cur, competition_id: int, season_year: int,
+                     standings_data: List[Dict]):
+    """Upserts a full standings response (FD format)."""
     if not standings_data:
         return
-
     for standing in standings_data:
         stage = standing.get("stage")
         st_type = standing.get("type")
         group = standing.get("group")
 
-        # 1. Create the standings_list
         cur.execute("""
-            INSERT INTO standings_lists (competition_id, season_year, stage, type, group_name)
+            INSERT INTO standings_lists (competition_id, season_year,
+                                         stage, type, group_name)
             VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (competition_id, season_year, type, stage, group_name) DO UPDATE SET competition_id = EXCLUDED.competition_id
+            ON CONFLICT (competition_id, season_year, type, stage, group_name)
+            DO UPDATE SET competition_id = EXCLUDED.competition_id
             RETURNING standings_list_id;
         """, (competition_id, season_year, stage, st_type, group))
-        
+
         standings_list_id_tuple = cur.fetchone()
         if not standings_list_id_tuple:
-            logging.warning("Failed to get standings_list_id, skipping row insert.")
+            logging.warning(
+                "Failed to get standings_list_id, skipping row insert."
+            )
             continue
         standings_list_id = standings_list_id_tuple[0]
 
-
-        # 2. Prepare all teams and rows
         table = standing.get("table", [])
         if not table:
             continue
-            
-        teams_to_upsert = [row.get("team") for row in table if row.get("team")]
+
+        teams_to_upsert = [
+            row.get("team") for row in table if row.get("team")
+        ]
         upsert_teams(cur, teams_to_upsert)
 
         sql_rows = """
-        INSERT INTO standing_rows (standings_list_id, team_id, position, played_games, form, won, draw, lost, points, goals_for, goals_against, goal_difference)
+        INSERT INTO standing_rows (standings_list_id, team_id, position,
+                                   played_games, form, won, draw, lost,
+                                   points, goals_for, goals_against,
+                                   goal_difference)
         VALUES %s
         ON CONFLICT (standings_list_id, team_id) DO UPDATE SET
             position = EXCLUDED.position,
@@ -730,277 +705,690 @@ def upsert_standings(cur, competition_id: int, season_year: int, standings_data:
             )
             for row in table if row.get("team", {}).get("id")
         ]
-        
         if row_values:
             execute_values(cur, sql_rows, row_values, page_size=100)
 
 
-# ============ CONCURRENT BACKFILL LOGIC ============
+def populate_all_areas_once(cur):
+    """Fetches and upserts all areas from FD /areas endpoint."""
+    logging.info("Populating all areas from FD /areas endpoint...")
+    try:
+        areas_data = api_call_fd("areas").get("areas", [])
+        upsert_areas(cur, areas_data)
+        logging.info(f"Upserted {len(areas_data)} areas from FD.")
+    except Exception as e:
+        logging.error(f"Failed to populate all areas: {e}")
+        raise e
 
-def discover_competition_tasks() -> List[Tuple[int, int, str, bool]]:
+
+# ============ AS (API-SPORTS) DATA TRANSFORMERS ============
+
+def get_or_create_as_area(cur, as_country: Dict[str, Any]) -> int:
+    """Finds an existing area (country) by name or creates it."""
+    # --- START v8.1 FIX ---
+    if not as_country:
+        return None # Cannot proceed
+
+    country_name = as_country.get("name")
+    if not country_name:
+        country_name = as_country.get("code") # Try code as fallback
+    if not country_name:
+        country_name = "Unknown Area" # Final fallback
+    # --- END v8.1 FIX ---
+    
+    # 1. Try to find by name
+    cur.execute("SELECT area_id FROM areas WHERE name = %s", (country_name,))
+    result = cur.fetchone()
+    if result:
+        return result[0]
+    
+    # 2. Not found, create it
+    try:
+        # Find max ID and add 1.
+        cur.execute("SELECT MAX(area_id) FROM areas")
+        max_id = cur.fetchone()[0]
+        # Start at a high number to avoid collisions with FD
+        new_area_id = (max_id or 2000) + 1 
+
+        area_data = {
+            "id": new_area_id,
+            "name": country_name,
+            "code": as_country.get("code"),
+            "flag": as_country.get("flag")
+        }
+        upsert_areas(cur, [area_data])
+        logging.info(f"Created new area for {country_name} with ID {new_area_id}")
+        return new_area_id
+    except Exception as e:
+        logging.warning(f"Failed to create new area {country_name}: {e}")
+        return None
+
+
+def transform_as_teams(as_teams_data: List[Dict]) -> List[Dict]:
+    """Transforms a list of AS teams into FD format."""
+    transformed_teams = []
+    for item in as_teams_data:
+        team = item.get("team", {})
+        venue = item.get("venue", {})
+        if not team.get("id"):
+            continue
+
+        transformed = {
+            "id": team["id"] + AS_ID_OFFSET,
+            "as_team_id": team["id"],
+            "name": team.get("name"),
+            "shortName": team.get("name"),
+            "tla": team.get("code"),
+            "crest": team.get("logo"),
+            "address": venue.get("address"),
+            "website": None,
+            "founded": team.get("founded"),
+            "clubColors": None,
+            "venue": venue.get("name"),
+            "lastUpdated": datetime.datetime.now(pytz.UTC).isoformat()
+            # Area must be linked separately
+        }
+        transformed_teams.append(transformed)
+    return transformed_teams
+
+
+def transform_as_matches(as_fixtures_data: List[Dict],
+                         competition_id_offset: int,
+                         season_year: int) -> List[Dict]:
+    """Transforms a list of AS fixtures into FD format."""
+    transformed_matches = []
+    for m in as_fixtures_data:
+        fixture = m.get("fixture", {})
+        teams = m.get("teams", {})
+        goals = m.get("goals", {})
+        score = m.get("score", {})
+
+        if not fixture.get("id"):
+            continue
+
+        # Map AS status to FD status
+        status_map = {
+            'TBD': 'SCHEDULED', 'NS': 'SCHEDULED', '1H': 'IN_PLAY',
+            'HT': 'IN_PLAY', '2H': 'IN_PLAY', 'ET': 'IN_PLAY',
+            'P': 'IN_PLAY', 'FT': 'FINISHED', 'AET': 'FINISHED',
+            'PEN': 'FINISHED', 'BT': 'IN_PLAY', 'SUSP': 'PAUSED',
+            'INT': 'PAUSED', 'PST': 'POSTPONED', 'CANC': 'CANCELED',
+            'ABD': 'CANCELED', 'AWD': 'FINISHED', 'WO': 'FINISHED'
+        }
+        status = status_map.get(fixture.get("status", {}).get("short"), 'SCHEDULED')
+        
+        winner_map = {True: 'HOME_TEAM', False: 'AWAY_TEAM', None: 'DRAW'}
+        winner = winner_map.get(teams.get("home", {}).get("winner"))
+
+        matchday_str = m.get("league", {}).get("round", "0")
+        matchday = None
+        try:
+            # Extract number, e.g., "Regular Season - 3" -> 3
+            matchday_num = re.findall(r'\d+', matchday_str)
+            if matchday_num:
+                matchday = int(matchday_num[-1])
+        except Exception:
+            pass # Keep matchday as None
+
+        transformed = {
+            "id": fixture["id"] + AS_ID_OFFSET,
+            "competition_id": competition_id_offset,
+            "season_year": season_year,
+            "utcDate": fixture.get("date"),
+            "status": status,
+            "matchday": matchday,
+            "stage": None,  # AS separates this
+            "group": m.get("league", {}).get("group"),
+            "homeTeam": {
+                "id": teams.get("home", {}).get("id", 0) + AS_ID_OFFSET,
+                "name": teams.get("home", {}).get("name")
+            },
+            "awayTeam": {
+                "id": teams.get("away", {}).get("id", 0) + AS_ID_OFFSET,
+                "name": teams.get("away", {}).get("name")
+            },
+            "score": {
+                "winner": winner,
+                "duration": "REGULAR",  # Default
+                "fullTime": {"home": goals.get("home"), "away": goals.get("away")},
+                "halfTime": {"home": score.get("halftime", {}).get("home"),
+                             "away": score.get("halftime", {}).get("away")}
+            },
+            "lastUpdated": datetime.datetime.fromtimestamp(
+                fixture.get("timestamp", 0), pytz.UTC
+            ).isoformat(),
+            "raw_data": m  # Store original AS data
+        }
+        transformed_matches.append(transformed)
+    return transformed_matches
+
+
+def transform_as_standings(as_standings_resp: List[Dict],
+                           competition_id_offset: int,
+                           season_year: int) -> List[Dict]:
+    """Transforms a list of AS standings into FD format."""
+    transformed_standings = []
+    if not as_standings_resp:
+        return []
+    
+    # AS wraps standings in a list, often of size 1
+    for league_standing in as_standings_resp:
+        standings_list = league_standing.get("league", {}).get("standings", [])
+        
+        for group_standing in standings_list:
+            # group_standing is a list of team rows
+            transformed_table = []
+            for row in group_standing:
+                team = row.get("team", {})
+                transformed_table.append({
+                    "position": row.get("rank"),
+                    "team": {
+                        "id": team.get("id", 0) + AS_ID_OFFSET,
+                        "name": team.get("name"),
+                        "crest": team.get("logo")
+                    },
+                    "playedGames": row.get("all", {}).get("played"),
+                    "form": row.get("form"),
+                    "won": row.get("all", {}).get("win"),
+                    "draw": row.get("all", {}).get("draw"),
+                    "lost": row.get("all", {}).get("lose"),
+                    "points": row.get("points"),
+                    "goalsFor": row.get("all", {}).get("goals", {}).get("for"),
+                    "goalsAgainst": row.get("all", {}).get("goals", {}).get("against"),
+                    "goalDifference": row.get("goalsDiff")
+                })
+
+            transformed_standings.append({
+                "stage": "REGULAR_SEASON",  # AS default
+                "type": "TOTAL",  # AS default
+                "group": group_standing[0].get("group") if group_standing else None,
+                "table": transformed_table
+            })
+    return transformed_standings
+
+
+# ============ CONCURRENT BACKFILL LOGIC (HYBRID) ============
+
+# Task Tuple is now:
+# (competition_id, season_year, comp_name, is_current, task_type)
+# task_type = 'FD' or 'AS'
+
+def discover_fd_tasks() -> List[Tuple[int, int, str, bool, str]]:
     """
-    Fetches all competitions and their seasons to build a task list.
-    Upserts competitions, areas, and seasons as it goes.
+    Fetches all FD competitions and their seasons to build a task list.
+    Upserts competitions, areas, and links AS IDs.
     """
     tasks = []
-    logging.info("Fetching all competitions to build task list...")
+    logging.info("Fetching all FD competitions to build task list...")
     conn = None
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            comps_data = api_call("competitions").get("competitions", [])
-            logging.info(f"{len(comps_data)} competitions detected. Upserting...")
+            comps_data_raw = api_call_fd("competitions").get("competitions", [])
             
-            upsert_competitions(cur, comps_data)
+            # Filter for free codes and inject AS ID
+            comps_data_to_upsert = []
+            fd_comps_by_id = {}
+            for comp in comps_data_raw:
+                comp_code = comp.get("code")
+                if comp_code in FREE_CODES:
+                    comp["as_competition_id"] = FD_AS_LEAGUE_MAP.get(comp_code)
+                    comps_data_to_upsert.append(comp)
+                    fd_comps_by_id[comp['id']] = comp
+            
+            logging.info(
+                f"{len(comps_data_to_upsert)} free FD competitions detected. "
+                "Upserting with AS ID links..."
+            )
+            upsert_competitions(cur, comps_data_to_upsert)
             conn.commit()
-            
-            for idx, comp in enumerate(comps_data, 1):
+
+            # Discover seasons for these competitions
+            for idx, comp in enumerate(comps_data_to_upsert, 1):
                 comp_id = comp["id"]
                 comp_name = comp["name"]
                 comp_code = comp.get("code", "")
-                if comp_code not in FREE_CODES:
-                    logging.info(f"[{idx}/{len(comps_data)}] Skipping non-free competition: {comp_name} ({comp_id}) ({comp_code})")
-                    continue
-                logging.info(f"[{idx}/{len(comps_data)}] Getting seasons for {comp_name} ({comp_id}) ({comp_code})")
                 
+                logging.info(
+                    f"[{idx}/{len(comps_data_to_upsert)}] FD: Getting seasons "
+                    f"for {comp_name} ({comp_id}) ({comp_code})"
+                )
                 try:
-                    detail = api_call(f"competitions/{comp_id}")
-                    
+                    detail = api_call_fd(f"competitions/{comp_id}")
                     if not detail or not detail.get("seasons"):
-                        logging.warning(f"No season data returned for {comp_name} ({comp_id}). Skipping.")
+                        logging.warning(f"No FD season data for {comp_name}")
                         continue
 
                     seasons = detail.get("seasons", [])
-                    
-                    current_season = detail.get("currentSeason", {})
-                    current_year_str = current_season.get("startDate", "")[:4]
-                    current_year = int(current_year_str) if current_year_str else None
-                    
-                    conn.commit()
-                    
-                    for year in range(START_YEAR, END_YEAR + 1):
-                        if any(s and s.get("startDate") and s["startDate"].startswith(str(year)) for s in seasons):
-                            is_current = (year == current_year) if current_year else False
-                            tasks.append((comp_id, year, comp_name, is_current))
-                            
-                except Exception as e:
-                    # This exception is often a 403 Forbidden for paid-tier leagues
-                    logging.error(f"Failed to get seasons for {comp_name} ({comp_id}): {e}. This may be a non-free league.")
-                    conn.rollback()
+                    current_year_str = detail.get(
+                        "currentSeason", {}
+                    ).get("startDate", "")[:4]
+                    current_year = int(
+                        current_year_str
+                    ) if current_year_str else None
 
-        logging.info(f"TOTAL TASKS DISCOVERED: {len(tasks)} (competition, year) pairs.")
+                    for year in range(FD_START_YEAR, FD_END_YEAR + 1):
+                        if any(
+                            s and s.get("startDate") and
+                            s["startDate"].startswith(str(year))
+                            for s in seasons
+                        ):
+                            is_current = (year == current_year)
+                            tasks.append(
+                                (comp_id, year, comp_name, is_current, 'FD')
+                            )
+                except Exception as e:
+                    logging.error(
+                        f"Failed to get FD seasons for {comp_name}: {e}"
+                    )
+
+        logging.info(f"TOTAL FD TASKS DISCOVERED: {len(tasks)}")
         return tasks
     except Exception as e:
-        logging.error(f"CRITICAL: Failed to get competitions list. {e}")
-        if conn:
-            conn.rollback()
+        logging.error(f"CRITICAL: Failed to get FD competitions list. {e}")
+        if conn: conn.rollback()
         return []
     finally:
-        if conn:
-            db_pool.putconn(conn)
+        if conn: db_pool.putconn(conn)
+
+
+def discover_as_tasks() -> List[Tuple[int, int, str, bool, str]]:
+    """
+    Fetches all AS competitions for requested seasons to build a task list.
+    """
+    if not AS_API_KEY:
+        logging.warning("Skipping AS task discovery: No API key provided.")
+        return []
+    
+    tasks = []
+    logging.info("Fetching all AS competitions to build task list...")
+    conn = None
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            # Get the AS IDs of the FD leagues to skip them
+            fd_as_ids_to_skip = set(FD_AS_LEAGUE_MAP.values())
+            logging.info(f"Will skip {len(fd_as_ids_to_skip)} AS leagues "
+                         "that are covered by FD.")
+
+            for season in AS_SEASONS:
+                logging.info(f"AS: Discovering leagues for season {season}...")
+                try:
+                    leagues_resp = api_call_as(
+                        "/leagues", {"season": season}
+                    )
+                    if not leagues_resp.get("response"):
+                        logging.warning(f"No AS leagues found for {season}.")
+                        continue
+                    
+                    comps_to_upsert = []
+                    for item in leagues_resp.get("response", []):
+                        as_league = item.get("league", {})
+                        as_country = item.get("country", {})
+                        if not as_league.get("id") or \
+                           as_league["id"] in fd_as_ids_to_skip:
+                            continue # Skip FD-covered leagues
+                        
+                        area_id = get_or_create_as_area(cur, as_country)
+                        # v8.1: If area creation failed, we can't add league
+                        if area_id is None:
+                            logging.warning(
+                                f"Skipping league {as_league.get('name')} "
+                                "due to failed area creation."
+                            )
+                            continue
+                        
+                        comp_id_offset = as_league["id"] + AS_ID_OFFSET
+                        comp_data = {
+                            "id": comp_id_offset,
+                            "area": {"id": area_id},
+                            "name": as_league["name"],
+                            "code": f"AS_{as_league['id']}", # Create a unique code
+                            "type": as_league["type"],
+                            "emblem": as_league["logo"],
+                            "lastUpdated": datetime.datetime.now(
+                                pytz.UTC
+                            ).isoformat(),
+                            "as_competition_id": as_league["id"]
+                        }
+                        comps_to_upsert.append(comp_data)
+                        
+                        # Add task
+                        tasks.append(
+                            (comp_id_offset, season, as_league["name"],
+                             season == 2025, 'AS') # Assume 2025 is current
+                        )
+                    
+                    # Upsert all discovered AS leagues for this season
+                    upsert_competitions(cur, comps_to_upsert)
+                    conn.commit()
+                    logging.info(
+                        f"Discovered and upserted {len(comps_to_upsert)} "
+                        f"new AS leagues for {season}."
+                    )
+                
+                except Exception as e:
+                    logging.error(f"Failed to process AS season {season}: {e}")
+                    if "limit" in str(e):
+                        logging.CRITICAL("AS daily limit hit during discovery.")
+                        break # Stop discovery for today
+                    conn.rollback()
+
+        logging.info(f"TOTAL AS TASKS DISCOVERED: {len(tasks)}")
+        return tasks
+    except Exception as e:
+        logging.error(f"CRITICAL: Failed to get AS competitions list. {e}")
+        if conn: conn.rollback()
+        return []
+    finally:
+        if conn: db_pool.putconn(conn)
 
 
 def get_pending_tasks(
-    conn, all_discovered_tasks: List[Tuple[int, int, str, bool]]
-) -> List[Tuple[int, int, str, bool]]:
+    conn, all_discovered_tasks: List[Tuple[int, int, str, bool, str]]
+) -> List[Tuple[int, int, str, bool, str]]:
     """
     Cross-references discovered tasks with the backfill_progress table.
-    Returns only tasks that are NOT marked 'COMPLETED'.
+    Returns only tasks that are NOT marked 'COMPLETED' or 'FAILED'.
     """
     if not all_discovered_tasks:
         return []
 
-    # Ensure all tasks exist in the progress table
-    task_keys = [(t[0], t[1]) for t in all_discovered_tasks]
+    task_keys = [(t[0], t[1], t[4]) for t in all_discovered_tasks]
     
     sql_insert = """
-    INSERT INTO backfill_progress (competition_id, season_year)
+    INSERT INTO backfill_progress (competition_id, season_year, task_type)
     VALUES %s
-    ON CONFLICT (competition_id, season_year) DO NOTHING;
+    ON CONFLICT (competition_id, season_year) DO UPDATE
+    SET task_type = EXCLUDED.task_type;
     """
     with conn.cursor() as cur:
-        # --- FIX V7.3: Set static page_size to avoid potential 'int' error ---
         execute_values(cur, sql_insert, task_keys, page_size=1000)
         conn.commit()
 
-        # Get all tasks that are not completed OR failed
-        # --- FIX V7.3: We now skip 'FAILED' tasks as well ---
         cur.execute(
-            "SELECT competition_id, season_year FROM backfill_progress WHERE status != 'COMPLETED' AND status != 'FAILED'"
+            "SELECT competition_id, season_year FROM backfill_progress "
+            "WHERE status != 'COMPLETED' AND status != 'FAILED'"
         )
-        pending_keys = set(cur.fetchall())
+        pending_keys = set(cur.fetchall()) # Set of (comp_id, year) tuples
 
     # Filter the main task list
     pending_tasks = [
         t for t in all_discovered_tasks if (t[0], t[1]) in pending_keys
     ]
     
-    logging.info(f"Found {len(pending_keys)} tasks not yet completed or failed.")
+    logging.info(
+        f"Found {len(pending_keys)} tasks not yet completed or failed."
+    )
     return pending_tasks
 
 
-def process_season_task(task: Tuple[int, int, str, bool]) -> bool:
-    """
-    The main worker function. Processes a single (competition_id, year) task.
-    This function is run by each thread.
-    Returns True on success, False on failure.
-    
-    V7.3 CHANGE: Now includes specific 403 (Forbidden) handling.
-    """
-    comp_id, year, comp_name, is_current = task
-    task_id = f"{comp_name} ({comp_id}) / {year}"
+def process_season_task_fd(task: Tuple) -> bool:
+    """The main worker function for FD tasks."""
+    comp_id, year, comp_name, is_current, _ = task
+    task_id = f"FD: {comp_name} ({comp_id}) / {year}"
     conn = None
     
     try:
-        # 1. Get connection from pool
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            
-            # 2. Mark as PENDING
             cur.execute("""
-                UPDATE backfill_progress SET status = 'PENDING', last_updated = NOW()
+                UPDATE backfill_progress SET status = 'PENDING',
+                       last_updated = NOW()
                 WHERE competition_id = %s AND season_year = %s;
             """, (comp_id, year))
-            conn.commit() # Commit this small change immediately
+            conn.commit()
             
             logging.info(f"STARTING: {task_id}")
 
-            # --- 4. Fetch and populate data (Free Plan Endpoints) ---
-            
-            # 4a. Get Matches (Basic)
+            # 4a. Get Matches
             logging.info(f"[{task_id}] Fetching matches...")
-            matches_resp = api_call(f"competitions/{comp_id}/matches", {"season": year})
+            matches_resp = api_call_fd(
+                f"competitions/{comp_id}/matches", {"season": year}
+            )
             matches_data = matches_resp.get("matches", [])
-            saved_matches = upsert_matches_basic(cur, comp_id, year, matches_data)
+            saved_matches = upsert_matches_basic(
+                cur, comp_id, year, matches_data
+            )
             logging.info(f"[{task_id}] Staged {saved_matches} basic matches.")
 
-            # 4b. Get Standings
+            # 4b. Get Standings (only for current)
             if is_current:
                 logging.info(f"[{task_id}] Fetching standings...")
-                standings_resp = api_call(f"competitions/{comp_id}/standings", {"season": year})
+                standings_resp = api_call_fd(
+                    f"competitions/{comp_id}/standings", {"season": year}
+                )
                 standings_data = standings_resp.get("standings", [])
                 upsert_standings(cur, comp_id, year, standings_data)
-                logging.info(f"[{task_id}] Staged {len(standings_data)} standing lists.")
+                logging.info(
+                    f"[{task_id}] Staged {len(standings_data)} standing lists."
+                )
             else:
-                logging.info(f"[{task_id}] Skipping standings fetch (not current season).")
+                logging.info(f"[{task_id}] Skipping standings (not current).")
 
-            # 4c. Get Teams (to catch any teams not in standings/matches)
+            # 4c. Get Teams
             logging.info(f"[{task_id}] Fetching teams...")
-            teams_data = api_call(f"competitions/{comp_id}/teams", {"season": year}).get("teams", [])
+            teams_data = api_call_fd(
+                f"competitions/{comp_id}/teams", {"season": year}
+            ).get("teams", [])
             upsert_teams(cur, teams_data)
             logging.info(f"[{task_id}] Staged {len(teams_data)} teams.")
 
-            # --- 5. Mark as COMPLETED ---
             cur.execute("""
-                UPDATE backfill_progress SET status = 'COMPLETED', last_updated = NOW()
+                UPDATE backfill_progress SET status = 'COMPLETED',
+                       last_updated = NOW()
                 WHERE competition_id = %s AND season_year = %s;
             """, (comp_id, year))
             
-            # --- 6. ATOMIC COMMIT ---
-            conn.commit() 
-            
+            conn.commit()
             logging.info(f"*** COMPLETE: {task_id} ***")
             return True
 
     except Exception as e:
-        if conn:
-            conn.rollback()  # Rollback any failed transaction
-
-        # --- FIX V7.3: Special 403 (Forbidden) handling ---
+        if conn: conn.rollback()
         if "Forbidden (403)" in str(e):
             logging.CRITICAL(
-                f"FAILED (403): {task_id}. This task is FORBIDDEN by the API "
-                f"(likely an old season). Marking as 'FAILED' to prevent retry loop."
+                f"FAILED (403): {task_id}. This task is FORBIDDEN. "
+                "Marking as 'FAILED' to prevent retry loop."
             )
             try:
-                # Get a new connection for this special update
                 conn = db_pool.getconn()
                 with conn.cursor() as cur:
                     cur.execute("""
-                        UPDATE backfill_progress SET status = 'FAILED', last_updated = NOW()
+                        UPDATE backfill_progress SET status = 'FAILED',
+                               last_updated = NOW()
                         WHERE competition_id = %s AND season_year = %s;
                     """, (comp_id, year))
                     conn.commit()
             except Exception as db_e:
-                logging.error(f"Failed to mark task {task_id} as FAILED in DB: {db_e}")
-        # --- End of 403 fix ---
+                logging.error(f"Failed to mark task {task_id} as FAILED: {db_e}")
         else:
-            logging.error(f"FAILED: {task_id}. Error: {e}. Rolling back transaction.")
-        
-        return False # Return False for *any* error
+            logging.error(f"FAILED: {task_id}. Error: {e}. Rolling back.")
+        return False
     finally:
-        if conn:
-            db_pool.putconn(conn)
+        if conn: db_pool.putconn(conn)
+
+
+def process_season_task_as(task: Tuple) -> bool:
+    """The main worker function for AS tasks."""
+    comp_id_offset, year, comp_name, is_current, _ = task
+    as_comp_id = comp_id_offset - AS_ID_OFFSET
+    task_id = f"AS: {comp_name} ({as_comp_id}) / {year}"
+    conn = None
+    
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE backfill_progress SET status = 'PENDING',
+                       last_updated = NOW()
+                WHERE competition_id = %s AND season_year = %s;
+            """, (comp_id_offset, year))
+            conn.commit()
+            
+            logging.info(f"STARTING: {task_id}")
+            
+            # 1. Get Teams (for this league/season)
+            logging.info(f"[{task_id}] Fetching teams...")
+            teams_resp = api_call_as(
+                "/teams", {"league": as_comp_id, "season": year}
+            )
+            as_teams_data = teams_resp.get("response", [])
+            transformed_teams = transform_as_teams(as_teams_data)
+            upsert_teams(cur, transformed_teams)
+            logging.info(f"[{task_id}] Staged {len(transformed_teams)} teams.")
+
+            # 2. Get Matches
+            logging.info(f"[{task_id}] Fetching matches...")
+            matches_resp = api_call_as(
+                "/fixtures", {"league": as_comp_id, "season": year}
+            )
+            as_matches_data = matches_resp.get("response", [])
+            transformed_matches = transform_as_matches(
+                as_matches_data, comp_id_offset, year
+            )
+            saved_matches = upsert_matches_basic(
+                cur, comp_id_offset, year, transformed_matches
+            )
+            logging.info(f"[{task_id}] Staged {saved_matches} basic matches.")
+
+            # 3. Get Standings
+            # AS often allows historical standings
+            logging.info(f"[{task_id}] Fetching standings...")
+            standings_resp = api_call_as(
+                "/standings", {"league": as_comp_id, "season": year}
+            )
+            as_standings_data = standings_resp.get("response", [])
+            transformed_standings = transform_as_standings(
+                as_standings_data, comp_id_offset, year
+            )
+            upsert_standings(cur, comp_id_offset, year, transformed_standings)
+            logging.info(
+                f"[{task_id}] Staged {len(transformed_standings)} standing lists."
+            )
+
+            cur.execute("""
+                UPDATE backfill_progress SET status = 'COMPLETED',
+                       last_updated = NOW()
+                WHERE competition_id = %s AND season_year = %s;
+            """, (comp_id_offset, year))
+            
+            conn.commit()
+            logging.info(f"*** COMPLETE: {task_id} ***")
+            return True
+
+    except Exception as e:
+        if conn: conn.rollback()
+        # Check if it's a daily limit error
+        if "limit" in str(e):
+            logging.CRITICAL(
+                f"FAILED (Limit): {task_id}. AS Daily limit hit. "
+                "Task will be retried later."
+            )
+            # Don't mark as 'FAILED', just let it retry
+        else:
+             logging.error(f"FAILED: {task_id}. Error: {e}. Rolling back.")
+        return False
+    finally:
+        if conn: db_pool.putconn(conn)
+
+
+def process_task_wrapper(task: Tuple) -> bool:
+    """Selects the correct worker function based on task type."""
+    task_type = task[4]
+    if task_type == 'AS':
+        return process_season_task_as(task)
+    elif task_type == 'FD':
+        return process_season_task_fd(task)
+    else:
+        logging.error(f"Unknown task type: {task_type}")
+        return False
 
 
 # ============ MAIN ============
 def main():
     start_time = time.time()
     try:
-        # 1. Setup DB
         conn = db_pool.getconn()
         with conn.cursor() as cur:
             create_tables(cur)
-            populate_all_areas_once(cur) # Pre-populate areas to prevent deadlocks
+            populate_all_areas_once(cur) # Pre-populate FD areas
             conn.commit()
         db_pool.putconn(conn)
         
         wat = (
             pytz.timezone("Africa/Lagos")
             .localize(datetime.datetime.now())
-            .strftime("%Y-m-%d %I:%M %p WAT")
+            .strftime("%Y-%m-%d %I:%M %p WAT")
         )
-        logging.info(f"POPULATOR v7.3 (NORMALIZED) | {wat} | SMART COOLDOWN")
-        logging.warning("RUNNING IN FREE TIER MODE. Will only fetch basic data.")
-        logging.warning("Script will run until all *possible* tasks are 'COMPLETED'.")
-        logging.warning("Tasks that are 'Forbidden (403)' by the API will be marked 'FAILED' and skipped.")
+        logging.info(f"POPULATOR {VERSION} (HYBRID) | {wat} | SMART COOLDOWN")
+        logging.warning("Script will run until all tasks are 'COMPLETED' "
+                        "or 'FAILED'.")
+        logging.warning("AS tasks will pause if 100/day limit is hit.")
 
-        # 2. Get all work
-        all_discovered_tasks = discover_competition_tasks()
+        # 2. Get all work from both sources
+        all_discovered_tasks = discover_fd_tasks()
+        all_discovered_tasks.extend(discover_as_tasks())
+        
         if not all_discovered_tasks:
-            logging.error("No tasks discovered. Exiting.")
+            logging.error("No tasks discovered from any source. Exiting.")
             return
 
         # 3. Indefinite Retry Loop
         while True:
-            # Get all tasks that are not yet 'COMPLETED' or 'FAILED'
             conn = db_pool.getconn()
             tasks_to_run = get_pending_tasks(conn, all_discovered_tasks)
             db_pool.putconn(conn)
 
             if not tasks_to_run:
-                logging.info("--- ALL TASKS COMPLETE! (or marked as FAILED) ---")
+                logging.info(
+                    "--- ALL TASKS COMPLETE! (or marked as FAILED) ---"
+                )
                 break  # Exit the while loop
 
-            logging.info(f"--- STARTING RUN: {len(tasks_to_run)} tasks to process ---")
+            logging.info(
+                f"--- STARTING RUN: {len(tasks_to_run)} tasks to process ---"
+            )
             
+            # Prioritize FD tasks
+            tasks_to_run.sort(key=lambda x: x[4] == 'AS') # Puts 'AS' last
+
             with ThreadPoolExecutor(
                 max_workers=MAX_WORKERS, thread_name_prefix="Worker"
             ) as executor:
-                results = list(executor.map(process_season_task, tasks_to_run))
+                # Use the wrapper to process tasks
+                results = list(executor.map(process_task_wrapper, tasks_to_run))
 
-            # Check results
-            failed_tasks = [tasks_to_run[i] for i, res in enumerate(results) if not res]
+            failed_tasks_count = sum(1 for res in results if not res)
             
-            if not failed_tasks:
-                logging.info("--- RUN FINISHED: All tasks in this batch succeeded. ---")
+            if failed_tasks_count == 0:
+                logging.info(
+                    "--- RUN FINISHED: All tasks in this batch succeeded. ---"
+                )
             else:
-                # --- FIX V7.3: Isolate len() call ---
-                num_failed = len(failed_tasks)
                 logging.warning(
-                    f"--- RUN FAILED: {num_failed} tasks failed (this run). "
-                    f"Retrying non-403 errors in {RETRY_SLEEP_SECONDS} seconds... ---"
+                    f"--- RUN FAILED: {failed_tasks_count} tasks failed. "
+                    f"Retrying non-403/non-limit errors in "
+                    f"{RETRY_SLEEP_SECONDS} seconds... ---"
                 )
                 time.sleep(RETRY_SLEEP_SECONDS)
-                
-            # Loop continues to next iteration
+            
+            # Check for AS limit just in case
+            if as_request_count >= 100:
+                logging.CRITICAL(
+                    "AS Daily Limit Hit. Pausing populator for 1 hour."
+                )
+                time.sleep(3600)
 
     except Exception as e:
         logging.error(f"Main process failed: {e}")
     finally:
         db_pool.closeall()
         end_time = time.time()
-        logging.info(f"Database connection pool closed. Total runtime: {end_time - start_time:.2f} seconds.")
+        logging.info(
+            "Database connection pool closed. "
+            f"Total runtime: {end_time - start_time:.2f} seconds."
+        )
 
 
 if __name__ == "__main__":

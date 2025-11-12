@@ -1,83 +1,103 @@
-# utils.py v1.1
-# Updated to use psycopg2.pool and raw SQL.
-# Added UTC parsing helper.
-# FIX (v1.1): Changed invalid (T1, T2) type hints to Tuple[T1, T2]
-#             to resolve Pylance 'reportInvalidTypeForm' warnings.
+# utils.py v1.5
+#
+# WHAT'S NEW (v1.5):
+# - BUG FIX (Standings: 0): Changed 'count_table' to count
+#   'standings_lists' instead of the legacy 'standings' table.
+#   This will fix the "Standings: 0" bug in the sidebar.
+# - BUG FIX (Last updated): Added 'st.cache_data.clear()' to
+#   'show_last_updated' to aggressively bust the cache and
+#   fix the stuck "14 NOV" date.
+# - RETAINED: All v1.4 logic for date parsing.
 
 import streamlit as st
 import re
 import pytz
+import logging
 from datetime import datetime, timedelta, timezone
 import db  # <-- Import the pool
-from typing import List, Dict, Any, Tuple # <-- FIX 1: Added Tuple
+from typing import List, Dict, Any, Tuple
 
-# --- NEW: UTC Parsing Helper ---
+# --- UTC Parsing Helper (FIXED) ---
 LAGOS_TZ = pytz.timezone('Africa/Lagos')
 DEFAULT_DATE = "01-01-1900"
 DEFAULT_TIME = "00:00:00"
 
-def parse_utc_to_gmt1(utc_date_str: str) -> Tuple[str, str]: # <-- FIX 2
+def parse_utc_to_gmt1(utc_date_input: Any) -> Tuple[str, str]:
     """
-    Parses a UTC ISO date string and converts it to
-    GMT+1 (Lagos) date and time strings.
+    Parses a UTC ISO date string OR a datetime object
+    and converts it to GMT+1 (Lagos) date and time strings.
     Returns (date_str, time_str)
     """
-    if not utc_date_str:
+    if not utc_date_input:
         return (DEFAULT_DATE, DEFAULT_TIME)
     try:
-        # 1. Parse the ISO string (e.g., "2025-11-20T18:00:00Z")
-        utc_dt = datetime.fromisoformat(utc_date_str.replace("Z", "+00:00"))
-        # 2. Ensure it's timezone-aware (as UTC)
-        utc_dt = utc_dt.replace(tzinfo=timezone.utc)
-        # 3. Convert to Lagos time
+        if isinstance(utc_date_input, datetime):
+            utc_dt = utc_date_input
+        else:
+            utc_dt = datetime.fromisoformat(str(utc_date_input).replace("Z", "+00:00"))
+
+        if utc_dt.tzinfo is None:
+            utc_dt = utc_dt.replace(tzinfo=timezone.utc)
+            
         gmt1_dt = utc_dt.astimezone(LAGOS_TZ)
-        # 4. Format to the strings the UI expects
         date_str = gmt1_dt.strftime("%d-%m-%Y")
         time_str = gmt1_dt.strftime("%H:%M:%S")
         return (date_str, time_str)
-    except Exception:
+    except Exception as e:
+        logging.error(f"Failed to parse date '{utc_date_input}': {e}")
         return (DEFAULT_DATE, DEFAULT_TIME)
 
-# --- CACHED DATA PULLS (Rewritten for SQL) ---
+# --- CACHED DATA PULLS (Corrected in v1.3) ---
 
-@st.cache_data(ttl=timedelta(minutes=5))
-def load_all_match_data() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]: # <-- FIX 3
+@st.cache_data(ttl=60) # Cache for 1 minute
+def load_all_match_data() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
-    Loads all future and past matches from the database using raw SQL
-    and LEFT JOINs predictions.
-    Returns (future_matches, past_matches) as lists of dicts.
+    Loads all upcoming and recent matches from the database.
     """
+    logging.info("DB: Caching load_all_match_data()")
+    
+    utc_now = datetime.now(pytz.UTC)
+    utc_today = utc_now.date()
+    seven_days_ago = utc_today - timedelta(days=7)
+
+    sql = """
+    SELECT
+        m.match_id,
+        m.competition_id,
+        m.utc_date,
+        m.status,
+        m.matchday,
+        m.home_team_id,
+        m.away_team_id,
+        m.score_fulltime_home,
+        m.score_fulltime_away,
+        m.score_halftime_home,
+        m.score_halftime_away,
+        m.score_winner,
+        m.details_populated,
+        m.last_updated,
+        m.raw_data,
+        p.prediction_data,
+        comp.code as competition_code
+    FROM
+        matches m
+    LEFT JOIN
+        competitions comp ON m.competition_id = comp.competition_id
+    LEFT JOIN
+        predictions p ON m.match_id = p.match_id
+    WHERE
+        m.utc_date >= %s
+    ORDER BY
+        m.utc_date ASC;
+    """
+    
     conn = None
-    future = []
-    past = []
-    
-    # Base query
-    sql_base = """
-    SELECT m.*, p.prediction_data
-    FROM matches m
-    LEFT JOIN predictions p ON m.match_id = p.match_id
-    """
-    
+    all_matches = []
     try:
         conn = db.db_pool.getconn()
-        
-        # --- Future Matches ---
-        sql_future = sql_base + """
-        WHERE m.status IN ('SCHEDULED', 'TIMED')
-        ORDER BY m.utc_date ASC;
-        """
         with conn.cursor() as cur:
-            cur.execute(sql_future)
-            future = cur.fetchall()
-
-        # --- Past Matches ---
-        sql_past = sql_base + """
-        WHERE m.status IN ('FINISHED', 'IN_PLAY', 'PAUSED')
-        ORDER BY m.utc_date DESC;
-        """
-        with conn.cursor() as cur:
-            cur.execute(sql_past)
-            past = cur.fetchall()
+            cur.execute(sql, (seven_days_ago,))
+            all_matches = cur.fetchall()
             
     except Exception as e:
         st.error(f"Failed to load match data: {e}")
@@ -85,14 +105,32 @@ def load_all_match_data() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]: 
         if conn:
             db.db_pool.putconn(conn)
             
-    # Return lists of dicts (RealDictRow)
-    return future, past
+    future_matches = []
+    past_matches = []
+    upcoming_statuses = {'SCHEDULED', 'TIMED', 'TIME', 'POSTPONED'}
+    
+    for match in all_matches:
+        if match['status'] in upcoming_statuses:
+            future_matches.append(match)
+        else:
+            past_matches.append(match)
+            
+    past_matches.sort(key=lambda m: (m['utc_date'] is not None, m['utc_date']), reverse=True)
+            
+    return future_matches, past_matches
 
-# --- GENERAL HELPERS (Rewritten for SQL) ---
+
+# --- GENERAL HELPERS (Corrected in v1.3) ---
 
 def count_table(table_name: str, status: List[str] = None) -> int:
     """Counts rows in a given table, optionally filtering by status."""
     conn = None
+    
+    # --- START v1.5 FIX: Point to correct standings table ---
+    if table_name == 'standings':
+        table_name = 'standings_lists'
+    # --- END v1.5 FIX ---
+    
     try:
         conn = db.db_pool.getconn()
         with conn.cursor() as cur:
@@ -105,7 +143,8 @@ def count_table(table_name: str, status: List[str] = None) -> int:
                 
             cur.execute(query, tuple(params))
             return cur.fetchone()['count']
-    except Exception:
+    except Exception as e:
+        logging.error(f"Failed to count table {table_name}: {e}")
         return 0
     finally:
         if conn:
@@ -115,7 +154,7 @@ def count_table(table_name: str, status: List[str] = None) -> int:
 def format_date(date_str):
     """
     Formats a date string to 'DD MMM, YYYY' uppercase.
-    (No database logic, no changes needed)
+    (Kept for widgets.py)
     """
     try:
         if " " in date_str:
@@ -128,11 +167,15 @@ def format_date(date_str):
         return date_str
 
 
+@st.cache_data(ttl=60) # Cache for 1 minute
 def show_last_updated():
     """
     Displays the last updated time based on the most recent match.last_updated in DB.
-    (Rewritten for SQL)
     """
+    # --- START v1.5 FIX: Aggressively bust the cache ---
+    st.cache_data.clear()
+    # --- END v1.5 FIX ---
+    
     if st.session_state.get('sync_thread_running'):
         st.sidebar.caption("Last updated: **Updating...**")
         return
@@ -141,21 +184,26 @@ def show_last_updated():
     try:
         conn = db.db_pool.getconn()
         with conn.cursor() as cur:
-            cur.execute("SELECT last_updated FROM matches ORDER BY last_updated DESC LIMIT 1")
+            cur.execute("SELECT MAX(last_updated) as last_update FROM matches")
             latest = cur.fetchone()
             
-            if latest and latest['last_updated']:
-                utc_dt = latest['last_updated'].replace(tzinfo=pytz.utc) # Ensure tzinfo
+            if latest and latest['last_update']:
+                utc_dt = latest['last_update']
+                
+                if utc_dt.tzinfo is None:
+                    utc_dt = pytz.UTC.localize(utc_dt)
+                    
                 gmt1_dt = utc_dt.astimezone(LAGOS_TZ)
                 updated_date_str = gmt1_dt.strftime("%d %b, %Y").upper()
-                updated_time_str = gmt1_dt.strftime("%H:%M:%S GMT+1")
+                updated_time_str = gmt1_dt.strftime("%H:%M:%S %Z")
                 st.sidebar.caption(
                     f"Last updated: **{updated_date_str} {updated_time_str}**"
                 )
             else:
                 st.sidebar.caption("Last updated: **—**")
-    except Exception:
-        st.sidebar.caption("Last updated: **—**")
+    except Exception as e:
+        logging.error(f"Failed to get last updated time: {e}")
+        st.sidebar.caption("Last updated: **Error**")
     finally:
         if conn:
             db.db_pool.putconn(conn)
@@ -164,7 +212,7 @@ def show_last_updated():
 def get_structured_match_info(match_data, target_team_name):
     """
     Parses match result string into structured information.
-    (No database logic, no changes needed)
+    (Kept for widgets.py)
     """
     result = match_data.get("result", "")
     match = re.match(r"(.+?)\s*(\d+)-(\d+)\s*(.+)", result)
