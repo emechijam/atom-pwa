@@ -4,7 +4,8 @@ requests
 pandas
 pytz
 sqlalchemy
-psycopg[binary,pool]      
+psycopg[binary,pool]   
+psycopg2-binary   
 apscheduler
 python-dotenv
 streamlit-card
