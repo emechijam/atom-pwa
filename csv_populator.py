@@ -1,4 +1,12 @@
-# csv_populator.py v1.13
+# csv_populator.py v1.14
+#
+# Changes in v1.14 (CRITICAL MATCH PERSISTENCE FIX):
+# - RESTORED FINAL COMMIT: Added `conn.commit()` back to the end of the successful `try` block in
+#   `process_row`.
+# - REASON: Match data and associated tables (odds, stats) are part of a transaction initiated *after*
+#   parent entities are committed. Without this final commit, the match transaction was implicitly
+#   rolled back when the connection was returned to the pool, resulting in zero rows in the 'matches' table
+#   despite successful logging. This fixes the empty 'matches' table issue.
 
 import os
 import csv
@@ -12,6 +20,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import psycopg2
 from psycopg2.pool import ThreadedConnectionPool
 from psycopg2.errors import IntegrityError
+from dotenv import load_dotenv
 
 # Optional dependency for robust date parsing
 try:
@@ -21,7 +30,6 @@ except Exception:
     HAS_DATEUTIL = False
 
 # ============ CONFIG & LOGGING ============
-from dotenv import load_dotenv
 load_dotenv()
 logging.basicConfig(
     level=logging.INFO,
@@ -199,7 +207,7 @@ def get_or_create_area(cur, name, code=None, flag=None):
             f"""
             INSERT INTO areas ({', '.join(cols)})
             VALUES (%s, %s, %s)
-            RETr:UNING area_id
+            RETURNING area_id
             """,
             values
         )
@@ -608,6 +616,9 @@ def process_row(row, filename, source_type, conn):
                     yellow_cards=to_int(row.get('AY'), None)
                 )
 
+        # CRITICAL FIX v1.14: Restore the final commit to persist match and match detail tables.
+        conn.commit()
+        
         logging.info(f"Processed match: {home_name or 'Unknown'} {ft_home}-{ft_away} {away_name or 'Unknown'} ({utc_date.isoformat()}) (Source: {source_type})")
         
     except Exception as e:
@@ -659,7 +670,6 @@ def main(folder_path='dataset'):
                             futures.append(executor.submit(_process_row_with_conn, row, filename, source_type))
                             
                         for fut in as_completed(futures):
-                            # Ensure any result/exception from the thread is handled
                             fut.result()
                             
             except Exception as e:
