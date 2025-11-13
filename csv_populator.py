@@ -483,16 +483,34 @@ def process_row(row, filename, source_type, conn):
         # Get league details
         if source_type == 'FD':
             div = row.get('Div')
-            if div not in FD_LEAGUE_MAP:
+            # Handle files like 'E0 (1).csv' where the division code is still 'E0'
+            if '(' in filename and ')' in filename:
+                 # Extract base name without number/extension, e.g., 'E0 (1).csv' -> 'E0'
+                base_name = os.path.splitext(filename)[0].split(' ')[0]
+                if base_name in FD_LEAGUE_MAP:
+                    div = base_name
+            elif div not in FD_LEAGUE_MAP:
                 logging.warning(f"Unknown FD div {div} in {filename}, skipping row.")
                 return
             league = FD_LEAGUE_MAP[div].copy()
         else:
             file_base = os.path.splitext(filename)[0].upper()
-            if file_base not in COUNTRY_LEAGUE_MAP:
-                logging.warning(f"Unknown country file {filename}, skipping row.")
-                return
-            league = COUNTRY_LEAGUE_MAP[file_base].copy()
+            # Handle files like 'ARG (1).csv' where the base name is still 'ARG'
+            file_base_clean = file_base.split(' ')[0].split('(')[0]
+            if file_base_clean not in COUNTRY_LEAGUE_MAP:
+                # Check if it is a COUNTRY-style file that needs to be added to the map
+                if len(file_base_clean) == 3 and file_base_clean.isalpha():
+                    # For a new country file (e.g., USA.csv), we use the filename as the area code/name
+                    league = {'name': 'Domestic League', 'area_name': file_base_clean, 'code': file_base_clean}
+                    COUNTRY_LEAGUE_MAP[file_base_clean] = league
+                else:
+                    # Skip files like 'example.csv' or 'Latest_Results.csv'
+                    if 'example' not in filename.lower() and 'latest' not in filename.lower() and 'snippet' not in filename.lower() and not file_base_clean.isdigit():
+                         logging.warning(f"Unknown COUNTRY file {filename}, skipping row.")
+                    return
+            else:
+                league = COUNTRY_LEAGUE_MAP[file_base_clean].copy()
+            
             league_name = row.get('League')
             if league_name:
                 league['name'] = league_name
@@ -510,7 +528,9 @@ def process_row(row, filename, source_type, conn):
 
         # Season year
         if 'Season' in row and row.get('Season'):
+            # Handles '08/09' format
             season_year = int(str(row['Season']).split('/')[0])
+            if season_year < 100: season_year += 2000 # Assume 2-digit years are 20xx
         else:
             season_year = infer_season_year(utc_date)
 
@@ -536,15 +556,21 @@ def process_row(row, filename, source_type, conn):
             ft_away = to_int(row.get('AG'), 0)
             ht_home = None
             ht_away = None
-            winner = get_winner(row.get('Res'))
+            winner_key = row.get('Res') # Res is typically H, A, D
+            if not winner_key and ft_home is not None and ft_away is not None:
+                if ft_home > ft_away: winner = 'HOME_TEAM'
+                elif ft_away > ft_home: winner = 'AWAY_TEAM'
+                else: winner = 'DRAW'
+            else:
+                winner = get_winner(winner_key)
 
         # Venue, attendance, referee (if available)
         venue = None
         attendance = to_int(row.get('Attendance')) if 'Attendance' in row else None
         referee_name = row.get('Referee') or row.get('Referee name')
         referee_id = None
-        if referee_name:
-            referee_id = get_or_create_person(cur, referee_name, position='REFEREE')
+        if referee_name and referee_name.strip():
+            referee_id = get_or_create_person(cur, referee_name.strip(), position='REFEREE')
 
         # Get or insert match
         match_id, exists = get_or_insert_match(
@@ -577,7 +603,7 @@ def process_row(row, filename, source_type, conn):
                     except Exception as e:
                         logging.warning(f"Could not insert odds for match {match_id}: {e}")
                         
-            # Team stats (only FD)
+            # Team stats (only FD, typically)
             if source_type == 'FD':
                 # Home stats
                 home_shots = to_int(row.get('HS'), 0)
@@ -650,14 +676,19 @@ def _process_row_with_conn(row, filename, source_type):
 def main(folder_path='dataset'):
     init_db_pool()
     try:
-        csv_files = [f for f in os.listdir(folder_path) if f.endswith('.csv') and 'Supabase Snippet' not in f]
+        # Filter out non-match data CSVs like 'Supabase Snippet...'
+        csv_files = [f for f in os.listdir(folder_path) if f.endswith('.csv') and 'Supabase Snippet' not in f and 'rows' not in f.lower()]
     except Exception as e:
         logging.error(f"Could not list folder {folder_path}: {e}")
         return
         
+    # Sort files to ensure predictable order (e.g., ARG, AUT, B1, D1, E0...)
+    csv_files.sort()
+        
     try:
         for filename in csv_files:
-            source_type = 'FD' if re.match(r'^[A-Z]\d(\s*\(1\))?\.csv$', filename, flags=re.IGNORECASE) else 'COUNTRY'
+            # Logic to determine source type based on filename pattern (e.g., D1.csv vs ARG.csv)
+            source_type = 'FD' if re.match(r'^[A-Z]\d(\s*\(.*\))?\.csv$', filename, flags=re.IGNORECASE) or filename.lower().startswith(('e0','e1','e2','e3','sc0','sc1','sc2','sc3')) else 'COUNTRY'
             logging.info(f"Processing {filename} as {source_type} type.")
             file_path = os.path.join(folder_path, filename)
             
@@ -669,8 +700,11 @@ def main(folder_path='dataset'):
                         for row in reader:
                             futures.append(executor.submit(_process_row_with_conn, row, filename, source_type))
                             
+                        # Wait for all rows in the current file to complete before moving to the next file
                         for fut in as_completed(futures):
                             fut.result()
+                        
+                        logging.info(f"Finished processing file: {filename}")
                             
             except Exception as e:
                 logging.error(f"Failed processing file {filename}: {e}")
