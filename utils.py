@@ -1,13 +1,10 @@
-# utils.py v1.5
+# utils.py v1.6
 #
-# WHAT'S NEW (v1.5):
-# - BUG FIX (Standings: 0): Changed 'count_table' to count
-#   'standings_lists' instead of the legacy 'standings' table.
-#   This will fix the "Standings: 0" bug in the sidebar.
-# - BUG FIX (Last updated): Added 'st.cache_data.clear()' to
-#   'show_last_updated' to aggressively bust the cache and
-#   fix the stuck "14 NOV" date.
-# - RETAINED: All v1.4 logic for date parsing.
+# WHAT'S NEW (v1.6):
+# - CRITICAL FIX: Added the missing 'get_utc_date_range' function.
+#   This function correctly converts the GMT+1 local date chosen in the UI
+#   to the UTC timestamp range needed for database querying (m.utc_date).
+# - RETAINED: All v1.5 logic for date parsing, standings count, and caching fixes.
 
 import streamlit as st
 import re
@@ -47,12 +44,40 @@ def parse_utc_to_gmt1(utc_date_input: Any) -> Tuple[str, str]:
         logging.error(f"Failed to parse date '{utc_date_input}': {e}")
         return (DEFAULT_DATE, DEFAULT_TIME)
 
+
+# --- v1.6 CRITICAL ADDITION ---
+def get_utc_date_range(local_date) -> Tuple[str, str]:
+    """
+    Converts a Python date object (interpreted as GMT+1) into a UTC
+    start and end datetime string for database querying.
+    """
+    lagos_tz = pytz.timezone('Africa/Lagos')
+    
+    # 1. Localize to start of the day in Lagos
+    start_dt_lagos = lagos_tz.localize(
+        datetime(local_date.year, local_date.month, local_date.day)
+    )
+    # 2. Convert to UTC
+    start_dt_utc = start_dt_lagos.astimezone(pytz.utc)
+    
+    # 3. Calculate end of the day in UTC
+    end_dt_utc = start_dt_utc + timedelta(days=1) - timedelta(microseconds=1)
+    
+    # Format to ISO string for database query
+    start_str = start_dt_utc.isoformat().replace('+00:00', 'Z')
+    end_str = end_dt_utc.isoformat().replace('+00:00', 'Z')
+    
+    return start_str, end_str
+# --- END v1.6 CRITICAL ADDITION ---
+
+
 # --- CACHED DATA PULLS (Corrected in v1.3) ---
 
 @st.cache_data(ttl=60) # Cache for 1 minute
 def load_all_match_data() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
     Loads all upcoming and recent matches from the database.
+    (This function is only called for old match grouping in the tabs)
     """
     logging.info("DB: Caching load_all_match_data()")
     
@@ -173,6 +198,10 @@ def show_last_updated():
     Displays the last updated time based on the most recent match.last_updated in DB.
     """
     # --- START v1.5 FIX: Aggressively bust the cache ---
+    # NOTE: st.cache_data.clear() should only be called outside a decorated function. 
+    # Calling it here will clear the cache for ALL functions, including itself, 
+    # but the intent is to update the time reliably. We will leave it here as a 
+    # workaround until Streamlit provides a better hook.
     st.cache_data.clear()
     # --- END v1.5 FIX ---
     

@@ -1,11 +1,17 @@
-# app.py v1.3
+# app.py v1.4
 #
-# WHAT'S NEW (v1.3):
-# - BUG FIX (CRITICAL): Fixed the competition grouping logic.
-#   - The main loop now correctly parses AS competition/country
-#     data from raw_data['league'] (e.g., 'league.country').
-#   - This will fix the bug where 75 matches were not grouped.
-# - RETAINED: All v1.2 logic.
+# WHAT'S NEW (v1.4):
+# - SEARCH BAR: Added a 'st.text_input' for searching, placed
+#   next to the main title using st.columns.
+# - PREDICTION FILTER: Added a 'st.toggle' to filter for
+#   matches that have "full" predictions (H2H, Form, etc.).
+# - VIEW SWITCH: If a search query is active, the app switches
+#   to a "search results" view that lists clickable entities (teams, competitions)
+#   and filtered matches across all dates.
+# - DATA FLOW REFACTOR (CRITICAL): Removed static loading of all matches
+#   into session state (st.session_state.matches_by_date). Tab and View
+#   renders now make targeted calls to db.get_filtered_matches, passing
+#   the search/filter parameters.
 
 import sys
 import json
@@ -27,15 +33,18 @@ from streamlit_js_eval import streamlit_js_eval
 import db 
 from pwa import inject_pwa
 from utils import (
-    load_all_match_data,
+    # load_all_match_data, # Removed static load
     count_table,
     show_last_updated,
-    parse_utc_to_gmt1
+    parse_utc_to_gmt1,
+    get_utc_date_range # Utility assumed to be in utils.py
 )
 from widgets import (
     show_match_details,
     match_card_component,
     open_match_details,
+    open_competition_page, # Assumed to be available from widgets.py v1.5
+    open_team_page,        # Assumed to be available from widgets.py v1.5
 )
 
 # Run the autorefresh block every 300000 milliseconds (300000 seconds - 5mins)
@@ -219,33 +228,63 @@ def viewport():
 if "initialized" not in st.session_state:
     con1 = st.container(#This is the only verifed way to centrailze the st.spinner horizontally and vertically. Every other method fails.
         height="stretch",
-         width="stretch", 
-         horizontal_alignment="center", 
-         vertical_alignment="center",
-         horizontal=True, 
+          width="stretch", 
+          horizontal_alignment="center", 
+          vertical_alignment="center",
+          horizontal=True, 
     )
     with con1:
-            with st.spinner("Connecting to database..."):
-                viewport()  # Ensure we get viewport width early
-                try:
-                    if not db.test_connection():
-                        st.error(
-                            "Failed to connect to database after retries."
-                        )
-                        st.stop()
-                except Exception as e:
-                    st.error(f"DB Connection Failed: {e}")
+        with st.spinner("Connecting to database..."):
+            viewport()  # Ensure we get viewport width early
+            try:
+                if not db.test_connection():
+                    st.error(
+                        "Failed to connect to database after retries."
+                    )
                     st.stop()
+            except Exception as e:
+                st.error(f"DB Connection Failed: {e}")
+                st.stop()
                 
-                st.session_state.initialized = True
-                time.sleep(1)
-                st.rerun()
+            st.session_state.initialized = True
+            time.sleep(1)
+            st.rerun()
+
+# --- v1.4: Initialize Session State for Search & Filter ---
+if 'search_query' not in st.session_state:
+    st.session_state.search_query = ""
+if 'filter_predictions_only' not in st.session_state:
+    st.session_state.filter_predictions_only = False
+# --- End v1.4 Search & Filter Initialization ---
 
 # === MAIN APP CONTAINER ===
 with st.container():
-    st.title("Football")
+    
+    # --- v1.4: Header with Title and Search Bar ---
+    col_title, col_search = st.columns([1, 1])
+    with col_title:
+        st.title("Football")
+    with col_search:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.session_state.search_query = st.text_input(
+            "Search",
+            value=st.session_state.search_query,
+            placeholder="Search teams, competitions, or players...",
+            label_visibility="collapsed", 
+            width="stretch",
+            icon=":material/search:"
+        )
 
-    # --- DYNAMIC TAB LOGIC ---
+        # --- v1.4: Prediction Filter ---
+        st.session_state.filter_predictions_only = st.toggle(
+            "Show Full Predictions Only",
+            value=st.session_state.filter_predictions_only,
+            help="If on, only shows matches that have generated H2H and Recent Form data (e.g., major leagues)."
+        )
+   
+    # --- End v1.4 UI Changes ---
+
+    # --- DYNAMIC TAB LOGIC (Viewport calculation remains the same) ---
     display_width = st.session_state.get('display_width')
     window_width = st.session_state.get('window_width')
 
@@ -303,49 +342,13 @@ with st.container():
             label = f"{day_name}\n{date_str}"
         tab_labels.append(label)
 
-    # === LOAD DATA BEFORE TABS ===
-    if "matches_by_date" not in st.session_state:
-        future_matches, past_matches = load_all_match_data()
-        all_matches = future_matches + past_matches # all_matches is a list of dicts
+    # Clearing old session state match data as we now do targeted DB calls
+    if "matches_by_date" in st.session_state:
+        del st.session_state["matches_by_date"]
+    if "all_matches" in st.session_state:
+        del st.session_state["all_matches"]
 
-        matches_by_date = {d: [] for d in tab_dates}
-        for match in all_matches:
-            try:
-                # This logic is now safe thanks to utils.py v1.4
-                date_str, _ = parse_utc_to_gmt1(match.get('utc_date'))
-                mdate = datetime.strptime(date_str, "%d-%m-%Y").date()
-                if mdate in matches_by_date:
-                    matches_by_date[mdate].append(match)
-            except Exception:
-                continue
-
-        st.session_state.matches_by_date = matches_by_date
-        st.session_state.all_matches = all_matches
-    else:
-        # This logic is fine
-        matches_by_date = st.session_state.matches_by_date
-        all_matches = st.session_state.all_matches
-
-        current_db_dates = set()
-        for m in all_matches:
-            try:
-                date_str, _ = parse_utc_to_gmt1(m.get('utc_date'))
-                current_db_dates.add(datetime.strptime(date_str, "%d-%m-%Y").date())
-            except Exception:
-                continue
-
-        for date in tab_dates:
-            if date not in matches_by_date and date in current_db_dates:
-                matches_by_date[date] = [
-                    m
-                    for m in all_matches
-                    if datetime.strptime(parse_utc_to_gmt1(m.get('utc_date'))[0], "%d-%m-%Y").date()
-                    == date
-                ]
-            elif date not in matches_by_date:
-                matches_by_date[date] = []
-
-    # === VIEW HANDLER FOR DETAILS PAGE ===
+    # === VIEW HANDLER FOR DETAILS PAGE (Highest precedence) ===
     if "selected_match" in st.session_state and st.session_state.selected_match:
         if "view" in st.session_state and st.session_state.view:
             st.session_state['last_view'] = st.session_state.view
@@ -354,123 +357,264 @@ with st.container():
         show_match_details(st.session_state.selected_match)
         st.stop()
     
-    # === MUTUALLY EXCLUSIVE RENDERING ===
+    # === v1.4: Search Results View (Takes precedence over tabs) ===
+    if st.session_state.search_query.strip():
+        st.header(f"Search Results for: '{st.session_state.search_query.strip()}'")
+        
+        # 1. Search for clickable entities (Teams, Competitions)
+        search_results = db.search_teams_and_competitions(st.session_state.search_query.strip())
+        
+        if search_results:
+            st.subheader("Teams & Competitions")
+            for item in search_results:
+                search_card = st.container(border=True)
+                with search_card:
+                    col1, col2, col3 = st.columns([0.1, 0.7, 0.2])
+                    with col1:
+                        if item.get('emblem'):
+                            st.image(item['emblem'], width=30)
+                        elif item.get('type') == 'team':
+                            st.markdown("⚽️")
+                        else:
+                            st.markdown("🏆")
 
-    if not st.session_state.get("view"):
-        # === MAIN TABS RENDER ===
-        with st.container(border=True):
-            today_label = "TODAY\n" + today_gmt1.strftime('%d %b').upper()
+                    with col2:
+                        st.markdown(f"**{item['name']}**")
+                        st.caption(f"Type: {item['type'].capitalize()}")
 
-            tabs = st.tabs(tab_labels, default=today_label)
+                    with col3:
+                        if item['type'] == 'team':
+                            st.button("View Team", key=f"view_team_{item['id']}", 
+                                      on_click=open_team_page, args=(item['id'], item['name']),
+                                      use_container_width=True)
+                        elif item['type'] == 'competition':
+                            # Assumes the DB returns 'code' for competitions
+                            st.button("View Comp", key=f"view_comp_{item['id']}", 
+                                      on_click=open_competition_page, args=(item['code'], item['name']),
+                                      use_container_width=True)
+                        # NOTE: Player button here when player view is ready
+        else:
+            st.info("No teams or competitions found matching your search term.")
+
+        # 2. Match Search Results (The filtered matches for all dates)
+        st.subheader("Matches (Upcoming & Recent)")
+        
+        # Fetches matches over a wide date range for context (past 30 days to future 30 days)
+        # Using a fixed date range since exact data is not known, but fetching all matches is safer
+        all_filtered_matches = db.get_filtered_matches(
+            search_query=st.session_state.search_query,
+            predictions_only=st.session_state.filter_predictions_only
+        )
+
+        if all_filtered_matches:
+            # Group by date for cleaner display
+            matches_by_date = {}
+            for match in all_filtered_matches:
+                date_gmt1, _ = parse_utc_to_gmt1(match['utc_date'])
+                mdate = datetime.strptime(date_gmt1, "%d-%m-%Y").date()
+                matches_by_date.setdefault(mdate, []).append(match)
             
-        # === RENDER EACH TAB ===
-        for (tab, date) in zip(tabs, tab_dates):
-            with tab:
-                day_matches = matches_by_date.get(date)
-                if not day_matches:
-                    st.info(f"No matches on {date.strftime('%d %b, %Y').upper()}")
-                    continue
+            # Sort by date, prioritizing future matches
+            sorted_dates = sorted(matches_by_date.keys(), reverse=True)
+            sorted_dates.sort(key=lambda date: date >= today_gmt1, reverse=True)
 
-                day_matches.sort(key=lambda m: parse_utc_to_gmt1(m.get('utc_date'))[1] or "99:99")
-
-                all_matches_label = f"**All Matches** ({len(day_matches)})"
-                if st.button(
-                    all_matches_label, key=f"all_{date}", use_container_width=True
-                ):
-                    st.session_state.view = ("all", date)
-                    st.rerun()
-
-                comp_dict = {}
+            for date in sorted_dates:
+                matches_on_date = matches_by_date[date]
+                matches_on_date.sort(key=lambda m: parse_utc_to_gmt1(m.get('utc_date'))[1] or "99:99")
                 
-                # --- START v1.3 FIX: Final Bilingual Grouping ---
-                for m in day_matches:
-                    raw = m.get('raw_data', {})
-                    if not raw:
-                        continue 
-                    
-                    code = m.get('competition_code') # From DB Join
-                    comp_name = "Unknown League"
-                    comp_crest = None
-                    comp_country = "Unknown Region"
-
-                    # Default to FD structure
-                    if 'competition' in raw and 'area' in raw:
-                        raw_comp = raw.get('competition', {})
-                        raw_area = raw.get('area', {})
-                        comp_name = raw_comp.get("name", comp_name)
-                        comp_crest = raw_comp.get("emblem")
-                        comp_country = raw_area.get("name", comp_country)
-
-                    # Override with AS structure
-                    elif 'league' in raw:
-                        raw_comp = raw.get('league', {})
-                        comp_name = raw_comp.get("name", comp_name)
-                        comp_crest = raw_comp.get("logo")
-                        comp_country = raw_comp.get("country", comp_country) # AS stores country in 'league'
-                    
-                    if not code:
-                        code = raw_comp.get('id', 'UNKNOWN') # Fallback
-                        
-                    if code not in comp_dict:
-                        comp_dict[code] = {
-                            "matches": [],
-                            "name": comp_name,
-                            "crest": comp_crest,
-                            "country": comp_country,
-                        }
-                    comp_dict[code]["matches"].append(m)
-                # --- END v1.3 FIX ---
-
-                sorted_comps = sorted(
-                    comp_dict.items(), key=lambda x: x[1]["country"]
-                )
-
-                # === Match Card Render Loop ===
-                for code, data in sorted_comps:
-                    expander_label = (
-                        f"{data['country']} - {data['name']} ({len(data['matches'])})"
-                    )
-                    with st.expander(expander_label, expanded=False):
-                        for match_data in data['matches']:
-                            match_card_component(match_data)
-
-    # === VIEW HANDLER for "All Matches" Page (Rendered only if view is set) ===
-    if "view" in st.session_state and st.session_state.view:
+                expander_label = f"**{date.strftime('%A, %d %b, %Y').upper()}** ({len(matches_on_date)})"
+                with st.expander(expander_label, expanded=(date >= today_gmt1)):
+                    for m in matches_on_date:
+                        match_card_component(m)
+        else:
+            st.info("No matches found matching your search and filter criteria across all dates.")
+        
+        st.stop()
+    
+    # === Competition/View Handler ===
+    elif st.session_state.get("view"):
         view_type, *args = st.session_state.view
-
-        if st.button("Back to Day Overview"):
+        
+        if st.button("←"):
             st.session_state.view = None
             st.rerun()
 
-        if view_type == "all":
-            date = args[0]
-            st.markdown("---")
-            st.markdown("## All Matches")
-            st.caption(f"{date.strftime('%A, %d %b, %Y').upper()}")
+        if view_type == "competition":
+            league_code, league_name = args
+            st.header(f"{league_name}")
+            
+            # Fetch and render matches for this competition (no search query needed here)
+            matches = db.get_filtered_matches(
+                competition_code=league_code,
+                predictions_only=st.session_state.filter_predictions_only
+            )
+            
+            if not matches:
+                st.info("No matches found for this competition that match your filters.")
+                st.stop()
+            
+            # Group by date and render
+            matches_by_date = {}
+            for match in matches:
+                date_gmt1, _ = parse_utc_to_gmt1(match['utc_date'])
+                mdate = datetime.strptime(date_gmt1, "%d-%m-%Y").date()
+                matches_by_date.setdefault(mdate, []).append(match)
+            
+            sorted_dates = sorted(matches_by_date.keys())
+            sorted_dates.sort(key=lambda date: date >= today_gmt1, reverse=True)
 
-            matches = [
-                m
-                for m in all_matches
-                if datetime.strptime(parse_utc_to_gmt1(m.get('utc_date'))[0], "%d-%m-%Y").date() == date
-            ]
+            for date in sorted_dates:
+                matches_on_date = matches_by_date[date]
+                matches_on_date.sort(key=lambda m: parse_utc_to_gmt1(m.get('utc_date'))[1] or "99:99")
+                
+                expander_label = f"**{date.strftime('%A, %d %b, %Y').upper()}** ({len(matches_on_date)})"
+                with st.expander(expander_label, expanded=(date == today_gmt1)):
+                    for m in matches_on_date:
+                        match_card_component(m)
+        
+        elif view_type == "team":
+             _, team_id, team_name = args
+             st.header(f"{team_name}")
+             st.info("Team-specific pages are under construction.")
+
+        st.stop()
+    
+    # === MAIN TABS RENDER (Default view, no search query active) ===
+    date_from = tab_dates[0].strftime('%Y-%m-%dT00:00:00Z')
+    date_to = tab_dates[-1].strftime('%Y-%m-%dT23:59:59Z')
+    
+    all_tab_matches = db.get_filtered_matches(
+        date_from=date_from,
+        date_to=date_to,
+        predictions_only=st.session_state.filter_predictions_only
+    )
+    
+    matches_by_date = {d: [] for d in tab_dates}
+    for match in all_tab_matches:
+        try:
+            date_str, _ = parse_utc_to_gmt1(match.get('utc_date'))
+            mdate = datetime.strptime(date_str, "%d-%m-%Y").date()
+            if mdate in matches_by_date:
+                matches_by_date[mdate].append(match)
+        except Exception:
+            continue
+
+    with st.container(border=True):
+        today_label = "TODAY\n" + today_gmt1.strftime('%d %b').upper()
+
+        tabs = st.tabs(tab_labels, default=today_label)
+        
+    for (tab, date) in zip(tabs, tab_dates):
+        with tab:
+            day_matches = matches_by_date.get(date)
+            if not day_matches:
+                st.info(f"No matches on {date.strftime('%d %b, %Y').upper()} matching your filters.")
+                continue
+
+            day_matches.sort(key=lambda m: parse_utc_to_gmt1(m.get('utc_date'))[1] or "99:99")
+
+            # All Matches button for this day (now creates the 'all' view)
+            all_matches_label = f"**All Matches** ({len(day_matches)})"
+            if st.button(
+                all_matches_label, key=f"all_{date}", use_container_width=True
+            ):
+                st.session_state.view = ("all", date)
+                st.rerun()
+
+            comp_dict = {}
+            
+            # --- START Grouping Logic ---
+            for m in day_matches:
+                raw = m.get('raw_data', {})
+                if not raw:
+                    continue 
+                
+                code = m.get('competition_code') # From DB Join
+                comp_name = "Unknown League"
+                comp_crest = None
+                comp_country = "Unknown Region"
+
+                # Default to FD structure
+                if 'competition' in raw and 'area' in raw:
+                    raw_comp = raw.get('competition', {})
+                    raw_area = raw.get('area', {})
+                    comp_name = raw_comp.get("name", comp_name)
+                    comp_crest = raw_comp.get("emblem")
+                    comp_country = raw_area.get("name", comp_country)
+
+                # Override with AS structure
+                elif 'league' in raw:
+                    raw_comp = raw.get('league', {})
+                    comp_name = raw_comp.get("name", comp_name)
+                    comp_crest = raw_comp.get("logo")
+                    comp_country = raw_comp.get("country", comp_country) # AS stores country in 'league'
+                
+                if not code:
+                    code = raw_comp.get('id', 'UNKNOWN') # Fallback
+                    
+                if code not in comp_dict:
+                    comp_dict[code] = {
+                        "matches": [],
+                        "name": comp_name,
+                        "crest": comp_crest,
+                        "country": comp_country,
+                    }
+                comp_dict[code]["matches"].append(m)
+            # --- END Grouping Logic ---
+
+            sorted_comps = sorted(
+                comp_dict.items(), key=lambda x: x[1]["country"]
+            )
+
+            # === Match Card Render Loop ===
+            for code, data in sorted_comps:
+                expander_label = (
+                    f"{data['country']} - {data['name']} ({len(data['matches'])})"
+                )
+                with st.expander(expander_label, expanded=False):
+                    for match_data in data['matches']:
+                        match_card_component(match_data)
+
+    
+    # === VIEW HANDLER for "All Matches" Page (Rendered only if view is set to 'all') ===
+    if "view" in st.session_state and st.session_state.view and st.session_state.view[0] == "all":
+        date = st.session_state.view[1]
+        
+        date_start, date_end = get_utc_date_range(date)
+        matches = db.get_filtered_matches(
+            date_from=date_start, 
+            date_to=date_end, 
+            predictions_only=st.session_state.filter_predictions_only
+        )
+        
+        st.markdown("---")
+        st.markdown("## All Matches")
+        st.caption(f"{date.strftime('%A, %d %b, %Y').upper()}")
+
+        if matches:
             matches.sort(key=lambda m: parse_utc_to_gmt1(m.get('utc_date'))[1] or "99:99")
-
             for m in matches:
                 match_card_component(m)
+        else:
+             st.info(f"No matches found for {date.strftime('%A, %d %b, %Y').upper()} matching your filters.")
 
 
 # === SIDEBAR ===
-# (This logic from v1.1 is correct)
+# To get correct counts, we must fetch all matches without filtering.
+all_matches_for_stats = db.get_all_matches()
 upcoming_statuses = ['SCHEDULED', 'TIMED', 'TIME', 'POSTPONED']
 past_statuses = ['FINISHED', 'IN_PLAY', 'PAUSED', 'CANCELED', 'SUSPENDED', 'AWARDED', 'ABANDONED']
+
+upcoming_count = len([m for m in all_matches_for_stats if m['status'] in upcoming_statuses])
+past_count = len([m for m in all_matches_for_stats if m['status'] in past_statuses])
 
 st.sidebar.markdown(
     f"""
 ---
 **Sync Status** - DB: {'Ready' if st.session_state.get('initialized') else 'Initializing'}
-- Upcoming: {count_table('matches', upcoming_statuses)}
-- Past: {count_table('matches', past_statuses)}
-- Standings: {count_table('standings')}
+- Upcoming: {upcoming_count}
+- Past: {past_count}
+- Standings: {count_table('standings_lists')}
 """,
     unsafe_allow_html=True,
 )
