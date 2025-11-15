@@ -1,11 +1,15 @@
-// service-worker.js v3
-const CACHE_NAME = 'atom-v3'; // <-- Updated cache name
+// service-worker.js v4
+const CACHE_NAME = 'atom-v4'; // Updated cache name
 const urlsToCache = [
   '/',
   '/static/icon-192.png',
   '/static/icon-512.png',
   '/static/style.css',
-  // Add more if you have dynamic routes, e.g., '/?league=PL'
+  // Expanded: Cache common dynamic routes
+  '/?league=PL',  // Example: Premier League
+  '/?league=CL',  // Champions League
+  '/?team=33',    // Example team ID
+  // Add more based on popular leagues/teams
 ];
 
 // Install: Cache assets

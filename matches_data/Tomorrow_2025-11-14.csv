@@ -1,0 +1,205 @@
+fixture_id,date,timestamp,timezone,referee,status_short,status_long,elapsed_time,league_id,league_name,country,season,round,home_team_id,home_team_name,home_team_winner,away_team_id,away_team_name,away_team_winner,goals_home,goals_away,score_ht_home,score_ht_away,score_ft_home,score_ft_away,score_et_home,score_et_away,score_pen_home,score_pen_away,venue_name,venue_city
+1446019,2025-11-14T00:00:00+00:00,1763078400,UTC,,NS,Not Started,,31,World Cup - Qualification CONCACAF,World,2026,Final Round - 5,5168,Trinidad and Tobago,,2385,Jamaica,,,,,,,,,,,,Hasely Crawford Stadium,Port of Spain
+1446020,2025-11-14T00:00:00+00:00,1763078400,UTC,,NS,Not Started,,31,World Cup - Qualification CONCACAF,World,2026,Final Round - 5,5158,Bermuda,,5530,Curaçao,,,,,,,,,,,,Bermuda National Stadium,Hamilton
+1480643,2025-11-14T00:00:00+00:00,1763078400,UTC,,NS,Not Started,,239,Primera A,Colombia,2025,Clausura - 20,1144,Rionegro Aguilas,,1142,Deportes Tolima,,,,,,,,,,,,Estadio Alberto Grisales,Rionegro
+1480645,2025-11-14T00:00:00+00:00,1763078400,UTC,,NS,Not Started,,239,Primera A,Colombia,2025,Clausura - 20,1127,Deportivo Cali,,1136,Once Caldas,,,,,,,,,,,,Estadio Deportivo Cali,Palmira
+1480646,2025-11-14T00:00:00+00:00,1763078400,UTC,,NS,Not Started,,239,Primera A,Colombia,2025,Clausura - 20,1126,Deportivo Pasto,,1131,Bucaramanga,,,,,,,,,,,,Estadio Departamental Libertad,Pasto
+1480647,2025-11-14T00:00:00+00:00,1763078400,UTC,,NS,Not Started,,239,Primera A,Colombia,2025,Clausura - 20,1128,Independiente Medellin,,1138,America de Cali,,,,,,,,,,,,Estadio Atanasio Girardot,
+1480648,2025-11-14T00:00:00+00:00,1763078400,UTC,,NS,Not Started,,239,Primera A,Colombia,2025,Clausura - 20,1135,Junior,,1137,Atletico Nacional,,,,,,,,,,,,,Barranquilla
+1480650,2025-11-14T00:00:00+00:00,1763078400,UTC,,NS,Not Started,,239,Primera A,Colombia,2025,Clausura - 20,1464,Llaneros,,1129,Envigado,,,,,,,,,,,,Estadio Bello Horizonte,Villavicencio
+1480651,2025-11-14T00:00:00+00:00,1763078400,UTC,,NS,Not Started,,239,Primera A,Colombia,2025,Clausura - 20,1139,Santa Fe,,1141,Alianza Petrolera,,,,,,,,,,,,,
+1480652,2025-11-14T00:00:00+00:00,1763078400,UTC,,NS,Not Started,,239,Primera A,Colombia,2025,Clausura - 20,1465,Union Magdalena,,1147,Fortaleza FC,,,,,,,,,,,,Estadio Sierra Nevada,Santa Marta
+1485988,2025-11-14T00:00:00+00:00,1763078400,UTC,,NS,Not Started,,673,Liga MX Femenil,Mexico,2025,Semi-finals,14875,Cruz Azul W,,14884,Tigres UANL W,,,,,,,,,,,,Instalaciones La Noria Cancha 1,Ciudad de Mexico
+1457377,2025-11-14T00:30:00+00:00,1763080200,UTC,,NS,Not Started,,10,Friendlies,World,2025,Friendlies 1,5529,Canada,,2382,Ecuador,,,,,,,,,,,,BMO Field,"Toronto, Ontario"
+1485900,2025-11-14T01:15:00+00:00,1763082900,UTC,,NS,Not Started,,263,Liga de Expansión MX,Mexico,2025,Quarter-finals,2284,Monarcas,,14276,Cancún,,,,,,,,,,,,Estadio Morelos,Morelia
+1446018,2025-11-14T02:00:00+00:00,1763085600,UTC,,NS,Not Started,,31,World Cup - Qualification CONCACAF,World,2026,Final Round - 5,5161,Guatemala,,11,Panama,,,,,,,,,,,,Estadio Cementos Progreso,Guatemala City
+1446021,2025-11-14T02:00:00+00:00,1763085600,UTC,,NS,Not Started,,31,World Cup - Qualification CONCACAF,World,2026,Final Round - 5,5164,Nicaragua,,4672,Honduras,,,,,,,,,,,,Estadio Nacional de Futbol,Managua
+1446022,2025-11-14T02:00:00+00:00,1763085600,UTC,,NS,Not Started,,31,World Cup - Qualification CONCACAF,World,2026,Final Round - 5,2386,Haiti,,29,Costa Rica,,,,,,,,,,,,Stadion Ergilio Hato,Willemstad
+1485989,2025-11-14T02:07:00+00:00,1763086020,UTC,,NS,Not Started,,673,Liga MX Femenil,Mexico,2025,Semi-finals,14876,Guadalajara W,,14868,América W,,,,,,,,,,,,Estadio Akron,Zapopan
+1485902,2025-11-14T02:30:00+00:00,1763087400,UTC,,NS,Not Started,,263,Liga de Expansión MX,Mexico,2025,Quarter-finals,2307,Leones Negros UDG,,19905,CDS Tampico Madero,,,,,,,,,,,,Estadio Jalisco,Guadalajara
+1485002,2025-11-14T05:00:00+00:00,1763096400,UTC,,CANC,Match Cancelled,,10,Friendlies,World,2025,Friendlies 1,5165,Solomon Islands,,5163,New Caledonia,,,,,,,,,,,,,
+1484482,2025-11-14T08:00:00+00:00,1763107200,UTC,,NS,Not Started,,190,A-League Women,Australia,2025,Regular Season - 3,1972,Adelaide United W,,1970,Canberra United W,,,,,,,,,,,,ServiceFM Stadium,Adelaide
+1481330,2025-11-14T08:35:00+00:00,1763109300,UTC,,NS,Not Started,,1202,Australian Championship,Australia,2025,Round - 6,22916,Moreton City Excelsior,,3811,South Melbourne,,,,,,,,,,,,Perry Park,Brisbane
+1396189,2025-11-14T10:00:00+00:00,1763114400,UTC,,NS,Not Started,,668,1. Liga U19,Czech-Republic,2025,Regular Season - 10,14839,Zbrojovka Brno U19,,14830,Baník Ostrava U19,,,,,,,,,,,,TCM Sladovnická,Brněnské Ivanovice
+1479872,2025-11-14T10:00:00+00:00,1763114400,UTC,,NS,Not Started,,886,UEFA U17 Championship - Qualification,World,2026,Group Stage - 1,17982,Turkey U17,,17964,Malta U17,,,,,,,,,,,,,
+1485003,2025-11-14T10:20:00+00:00,1763115600,UTC,,NS,Not Started,,10,Friendlies,World,2025,Friendlies 1,12,Japan,,1504,Ghana,,,,,,,,,,,,,
+1479873,2025-11-14T10:30:00+00:00,1763116200,UTC,,NS,Not Started,,886,UEFA U17 Championship - Qualification,World,2026,Group Stage - 1,17945,Croatia U17,,17936,Albania U17,,,,,,,,,,,,,
+1350079,2025-11-14T11:00:00+00:00,1763118000,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 11,8179,Armenia U21,,8210,Montenegro U21,,,,,,,,,,,,Armavir stadium,Armavir
+1416311,2025-11-14T11:00:00+00:00,1763118000,UTC,,NS,Not Started,,1065,U19 League,Ukraine,2025,Regular Season - 8,23075,Kolos Kovalivka U19,,20240,Rukh Vynnyky U19,,,,,,,,,,,,,
+1469290,2025-11-14T11:00:00+00:00,1763118000,UTC,,NS,Not Started,,10,Friendlies,World,2025,Friendlies 1,17,South Korea,,2381,Bolivia,,,,,,,,,,,,,
+1479241,2025-11-14T11:30:00+00:00,1763119800,UTC,,NS,Not Started,,291,Azadegan League,Iran,2025,Regular Season - 12,7500,Damash Gilanian,,22890,Shenavarsazi Qeshm,,,,,,,,,,,,,
+1479242,2025-11-14T11:30:00+00:00,1763119800,UTC,,NS,Not Started,,291,Azadegan League,Iran,2025,Regular Season - 12,2719,Nassaji Mazandaran,,22236,Mes Soongoun,,,,,,,,,,,,Vatani Stadium,
+1479243,2025-11-14T11:30:00+00:00,1763119800,UTC,,NS,Not Started,,291,Azadegan League,Iran,2025,Regular Season - 12,7502,Niroye Zamini,,10399,Naft Gachsaran,,,,,,,,,,,,,
+1395194,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,287,Prva Liga,Serbia,2025,Regular Season - 18,12347,Stepojevac Vaga,,2649,Borac Cacak,,,,,,,,,,,,Stadion FK Bežanija,Beograd
+1410910,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,782,III Liga - Group 3,Poland,2025,Group III - 17,6963,Zagłębie Lubin II,,16259,Goczałkowice Zdrój,,,,,,,,,,,,KGHM Zaglebie Arena,Lubin
+1473485,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,784,Liga III - Serie 1,Romania,2025,Group 1 - 13,6883,Odorheiu Secuiesc,,7467,CSM FC Vaslui,,,,,,,,,,,,Stadionul Municipal,Odorheiu Secuiesc
+1473489,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,784,Liga III - Serie 1,Romania,2025,Group 1 - 13,26675,FC Bacău II,,21678,USV Iaşi,,,,,,,,,,,,Baza Sportivă FC Bacău,Ruși-Ciutea
+1473606,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,785,Liga III - Serie 2,Romania,2025,Group 2 - 13,24844,Petrolul 52 II,,6919,Victoria Traian,,,,,,,,,,,,Stadionul CONPET,Ploiesti
+1473607,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,785,Liga III - Serie 2,Romania,2025,Group 2 - 13,10163,Braila,,6894,Păuleşti,,,,,,,,,,,,Baza Sportivă Chiscani,Lacu Sărat
+1473666,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,785,Liga III - Serie 2,Romania,2025,Group 2 - 13,26676,FC Oţelul II,,16293,Plopeni,,,,,,,,,,,,Teren Comunal Slobozia Conachi,Slobozia Conachi
+1473747,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,786,Liga III - Serie 3,Romania,2025,Group 3 - 13,6932,Înainte Modelu,,16287,FCSB II,,,,,,,,,,,,Stadionul Vasile Enache,Modelu
+1473751,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,786,Liga III - Serie 3,Romania,2025,Group 3 - 13,16289,Voluntari II,,2582,Dunarea Calarasi,,,,,,,,,,,,Stadionul Central,Voluntari
+1473917,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,787,Liga III - Serie 4,Romania,2025,Group 4 - 13,26677,Progresul Mogosoaia,,6862,Flacăra Moreni,,,,,,,,,,,,,
+1474007,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,788,Liga III - Serie 5,Romania,2025,Group 5 - 13,6861,Filiaşi,,19179,Oltul Curtişoara,,,,,,,,,,,,Stadionul Orășenesc Filiași,Filiaşi
+1474010,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,788,Liga III - Serie 5,Romania,2025,Group 5 - 13,24361,Axi Adunații-Copăceni,,24363,CSL Nanov,,,,,,,,,,,,Baza Sportivă Mihăilești Teren Sintetic,Mihăilești
+1474125,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,789,Liga III - Serie 6,Romania,2025,Group 6 - 13,22208,ACS Mediaş 2022,,6912,Unirea Bascov,,,,,,,,,,,,Stadionul Municipal Gaz Metan,Mediaş
+1474126,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,789,Liga III - Serie 6,Romania,2025,Group 6 - 13,22202,ARO Muscelul Câmpulung,,21684,Vulturii Fărcăşeşti,,,,,,,,,,,,Stadionul Muscelul,Câmpulung Muscel
+1474236,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,790,Liga III - Serie 7,Romania,2025,Group 7 - 13,24841,CIL Blaj,,14596,Universitatea Alba Iulia,,,,,,,,,,,,Stadionul C.I.L.,Blaj
+1474237,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,790,Liga III - Serie 7,Romania,2025,Group 7 - 13,6911,Unirea Alba Iulia,,7483,Progresul Pecica,,,,,,,,,,,,Stadionul Municipal Victoria,Alba Iulia
+1474238,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,790,Liga III - Serie 7,Romania,2025,Group 7 - 13,24842,Timişul Şag,,2606,FC Politehnica Timisoara,,,,,,,,,,,,Stadionul Timișul Șag,Șag
+1474400,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,791,Liga III - Serie 8,Romania,2025,Group 8 - 13,7490,Sânmartin,,19172,Crişul Sântandrei,,,,,,,,,,,,Stadionul Comunal Sânmartin,Sânmartin
+1474401,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,791,Liga III - Serie 8,Romania,2025,Group 8 - 13,6914,Unirea Dej,,6906,Sănătatea Cluj,,,,,,,,,,,,Unirea Stadium,Dej
+1474402,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,791,Liga III - Serie 8,Romania,2025,Group 8 - 13,19851,Viitorul Cluj,,14593,Sighetu Marmaţiei,,,,,,,,,,,,Baza Sportivă Dan Anca,Cluj-Napoca
+1479244,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,291,Azadegan League,Iran,2025,Regular Season - 12,20802,Be'sat Kermanshah,,10388,Mes Shahr-e Babak,,,,,,,,,,,,,
+1479245,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,291,Azadegan League,Iran,2025,Regular Season - 12,2718,Mes Kerman,,15541,Havadar,,,,,,,,,,,,,
+1479246,2025-11-14T12:00:00+00:00,1763121600,UTC,,NS,Not Started,,291,Azadegan League,Iran,2025,Regular Season - 12,2726,Navad Urmia,,18302,Shahrdari Noshahr,,,,,,,,,,,,,
+1393378,2025-11-14T12:30:00+00:00,1763123400,UTC,,NS,Not Started,,211,First NL,Croatia,2025,Regular Season - 15,6246,Opatija,,1021,HNK Cibalia,,,,,,,,,,,,Stadion Kantrida,Rijeka
+1440840,2025-11-14T12:30:00+00:00,1763123400,UTC,,NS,Not Started,,887,Second League,Egypt,2025,Regular Season - 12,1045,Tanta SC,,18022,Dayrout,,,,,,,,,,,,Tanta Stadium,Tanta
+1445349,2025-11-14T12:30:00+00:00,1763123400,UTC,,NS,Not Started,,887,Second League,Egypt,2025,Regular Season - 12,25468,Masar,,1032,El Dakhleya,,,,,,,,,,,,Right To Dream School Stadium,
+1452939,2025-11-14T12:30:00+00:00,1763123400,UTC,,NS,Not Started,,890,U20 Elite League,World,2025,Group Stage - 3,18047,Czech Republic U20,,10298,Poland U20,,,,,,,,,,,,,
+1486053,2025-11-14T12:30:00+00:00,1763123400,UTC,,NS,Not Started,,587,World Cup - U17,World,2025,Round of 32,17971,Portugal U17,,17942,Belgium U17,,,,,,,,,,,,Aspire Zone,
+1486054,2025-11-14T12:30:00+00:00,1763123400,UTC,,NS,Not Started,,587,World Cup - U17,World,2025,Round of 32,21301,Zambia U17,,21298,Mali U17,,,,,,,,,,,,Aspire Zone,
+1479874,2025-11-14T12:45:00+00:00,1763124300,UTC,,NS,Not Started,,886,UEFA U17 Championship - Qualification,World,2026,Group Stage - 1,12514,Netherlands U17,,17958,Kazakhstan U17,,,,,,,,,,,,,
+1393380,2025-11-14T13:00:00+00:00,1763125200,UTC,,NS,Not Started,,211,First NL,Croatia,2025,Regular Season - 15,1479,Sesvete,,6254,Croatia Zmijavci,,,,,,,,,,,,Stadion sv. Josip Radnik,Sesvete
+1441077,2025-11-14T13:00:00+00:00,1763125200,UTC,,NS,Not Started,,946,Second NL,Croatia,2025,Regular Season - 13,1481,Kustosija,,8607,Trnje,,,,,,,,,,,,Stadion Kustosija,Zagreb
+1452938,2025-11-14T13:00:00+00:00,1763125200,UTC,,NS,Not Started,,890,U20 Elite League,World,2025,Group Stage - 3,10289,Italy U20,,10299,Portugal U20,,,,,,,,,,,,,
+1468146,2025-11-14T13:00:00+00:00,1763125200,UTC,,NS,Not Started,,844,Ligue 1,Congo,2025,Regular Season - 10,16793,Kondzo,,3170,Diables Noirs,,,,,,,,,,,,,
+1470612,2025-11-14T13:00:00+00:00,1763125200,UTC,,NS,Not Started,,276,FKF Premier League,Kenya,2025,Regular Season - 9,2476,KCB,,2493,Bidco United,,,,,,,,,,,,Ulinzi Sports Complex,Nairobi
+1479247,2025-11-14T13:00:00+00:00,1763125200,UTC,,NS,Not Started,,291,Azadegan League,Iran,2025,Regular Season - 12,2736,Saipa,,2702,Pars Jonoubi JAM,,,,,,,,,,,,,
+1485006,2025-11-14T13:00:00+00:00,1763125200,UTC,,NS,Not Started,,10,Friendlies,World,2025,Friendlies 1,27055,Egypt B,,27054,Algeria B,,,,,,,,,,,,,
+1486055,2025-11-14T13:00:00+00:00,1763125200,UTC,,NS,Not Started,,587,World Cup - U17,World,2025,Round of 32,17981,Switzerland U17,,25819,Egypt U17,,,,,,,,,,,,Aspire Zone,
+1434022,2025-11-14T13:30:00+00:00,1763127000,UTC,,NS,Not Started,,703,Professional Development League,England,2025,Regular Season - 15,20095,Millwall U21,,20085,Queens Park Rangers U21,,,,,,,,,,,,Millwall FC Training Ground,"Bromley, London"
+1479248,2025-11-14T13:30:00+00:00,1763127000,UTC,,NS,Not Started,,291,Azadegan League,Iran,2025,Regular Season - 12,24800,Naft Bandar Abbas,,20801,Ario Eslamshahr,,,,,,,,,,,,,
+1479249,2025-11-14T13:30:00+00:00,1763127000,UTC,,NS,Not Started,,291,Azadegan League,Iran,2025,Regular Season - 12,2743,Sanat Naft,,25364,Fard Alborz,,,,,,,,,,,,Takhti Stadium,Abadan
+1483893,2025-11-14T13:30:00+00:00,1763127000,UTC,,NS,Not Started,,847,Premier League,Eswatini,2025,Regular Season - 6,6421,Green Mamba,,22544,Ezulwini United,,,,,,,,,,,,,
+1483894,2025-11-14T13:30:00+00:00,1763127000,UTC,,NS,Not Started,,847,Premier League,Eswatini,2025,Regular Season - 6,18314,Rangers FC,,8107,Mbabane Swallows,,,,,,,,,,,,,
+1486056,2025-11-14T13:30:00+00:00,1763127000,UTC,,NS,Not Started,,587,World Cup - U17,World,2025,Round of 32,12507,France U17,,20527,Colombia U17,,,,,,,,,,,,Aspire Zone,
+1350078,2025-11-14T14:00:00+00:00,1763128800,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 11,8182,Belarus U21,,8229,Wales U21,,,,,,,,,,,,Tengiz Burjanadze Stadium,Gori
+1434016,2025-11-14T14:00:00+00:00,1763128800,UTC,,NS,Not Started,,703,Professional Development League,England,2025,Regular Season - 15,20079,Brentford U21,,20000,AFC Bournemouth U21,,,,,,,,,,,,Wheatsheaf Park,"Staines, Surrey"
+1452898,2025-11-14T14:00:00+00:00,1763128800,UTC,,NS,Not Started,,890,U20 Elite League,World,2025,Group Stage - 5,10310,Germany U20,,18180,Romania U20,,,,,,,,,,,,,
+1468147,2025-11-14T14:00:00+00:00,1763128800,UTC,,NS,Not Started,,844,Ligue 1,Congo,2025,Regular Season - 10,6428,Otôho d'Oyo,,20462,Jeunesse Unie de Kintélé,,,,,,,,,,,,,
+1483142,2025-11-14T14:00:00+00:00,1763128800,UTC,,NS,Not Started,,424,Ligue 1,Congo-DR,2025,Regular Season - 6,8064,Maniema Union,,24105,Anges Verts,,,,,,,,,,,,,
+1483160,2025-11-14T14:00:00+00:00,1763128800,UTC,,NS,Not Started,,424,Ligue 1,Congo-DR,2025,Regular Season - 5,8112,Sanga Balende,,8578,Saint Eloi Lupopo,,,,,,,,,,,,,
+1388184,2025-11-14T14:30:00+00:00,1763130600,UTC,,NS,Not Started,,374,2. SNL,Slovenia,2025,Regular Season - 15,4375,Krka,,4370,Dekani,,,,,,,,,,,,Portoval,Novo Mesto
+1450921,2025-11-14T14:30:00+00:00,1763130600,UTC,,NS,Not Started,,677,QSL Cup,Qatar,2025,Group Stage - 6,2905,Al-Arabi SC,,2916,Al Shamal,,,,,,,,,,,,Grand Hamad Stadium,Doha
+1450922,2025-11-14T14:30:00+00:00,1763130600,UTC,,NS,Not Started,,677,QSL Cup,Qatar,2025,Group Stage - 6,2907,Qatar SC,,2893,Al Shahaniya,,,,,,,,,,,,Qatar SC Stadium,Doha
+1486057,2025-11-14T14:45:00+00:00,1763131500,UTC,,NS,Not Started,,587,World Cup - U17,World,2025,Round of 32,12500,Argentina U17,,12513,Mexico W U17,,,,,,,,,,,,Aspire Zone,
+1350070,2025-11-14T15:00:00+00:00,1763132400,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 10,8193,Finland U21,,8218,Romania U21,,,,,,,,,,,,Veritas Stadion,Turku
+1350080,2025-11-14T15:00:00+00:00,1763132400,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 11,8215,Poland U21,,8201,Italy U21,,,,,,,,,,,,Stadion Miejski im. Floriana Krygiera,Szczecin
+1350081,2025-11-14T15:00:00+00:00,1763132400,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 11,8198,Greece U21,,8195,Georgia U21,,,,,,,,,,,,Apostolos Nikolaidis Stadium,Athens
+1471783,2025-11-14T15:00:00+00:00,1763132400,UTC,,NS,Not Started,,397,Girabola,Angola,2025,Regular Season - 2,26665,Guelson FC,,4913,1º de Agosto,,,,,,,,,,,,Estádio Municipal dos Coqueiros,Luanda
+1474009,2025-11-14T15:00:00+00:00,1763132400,UTC,,NS,Not Started,,788,Liga III - Serie 5,Romania,2025,Group 5 - 13,23382,LPS HD Clinceni,,6892,Progresul Spartac,,,,,,,,,,,,Stadionul Clinceni,Clinceni
+1478667,2025-11-14T15:00:00+00:00,1763132400,UTC,,NS,Not Started,,1196,Division One League,Ghana,2025,Regular Season - 7,22761,Attram de Visser,,26798,Great Ambitions,,,,,,,,,,,,,
+1478668,2025-11-14T15:00:00+00:00,1763132400,UTC,,NS,Not Started,,1196,Division One League,Ghana,2025,Regular Season - 7,13884,Berekum Arsenal,,26800,KAC Soccer,,,,,,,,,,,,,
+1478672,2025-11-14T15:00:00+00:00,1763132400,UTC,,NS,Not Started,,1196,Division One League,Ghana,2025,Regular Season - 7,12247,Elmina Sharks,,22776,Rospak,,,,,,,,,,,,,
+1486058,2025-11-14T15:15:00+00:00,1763133300,UTC,,NS,Not Started,,587,World Cup - U17,World,2025,Round of 32,17972,Republic of Ireland U17,,26644,Canada U17,,,,,,,,,,,,Aspire Zone,
+1394867,2025-11-14T15:30:00+00:00,1763134200,UTC,,NS,Not Started,,506,2. liga,Slovakia,2025,Regular Season - 17,10533,Dukla Banská Bystrica,,3553,Zlaté Moravce,,,,,,,,,,,,Štadión SNP Štiavničky,Banská Bystrica
+1423918,2025-11-14T15:30:00+00:00,1763134200,UTC,,NS,Not Started,,701,Liga Revelação U23,Portugal,2025,Regular Season - 13,21719,Santa Clara U23,,15470,Sporting CP U23,,,,,,,,,,,,Complexo Desportivo Laranjeiras,Ponta Delgada
+1468560,2025-11-14T15:30:00+00:00,1763134200,UTC,,NS,Not Started,,570,Premier League,Ghana,2025,Regular Season - 10,4450,Dreams,,22767,Hohoe United,,,,,,,,,,,,Tuba Astro Turf,Accra
+1469359,2025-11-14T15:30:00+00:00,1763134200,UTC,,NS,Not Started,,423,Ligue 1,Burkina-Faso,2025,Regular Season - 9,8570,USFA,,20029,Réal du Faso,,,,,,,,,,,,Stade Dr Issoufou Joseph Conombo,Ouagadougou
+1469360,2025-11-14T15:30:00+00:00,1763134200,UTC,,NS,Not Started,,423,Ligue 1,Burkina-Faso,2025,Regular Season - 9,6430,Rahimo,,8111,SONABEL,,,,,,,,,,,,Stade Wobi,Bobo Dioulasso
+1486059,2025-11-14T15:45:00+00:00,1763135100,UTC,,NS,Not Started,,587,World Cup - U17,World,2025,Round of 32,12502,Brazil U17,,12517,Paraguay U17,,,,,,,,,,,,Aspire Zone,
+1486060,2025-11-14T15:45:00+00:00,1763135100,UTC,,NS,Not Started,,587,World Cup - U17,World,2025,Round of 32,12522,United States U17,,21302,Morocco U17,,,,,,,,,,,,Aspire Zone,
+1394868,2025-11-14T16:00:00+00:00,1763136000,UTC,,NS,Not Started,,506,2. liga,Slovakia,2025,Regular Season - 17,4134,Pohronie,,10552,Lokomotíva Zvolen,,,,,,,,,,,,Futbalový štadión Žiar nad Hronom,Žiar nad Hronom
+1395962,2025-11-14T16:00:00+00:00,1763136000,UTC,,NS,Not Started,,109,II Liga - East,Poland,2025,Regular Season - 17,6958,Stal Stalowa Wola,,6942,Hutnik Kraków,,,,,,,,,,,,Stadion Stali Stalowa Wola,Stalowa Wola
+1419555,2025-11-14T16:00:00+00:00,1763136000,UTC,,NS,Not Started,,287,Prva Liga,Serbia,2025,Regular Season - 18,12323,Loznica,,4254,Semendrija 1924,,,,,,,,,,,,Lagator Stadium,Loznica
+1420458,2025-11-14T16:00:00+00:00,1763136000,UTC,,NS,Not Started,,350,4. liga - Divizie A,Czech-Republic,2025,Division A - 15,21982,Hluboka nad Vltavou,,19432,Slavoj Český Krumlov,,,,,,,,,,,,Zimní Stadion Hluboká,Hluboká nad Vltavou
+1450919,2025-11-14T16:00:00+00:00,1763136000,UTC,,NS,Not Started,,677,QSL Cup,Qatar,2025,Group Stage - 6,2904,Al-Duhail SC,,2903,Al-Gharafa,,,,,,,,,,,,Abdullah bin Khalifa Stadium,Doha
+1450920,2025-11-14T16:00:00+00:00,1763136000,UTC,,NS,Not Started,,677,QSL Cup,Qatar,2025,Group Stage - 6,2898,Al-Sailiya,,2897,Al-Rayyan SC,,,,,,,,,,,,Hamad bin Khalifa Stadium,Doha
+1456959,2025-11-14T16:00:00+00:00,1763136000,UTC,,NS,Not Started,,722,Liga Premier Serie A,Mexico,2025,Apertura - 12,17782,Correcaminos UAT II,,19458,Chilpancingo,,,,,,,,,,,,Estadio Universitario Prof. Eugenio Alvizo Porras,Ciudad Víctoria
+1479871,2025-11-14T16:00:00+00:00,1763136000,UTC,,NS,Not Started,,886,UEFA U17 Championship - Qualification,World,2026,Group Stage - 1,17977,Serbia U17,,17943,Bosnia-Herzegovina U17,,,,,,,,,,,,,
+1483897,2025-11-14T16:00:00+00:00,1763136000,UTC,,NS,Not Started,,847,Premier League,Eswatini,2025,Regular Season - 6,16826,Highlanders,,25019,Sisonkhe,,,,,,,,,,,,Prince of Wales Stadium,Mbabane
+1484134,2025-11-14T16:00:00+00:00,1763136000,UTC,,NS,Not Started,,378,Ligue 1,Guinea,2025,Regular Season - 4,4409,ASFAG,,20627,ASM Sangarédi,,,,,,,,,,,,,
+1485004,2025-11-14T16:00:00+00:00,1763136000,UTC,,NS,Not Started,,10,Friendlies,World,2025,Friendlies 1,1529,Angola,,26,Argentina,,,,,,,,,,,,,
+1485008,2025-11-14T16:00:00+00:00,1763136000,UTC,,NS,Not Started,,10,Friendlies,World,2025,Friendlies 1,1568,Uzbekistan,,32,Egypt,,,,,,,,,,,,,
+1388187,2025-11-14T16:30:00+00:00,1763137800,UTC,,NS,Not Started,,374,2. SNL,Slovenia,2025,Regular Season - 15,4363,Triglav,,4376,Nafta,,,,,,,,,,,,Stanko Mlakar Stadium,Kranj
+1485009,2025-11-14T16:45:00+00:00,1763138700,UTC,,NS,Not Started,,10,Friendlies,World,2025,Friendlies 1,28,Tunisia,,1548,Jordan,,,,,,,,,,,,,
+1323348,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,32,World Cup - Qualification Europe,World,2024,Group Stage - 9,1099,Finland,,1112,Malta,,,,,,,,,,,,,
+1350071,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 10,8187,Cyprus U21,,8203,Kosovo U21,,,,,,,,,,,,Ethnikos Achnas,Achna
+1350076,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 10,8227,Turkey U21,,8228,Ukraine U21,,,,,,,,,,,,,Istanbul
+1350077,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 10,8180,Austria U21,,8183,Belgium U21,,,,,,,,,,,,Josko Arena,Ried
+1350082,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 11,8196,Germany U21,,8208,Malta U21,,,,,,,,,,,,Sportpark Ronhof Thomas Sommer,
+1388183,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,374,2. SNL,Slovenia,2025,Regular Season - 15,4364,Gorica,,4365,Krško,,,,,,,,,,,,Sportni park,Nova Gorica
+1393161,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,122,2. Division,Denmark,2025,Regular Season - 16,6021,HIK,,399,Vendsyssel FF,,,,,,,,,,,,Gentofte Sportspark Vest,Gentofte
+1410609,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,781,III Liga - Group 2,Poland,2025,Group II - 17,13843,Zawisza Bydgoszcz,,20625,Cartusia Kartuzy,,,,,,,,,,,,Stadion im. Zdzisława Krzyszkowiaka,Bydgoszcz
+1410916,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,782,III Liga - Group 3,Poland,2025,Group III - 17,14145,Polonia Nysa,,17401,Carina Gubin,,,,,,,,,,,,Stadion KS Polonia Nysa,Nysa
+1411220,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,783,III Liga - Group 4,Poland,2025,Group IV - 17,16265,Cracovia Kraków II,,6955,Siarka Tarnobrzeg,,,,,,,,,,,,Boisko przy ul. Wielickiej,Kraków
+1444878,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,572,Srpska Liga - Belgrade,Serbia,2025,Belgrade - 13,2636,Kolubara,,12336,Radnički Obrenovac,,,,,,,,,,,,,
+1445502,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,722,Liga Premier Serie A,Mexico,2025,Apertura - 12,24949,Acatlan,,26425,Ensenada,,,,,,,,,,,,Estadio Miguel Hidalgo,Zapotlanejo
+1465619,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,232,Landesliga - Wien,Austria,2025,Wien - 14,11201,Red Star Penzing,,24459,First Vienna II,,,,,,,,,,,,Sportplatz Red Star Auto,Wien
+1475082,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,412,Premier League,Botswana,2025,Regular Season - 15,5421,Gaborone United,,5419,Centre Chiefs,,,,,,,,,,,,Botswana National Stadium,Gaborone
+1485005,2025-11-14T17:00:00+00:00,1763139600,UTC,,NS,Not Started,,10,Friendlies,World,2025,Friendlies 1,8188,Czech Republic U21,,8222,Serbia U21,,,,,,,,,,,,Stadion Arnosta Kostala,Pardubice
+1350074,2025-11-14T17:30:00+00:00,1763141400,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 10,8211,Netherlands U21,,8231,Slovenia U21,,,,,,,,,,,,Kooi Stadion,Leeuwarden
+1398823,2025-11-14T17:30:00+00:00,1763141400,UTC,,NS,Not Started,,223,Regionalliga - West,Austria,2025,West - 17,4981,SVG Reichenau,,8261,Wals-Grünau,,,,,,,,,,,,Kunstrasen Reichenau Hauptspielfeld,Innsbruck
+1350075,2025-11-14T17:45:00+00:00,1763142300,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 10,8200,Israel U21,,8214,Norway U21,,,,,,,,,,,,,
+1388182,2025-11-14T18:00:00+00:00,1763143200,UTC,,NS,Not Started,,374,2. SNL,Slovenia,2025,Regular Season - 15,12744,Brinje-Grosuplje,,4367,Bilje,,,,,,,,,,,,,
+1393158,2025-11-14T18:00:00+00:00,1763143200,UTC,,NS,Not Started,,122,2. Division,Denmark,2025,Regular Season - 16,2065,Fremad Amager,,2068,Skive,,,,,,,,,,,,Sundby Idrætspark,København
+1393159,2025-11-14T18:00:00+00:00,1763143200,UTC,,NS,Not Started,,122,2. Division,Denmark,2025,Regular Season - 16,2062,FC Helsingor,,2060,AB Copenhagen,,,,,,,,,,,,Helsingør Ny Stadion OPV,Helsingør
+1406227,2025-11-14T18:00:00+00:00,1763143200,UTC,,NS,Not Started,,753,Oberliga - Baden-Württemberg,Germany,2025,Baden-Württemberg - 17,1638,FC Nöttingen,,16114,Bissingen,,,,,,,,,,,,Kleiner-Arena,Remchingen
+1406229,2025-11-14T18:00:00+00:00,1763143200,UTC,,NS,Not Started,,753,Oberliga - Baden-Württemberg,Germany,2025,Baden-Württemberg - 17,1619,FC 08 Villingen,,26167,TSV Singen,,,,,,,,,,,,MS Technologie Arena,Villingen-Schwenningen
+1409578,2025-11-14T18:00:00+00:00,1763143200,UTC,,NS,Not Started,,938,Oberliga - Bayern Nord,Germany,2025,Bayern Nord - 19,19759,Kornburg,,26067,Stadeln,,,,,,,,,,,,Sportanlage TSV Kornburg,Nürnberg
+1412048,2025-11-14T18:00:00+00:00,1763143200,UTC,,NS,Not Started,,747,Oberliga - Westfalen,Germany,2025,Westfalen - 15,14779,Schermbeck,,14753,Preußen Münster II,,,,,,,,,,,,Volksbank-Arena,Schermbeck
+1417998,2025-11-14T18:00:00+00:00,1763143200,UTC,,NS,Not Started,,221,Regionalliga - Ost,Austria,2025,Regular Season - 16,4952,Mannsdorf-Großenzersdorf,,4955,Parndorf,,,,,,,,,,,,Aulandstadion Mannsdorf,Mannsdorf an der Donau
+1417999,2025-11-14T18:00:00+00:00,1763143200,UTC,,NS,Not Started,,221,Regionalliga - Ost,Austria,2025,Regular Season - 16,4954,Neusiedl,,4961,Traiskirchen,,,,,,,,,,,,Sportzentrum Neusiedl,Neusiedl am See
+1431241,2025-11-14T18:00:00+00:00,1763143200,UTC,,NS,Not Started,,436,Primera División RFEF - Group 2,Spain,2025,Group 2 - 12,9765,Real Betis II,,9593,Sabadell,,,,,,,,,,,,Ciudad Deportiva Luis de Sol,Sevilla
+1463823,2025-11-14T18:00:00+00:00,1763143200,UTC,,NS,Not Started,,224,Landesliga - Burgenland,Austria,2025,Burgenland - 15,4983,Siegendorf,,21725,Halbturn,,,,,,,,,,,,PAC Sportpark,Siegendorf
+1475807,2025-11-14T18:00:00+00:00,1763143200,UTC,,NS,Not Started,,216,Third NL - Sredite,Croatia,2025,Center - 13,26698,Prečko,,17493,Tekstilac Ravnice,,,,,,,,,,,,Igralište NK Prečko,Zagreb
+1483898,2025-11-14T18:15:00+00:00,1763144100,UTC,,NS,Not Started,,847,Premier League,Eswatini,2025,Regular Season - 6,16821,Moneni Pirates,,16817,Manzini Sea Birds,,,,,,,,,,,,,
+1350073,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 10,8226,Switzerland U21,,8194,France U21,,,,,,,,,,,,Stade de la Tuiliere,Lausanne
+1397140,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,142,Primera División Femenina,Spain,2025,Regular Season - 11,6376,Deportivo de La Coruña W,,1911,Levante W,,,,,,,,,,,,Estadio Municipal de Riazor,A Coruña (La Coruña)
+1406779,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,754,Oberliga - Nordost-Nord,Germany,2025,Nordost-Nord - 13,4266,Viktoria Berlin,,12759,Eintracht Mahlsdorf,,,,,,,,,,,,Stadion Lichterfelde,Berlin
+1407903,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,745,Oberliga - Hamburg,Germany,2025,Hamburg - 17,19470,Harksheide,,26173,HT16,,,,,,,,,,,,Kunstrasenplatz collatz+schwartz Sportpark,Norderstedt
+1407904,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,745,Oberliga - Hamburg,Germany,2025,Hamburg - 17,12890,Victoria Hamburg,,12878,Teutonia Ottensen,,,,,,,,,,,,Stadion Hoheluft,Hamburg
+1408225,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,84,Regionalliga - Nord,Germany,2025,North - 19,12804,Kickers Emden,,1623,SV Drochtersen/Assel,,,,,,,,,,,,Ostfriesland-Stadion,Emden
+1409115,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,939,Oberliga - Bayern Süd,Germany,2025,Bayern Süd - 19,20870,Sportfreunde Schwaig,,14793,Sturm Hauzenberg,,,,,,,,,,,,Sportanlage Schwaig Platz 1,Oberding
+1412801,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,748,Oberliga - Niedersachsen,Germany,2025,Niedersachsen - 15,14635,Bersenbrück,,17143,Holthausen-Biene,,,,,,,,,,,,Hasestadion,Bersenbrück
+1413251,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,749,Oberliga - Bremen,Germany,2025,Bremen - 13,4263,Oberneuland,,16094,OSC Bremerhaven,,,,,,,,,,,,Marko Mock Arena,Bremen
+1413252,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,749,Oberliga - Bremen,Germany,2025,Bremen - 13,16096,Vatan Sport,,16090,BTS Neustadt,,,,,,,,,,,,BSA Gröpelingen,Bremen
+1418001,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,221,Regionalliga - Ost,Austria,2025,Regular Season - 16,11200,Oberwart,,4966,Wiener Viktoria,,,,,,,,,,,,Informstadion,Oberwart
+1418002,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,221,Regionalliga - Ost,Austria,2025,Regular Season - 16,16999,TWL Elektra,,8366,Fach-Donaufeld,,,,,,,,,,,,Sportplatz Rax,Wien
+1485749,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,1115,Paraense A3,Brazil,2025,Semi-finals,23742,Belenense,,25002,Santos PA,,,,,,,,,,,,,
+1486093,2025-11-14T18:30:00+00:00,1763145000,UTC,,NS,Not Started,,1115,Paraense A3,Brazil,2025,Semi-finals,15610,Gavião,,26856,Atletico Paraense,,,,,,,,,,,,,
+1406784,2025-11-14T19:00:00+00:00,1763146800,UTC,,NS,Not Started,,754,Oberliga - Nordost-Nord,Germany,2025,Nordost-Nord - 13,12820,Neustrelitz,,22912,Union Klosterfelde,,,,,,,,,,,,Parkstadion,Neustrelitz
+1436408,2025-11-14T19:00:00+00:00,1763146800,UTC,,NS,Not Started,,733,I Liga - Women,Slovakia,2025,Regular Season - 14,15982,Spartak Myjava W,,24078,Komárno W,,,,,,,,,,,,Futbalový štadión Spartak Myjava,Myjava
+1462334,2025-11-14T19:00:00+00:00,1763146800,UTC,,NS,Not Started,,453,Tercera División RFEF - Group 15,Spain,2025,Group 15 - 11,26553,Aoiz,,9854,Pamplona,,,,,,,,,,,,Estadio San Miguel,Agoitz (Aoiz)
+1485809,2025-11-14T19:00:00+00:00,1763146800,UTC,,NS,Not Started,,66,Coupe de France,France,2025,1/128-finals,9932,Cannes,,3012,Annecy,,,,,,,,,,,,Stade Pierre de Coubertin,Cannes
+1485869,2025-11-14T19:00:00+00:00,1763146800,UTC,,NS,Not Started,,66,Coupe de France,France,2025,1/128-finals,27038,Olympique de Villefontaine,,101,Grenoble,,,,,,,,,,,,,
+1391911,2025-11-14T19:30:00+00:00,1763148600,UTC,,NS,Not Started,,141,Segunda División,Spain,2025,Regular Season - 14,720,Valladolid,,534,Las Palmas,,,,,,,,,,,,Estadio Municipal José Zorrilla,Valladolid
+1395539,2025-11-14T19:30:00+00:00,1763148600,UTC,,NS,Not Started,,111,FAW Championship,Wales,2025,South - 14,2190,Cwmbran Celtic,,2196,Llantwit Major,,,,,,,,,,,,The Avondale Motor Park Arena,Cwmbran
+1395540,2025-11-14T19:30:00+00:00,1763148600,UTC,,NS,Not Started,,111,FAW Championship,Wales,2025,South - 14,20364,Newport City,,7586,Cardiff Draconians,,,,,,,,,,,,Newport Stadium,Newport (Casnewydd)
+1395542,2025-11-14T19:30:00+00:00,1763148600,UTC,,NS,Not Started,,111,FAW Championship,Wales,2025,South - 14,6479,Trefelin,,359,Carmarthen Town,,,,,,,,,,,,Ynys Park,Port Talbot
+1430290,2025-11-14T19:30:00+00:00,1763148600,UTC,,NS,Not Started,,599,1. Liga Classic - Group 1,Switzerland,2025,Group 1 - 14,6628,Lancy,,16337,Portalban / Gletterens,,,,,,,,,,,,Centre Sportif Les Grèves,Portalban
+1439491,2025-11-14T19:30:00+00:00,1763148600,UTC,,NS,Not Started,,942,Serie C - Girone B,Italy,2025,Girone B - 14,876,Arezzo,,9430,Bra,,,,,,,,,,,,Citta di Arezzo,Arezzo
+1439492,2025-11-14T19:30:00+00:00,1763148600,UTC,,NS,Not Started,,942,Serie C - Girone B,Italy,2025,Girone B - 14,1688,Forli,,9510,Campobasso FC,,,,,,,,,,,,Stadio Tullo Morgagni,Forli
+1444722,2025-11-14T19:30:00+00:00,1763148600,UTC,,NS,Not Started,,518,Reserve Pro League,Belgium,2025,Regular Season - 9,19587,Westerlo U21,,22199,Patro Eisden U21,,,,,,,,,,,,,
+1450426,2025-11-14T19:30:00+00:00,1763148600,UTC,,NS,Not Started,,149,Second Amateur Division - VFV A,Belgium,2025,VV A - 12,14157,Diksmuide,,5966,VW Hamme,,,,,,,,,,,,Batimont Solar Park,Oostende
+1462333,2025-11-14T19:30:00+00:00,1763148600,UTC,,NS,Not Started,,453,Tercera División RFEF - Group 15,Spain,2025,Group 15 - 11,15320,Bidezarra,,24614,Atlético Artajonés,,,,,,,,,,,,Campo Bidezarra de Noain,Noain
+1485011,2025-11-14T19:30:00+00:00,1763148600,UTC,,NS,Not Started,,10,Friendlies,World,2025,Friendlies 1,10309,England U20,,10290,Japan U20,,,,,,,,,,,,,
+1323349,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,32,World Cup - Qualification Europe,World,2024,Group Stage - 9,773,Slovakia,,771,Northern Ireland,,,,,,,,,,,,,
+1323350,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,32,World Cup - Qualification Europe,World,2024,Group Stage - 9,1093,Gibraltar,,1109,Montenegro,,,,,,,,,,,,,
+1350069,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 10,8224,Spain U21,,8220,San Marino U21,,,,,,,,,,,,Estadio Anxo Carro,Lugo
+1350072,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,850,UEFA U21 Championship - Qualification,World,2027,Group Stage - 10,8190,England U21,,8217,Republic of Ireland U21,,,,,,,,,,,,,Birmingham
+1366314,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,32,World Cup - Qualification Europe,World,2024,Group Stage - 9,1102,Luxembourg,,25,Germany,,,,,,,,,,,,,
+1366315,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,32,World Cup - Qualification Europe,World,2024,Group Stage - 9,24,Poland,,1118,Netherlands,,,,,,,,,,,,,
+1366316,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,32,World Cup - Qualification Europe,World,2024,Group Stage - 9,3,Croatia,,1098,Faroe Islands,,,,,,,,,,,,,
+1385225,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,408,Premiership,Northern-Ireland,2025,Regular Season - 16,5352,Glentoran,,5350,Carrick Rangers,,,,,,,,,,,,The BetMcLean Oval,Belfast
+1395541,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,111,FAW Championship,Wales,2025,South - 14,11310,Trethomas Bluebirds,,20358,Baglan Dragons,,,,,,,,,,,,CCB Centre for Sporting Excellence,"Ystrad Mynach, Caerphilly"
+1395543,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,111,FAW Championship,Wales,2025,South - 14,2202,Cambrian & Clydach,,2188,Ammanford AFC,,,,,,,,,,,,M & P Group 3G,Blaen Clydach
+1395545,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,111,FAW Championship,Wales,2025,North - 14,5609,Buckley Town,,5623,Rhyl,,,,,,,,,,,,Globe Way Stadium,"Buckley / Bwcle, Flintshire"
+1395546,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,111,FAW Championship,Wales,2025,North - 14,5620,Penrhyncoch,,6445,Caersws,,,,,,,,,,,,Cae Baker,"Penrhyncoch, Ceredigion"
+1395547,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,111,FAW Championship,Wales,2025,North - 14,5624,Ruthin Town,,6443,Brickfield Rangers,,,,,,,,,,,,Memorial Playing Fields,"Ruthin / Rhuthun, Denbighshire"
+1401109,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,110,Premier League,Wales,2025,Regular Season - 17,353,Cardiff MET,,2201,Briton Ferry,,,,,,,,,,,,Cyncoed Campus,Cardiff
+1401110,2025-11-14T19:45:00+00:00,1763149500,UTC,,NS,Not Started,,110,Premier League,Wales,2025,Regular Season - 17,5614,Flint Town United,,354,The New Saints,,,,,,,,,,,,Essity Stadium,Flint
+1395544,2025-11-14T20:00:00+00:00,1763150400,UTC,,NS,Not Started,,111,FAW Championship,Wales,2025,North - 14,4909,Airbus UK,,6451,Denbigh Town,,,,,,,,,,,,The Airfield,Broughton
+1431626,2025-11-14T20:15:00+00:00,1763151300,UTC,,NS,Not Started,,435,Primera División RFEF - Group 1,Spain,2025,Group 1 - 12,9632,Real Avilés,,9578,Arenas Getxo,,,,,,,,,,,,Estadio Roman Suarez Puerta,Avilés
+1461415,2025-11-14T21:00:00+00:00,1763154000,UTC,,NS,Not Started,,450,Tercera División RFEF - Group 12,Spain,2025,Group 12 - 11,9415,Tamaraceite,,26549,Telde,,,,,,,,,,,,Campo de Fútbol Juan Guedes,Las Palmas de Gran Canaria
+1461416,2025-11-14T21:00:00+00:00,1763154000,UTC,,NS,Not Started,,450,Tercera División RFEF - Group 12,Spain,2025,Group 12 - 11,9807,Villa Santa Brígida,,15472,Arucas,,,,,,,,,,,,Campo Los Olivos,Santa Brígida
+1461417,2025-11-14T21:00:00+00:00,1763154000,UTC,,NS,Not Started,,450,Tercera División RFEF - Group 12,Spain,2025,Group 12 - 11,20375,Real Unión de Tenerife,,9799,Marino,,,,,,,,,,,,Campo de Fútbol de La Salud,Santa Cruz de Tenerife
+1485992,2025-11-14T21:00:00+00:00,1763154000,UTC,,NS,Not Started,,1205,Kings Cup,Brazil,2025,Semi-finals,26902,G3X,,26900,Funkbol,,,,,,,,,,,,Trident Arena,
+1486094,2025-11-14T21:30:00+00:00,1763155800,UTC,,NS,Not Started,,501,Copa Paraguay,Paraguay,2025,3rd place,1174,Club Guarani,,1175,Nacional Asuncion,,,,,,,,,,,,Estadio Lic. Erico Galeano Segovia,
+1456960,2025-11-14T22:00:00+00:00,1763157600,UTC,,NS,Not Started,,722,Liga Premier Serie A,Mexico,2025,Apertura - 12,26524,Atletico Hidalgo,,17783,Deportivo Zap,,,,,,,,,,,,Deportivo Municipal Atitalaquia,Atitalaquia
+1483546,2025-11-14T22:00:00+00:00,1763157600,UTC,,NS,Not Started,,591,Pro League,Trinidad-And-Tobago,2026,Regular Season - 4,12567,San Juan Jabloteh,,25276,Phoenix,,,,,,,,,,,,Hasely Crawford Stadium,Port of Spain
+1485993,2025-11-14T22:00:00+00:00,1763157600,UTC,,NS,Not Started,,1205,Kings Cup,Brazil,2025,Semi-finals,26903,Loud,,26901,Furia,,,,,,,,,,,,Trident Arena,
+1486193,2025-11-14T22:00:00+00:00,1763157600,UTC,,NS,Not Started,,132,Primera C,Argentina,2025,Semi-finals,18915,Mercedes,,8381,Deportivo Español,,,,,,,,,,,,,
+1353623,2025-11-14T23:00:00+00:00,1763161200,UTC,,NS,Not Started,,72,Serie B,Brazil,2025,Regular Season - 37,149,Paysandu,,10862,Amazonas,,,,,,,,,,,,Leonidas Sodre de Castro,Belem
+1374295,2025-11-14T23:00:00+00:00,1763161200,UTC,,NS,Not Started,,128,Liga Profesional Argentina,Argentina,2025,2nd Phase - 16,446,Lanus,,455,Atletico Tucuman,,,,,,,,,,,,Estadio Ciudad de Lanús - Néstor Díaz Pérez,"Lanús, Provincia de Buenos Aires"

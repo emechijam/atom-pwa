@@ -11,3 +11,5 @@ python-dotenv
 streamlit-card
 streamlit-autorefresh  
 streamlit-js-eval          
+psutil 
+aiohttp  # Added for async in sync.py

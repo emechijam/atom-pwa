@@ -1,58 +1,54 @@
-# app.py v1.4
+# app.py v1.9
 #
-# WHAT'S NEW (v1.4):
-# - SEARCH BAR: Added a 'st.text_input' for searching, placed
-#   next to the main title using st.columns.
-# - PREDICTION FILTER: Added a 'st.toggle' to filter for
-#   matches that have "full" predictions (H2H, Form, etc.).
-# - VIEW SWITCH: If a search query is active, the app switches
-#   to a "search results" view that lists clickable entities (teams, competitions)
-#   and filtered matches across all dates.
-# - DATA FLOW REFACTOR (CRITICAL): Removed static loading of all matches
-#   into session state (st.session_state.matches_by_date). Tab and View
-#   renders now make targeted calls to db.get_filtered_matches, passing
-#   the search/filter parameters.
+# WHAT'S NEW (v1.9):
+# - PAGINATION: Added "Load More" functionality for matches using an in-memory limit increase
+#   in the 'All Matches', Search, and Competition views. Resets limit when switching primary views.
+# - VERSION DISPLAY: Added st.info("Atom v3") in sidebar.
+# - RETAINED: All v1.8 features (ultra-responsive tabs, modal, sticky header on list views, 7-day load window).
+# - FIX (v1.9.1): Removed invalid import 'count_table' from utils and corrected usage to db.count_standings_lists().
 
-import sys
+# Standard Library Imports
 import json
 import os
 import re
+import subprocess
+import sys
 import threading
 import time
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-# Third-Party Libraries
+# Third-Party Libraries Imports
 import pandas as pd
+import psutil
+import psycopg2
 import pytz
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 from streamlit_js_eval import streamlit_js_eval
 
-# Local Application Modules
-import db 
+# Local Application Modules Imports
+import db
 from pwa import inject_pwa
+import utils
 from utils import (
-    # load_all_match_data, # Removed static load
-    count_table,
-    show_last_updated,
+    get_utc_date_range,
     parse_utc_to_gmt1,
-    get_utc_date_range # Utility assumed to be in utils.py
 )
 from widgets import (
-    show_match_details,
     match_card_component,
+    open_competition_page,
     open_match_details,
-    open_competition_page, # Assumed to be available from widgets.py v1.5
-    open_team_page,        # Assumed to be available from widgets.py v1.5
+    open_team_page,
+    show_match_details,
 )
 
-# Run the autorefresh block every 300000 milliseconds (300000 seconds - 5mins)
+# Run the autorefresh block every 300000 milliseconds (5mins)
+# This keeps the FRONTEND data fresh. The sidebar toggle controls the BACKEND data.
 st_autorefresh(interval=300000, key="data_refresher")
 
 # === SAFE SQLALCHEMY IMPORT ===
 try:
-    import psycopg2
     PSYCOPG2_AVAILABLE = True
 except ImportError as e:
     st.error(f"psycopg2 import failed: {e}. Install via requirements.txt.")
@@ -71,7 +67,6 @@ st.set_page_config(
 inject_pwa()
 
 # === ULTRA-RESPONSIVE CSS ===
-# (Your vetted CSS is unchanged)
 st.markdown(
     """
 <style>
@@ -141,9 +136,12 @@ h3 { font-size: 1.25em !important; }
         padding: 0.3rem 0 !important; line-height: 1.2 !important; 
     }
     .stSidebar .stMultiSelect { padding: 0.5rem 0 !important; }
+    /* v1.7: Adjust App Title size to match button */
     .stApp [data-testid="stTitle"] { 
-        margin-top: 0 !important; margin-bottom: 0.3rem !important; 
+        margin-top: 0.5rem !important; /* Align with search bar */
+        margin-bottom: 0.3rem !important; 
         font-size: 1.75rem !important; 
+        line-height: 1.3 !important;
     }
     .stApp [data-testid="stCaptionContainer"] { 
         margin-bottom: 0.1rem !important; font-size: 0.65rem !important; 
@@ -175,12 +173,11 @@ button[data-testid="stTab"] {
     padding-top: 0.5rem !important;
     padding-bottom: 0.5rem !important;
 }
-/* This targets the <p> tag Streamlit uses for tab labels */
 button[data-testid="stTab"] p {
-    white-space: pre-wrap; /* This makes the \n newline character work */
-    font-size: 0.9em;       /* Adjust font size as needed */
-    font-weight: 600;       /* Make the text bold */
-    line-height: 1.3;       /* Adjust line height for stacked text */
+    white-space: pre-wrap;
+    font-size: 0.9em; 
+    font-weight: 600; 
+    line-height: 1.3; 
 }
 
 /* === SCROLLABLE TABS CONTAINER === */
@@ -188,20 +185,50 @@ div[data-baseweb="tab-list"] {
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+    -webkit-overflow-scrolling: touch; 
 }
-
-/* Optional: Style the scrollbar for aesthetics */
 div[data-baseweb="tab-list"]::-webkit-scrollbar {
-    height: 4px; /* Make scrollbar smaller */
+    height: 4px; 
 }
 div[data-baseweb="tab-list"]::-webkit-scrollbar-thumb {
-    background: #444; /* Scrollbar color */
+    background: #444; 
     border-radius: 2px;
 }
 div[data-baseweb="tab-list"]::-webkit-scrollbar-track {
-    background: #222; /* Track color */
+    background: #222; 
 }
+
+/* v1.7: Style for the Title Button to look like st.title */
+button[data-testid="baseButton-secondary"] p {
+    font-size: 1.75rem !important;
+    font-weight: 600;
+}
+/* Ensure the title button looks like a title */
+button[data-testid="stButton"] > button.st-emotion-cache-19rxjzo {
+    /* Reset button styles to look like text */
+    border: none !important;
+    background: transparent !important;
+    color: white !important; /* Or your theme's title color */
+    padding: 0 !important;
+    margin: 0 !important; 
+    text-align: left !important;
+    
+    /* Apply title font styling */
+    font-size: 1.75rem !important; /* Match st.title */
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+    display: inline !important; /* Act like text */
+}
+/* Remove hover effects */
+button[data-testid="stButton"] > button.st-emotion-cache-19rxjzo:hover {
+    background: transparent !important;
+    color: #aaa !important; /* Slight dim on hover */
+}
+button[data-testid="stButton"] > button.st-emotion-cache-19rxjzo:active {
+    background: transparent !important;
+    color: #888 !important; /* Slight dim on active */
+}
+
 
 </style>
 """,
@@ -216,85 +243,188 @@ def viewport():
     )
 
     if viewport_width is not None:
-        st.session_state['display_width'] = viewport_width
-        st.session_state['window_width'] = viewport_width
+        st.session_state["display_width"] = viewport_width
+        st.session_state["window_width"] = viewport_width
         return viewport_width
     else:
-        st.session_state.setdefault('display_width', None)
-        st.session_state.setdefault('window_width', None)
+        st.session_state.setdefault("display_width", None)
+        st.session_state.setdefault("window_width", None)
 
 
-# === DB INIT (REMOVED THREADS) ===
-if "initialized" not in st.session_state:
-    con1 = st.container(#This is the only verifed way to centrailze the st.spinner horizontally and vertically. Every other method fails.
-        height="stretch",
-          width="stretch", 
-          horizontal_alignment="center", 
-          vertical_alignment="center",
-          horizontal=True, 
+# === v1.5: PROCESS MANAGEMENT HELPERS ===
+def is_process_running(pid):
+    """Check if a process with the given PID is currently running."""
+    if pid is None:
+        return False
+    try:
+        p = psutil.Process(pid)
+        return p.is_running()
+    except psutil.NoSuchProcess:
+        return False
+    except Exception:
+        return False
+
+
+def kill_process_tree(pid):
+    """Safely terminate a process and all its children."""
+    try:
+        parent = psutil.Process(pid)
+        children = parent.children(recursive=True)
+        for child in children:
+            child.terminate()
+        parent.terminate()
+        # Wait up to 3 seconds for termination
+        psutil.wait_procs(children + [parent], timeout=3)
+        st.sidebar.success("Live sync stopped.")
+    except psutil.NoSuchProcess:
+        st.sidebar.warning("Sync process was already stopped.")
+    except Exception as e:
+        st.sidebar.error(f"Error stopping process {pid}: {e}")
+# === END v1.5 HELPERS ===
+
+
+# === v1.7: MODAL AND HEADER FUNCTIONS ===
+@st.dialog("Select Sport")
+def show_sports_modal():
+    """Shows the sport selection modal."""
+    # Note: st.dialog holds the app execution until it's closed.
+    sport_options = ["Football", "Basketball", "Tennis", "Baseball"]
+    selected = st.radio(
+        "Sport",
+        sport_options,
+        index=sport_options.index(
+            st.session_state.get("selected_sport", "Football")
+        ),
+        horizontal=True,
     )
-    with con1:
-        with st.spinner("Connecting to database..."):
-            viewport()  # Ensure we get viewport width early
-            try:
-                if not db.test_connection():
-                    st.error(
-                        "Failed to connect to database after retries."
-                    )
-                    st.stop()
-            except Exception as e:
-                st.error(f"DB Connection Failed: {e}")
-                st.stop()
-                
-            st.session_state.initialized = True
-            time.sleep(1)
-            st.rerun()
 
-# --- v1.4: Initialize Session State for Search & Filter ---
-if 'search_query' not in st.session_state:
-    st.session_state.search_query = ""
-if 'filter_predictions_only' not in st.session_state:
-    st.session_state.filter_predictions_only = False
-# --- End v1.4 Search & Filter Initialization ---
+    st.session_state.selected_sport = selected
 
-# === MAIN APP CONTAINER ===
-with st.container():
-    
-    # --- v1.4: Header with Title and Search Bar ---
-    col_title, col_search = st.columns([1, 1])
+    if selected != "Football":
+        st.info(f"{selected} support is coming soon!")
+
+    if st.button("Close", use_container_width=True):
+        st.rerun()
+
+
+def render_header():
+    """
+    v1.7: Renders the main app header (Title Modal Button, Search, Toggle)
+    """
+    col_title, col_search = st.columns([1, 1], vertical_alignment="center")
     with col_title:
-        st.title("Football")
+        # v1.7: Title is now a button that opens a modal
+        sport_icon = "⚽️"  # Default
+        if st.session_state.selected_sport == "Basketball":
+            sport_icon = "🏀"
+        elif st.session_state.selected_sport == "Tennis":
+            sport_icon = "🎾"
+        elif st.session_state.selected_sport == "Baseball":
+            sport_icon = "⚾️"
+
+        # Using markdown in the button label to control style
+        if st.button(
+            f"**{st.session_state.selected_sport}** {sport_icon}",
+            key="sport_modal_button",
+        ):
+            show_sports_modal()
+
     with col_search:
         st.markdown("<br>", unsafe_allow_html=True)
         st.session_state.search_query = st.text_input(
             "Search",
             value=st.session_state.search_query,
             placeholder="Search teams, competitions, or players...",
-            label_visibility="collapsed", 
+            label_visibility="collapsed",
             width="stretch",
-            icon=":material/search:"
+            icon=":material/search:",
         )
 
-        # --- v1.4: Prediction Filter ---
         st.session_state.filter_predictions_only = st.toggle(
             "Show Full Predictions Only",
             value=st.session_state.filter_predictions_only,
-            help="If on, only shows matches that have generated H2H and Recent Form data (e.g., major leagues)."
+            help=(
+                "If on, only shows matches that have generated H2H and Recent"
+                " Form data (e.g., major leagues)."
+            ),
         )
-   
-    # --- End v1.4 UI Changes ---
+# === END v1.7 FUNCTIONS ===
 
-    # --- DYNAMIC TAB LOGIC (Viewport calculation remains the same) ---
-    display_width = st.session_state.get('display_width')
-    window_width = st.session_state.get('window_width')
+
+# === v1.9: PAGINATION LOGIC ===
+MATCH_PAGE_SIZE = 50
+
+
+# Callback function to increment the limit and force a rerun
+def load_more_matches():
+    st.session_state.matches_limit += MATCH_PAGE_SIZE
+    # We don't need to manually reset fetched data unless switching views
+
+
+# === DB INIT ===
+if "initialized" not in st.session_state:
+    con1 = st.container(
+        height="stretch",
+        width="stretch",
+        horizontal_alignment="center",
+        vertical_alignment="center",
+        horizontal=True,
+    )
+    with con1:
+        with st.spinner("Connecting to database..."):
+            viewport()  # Get viewport width
+            try:
+                # Test the connection by calling a real function from db.py
+                # This will raise an exception if the connection is bad.
+                db.get_match_counts()
+            except Exception as e:
+                st.error(f"DB Connection Failed: {e}")
+                st.stop()
+
+            st.session_state.initialized = True
+            time.sleep(1)
+            st.rerun()
+
+# --- Initialize Session State ---
+if "search_query" not in st.session_state:
+    st.session_state.search_query = ""
+if "filter_predictions_only" not in st.session_state:
+    st.session_state.filter_predictions_only = False
+if "live_update_on" not in st.session_state:
+    st.session_state.live_update_on = False
+if "sync_process_pid" not in st.session_state:
+    st.session_state.sync_process_pid = None
+# v1.7: Sport Selection State
+if "selected_sport" not in st.session_state:
+    st.session_state.selected_sport = "Football"
+# v1.9: Pagination State
+if "matches_limit" not in st.session_state:
+    st.session_state.matches_limit = MATCH_PAGE_SIZE
+
+
+# Function to reset the pagination limit when the main view changes
+def reset_pagination_limit(new_view=None):
+    if st.session_state.matches_limit != MATCH_PAGE_SIZE:
+        st.session_state.matches_limit = MATCH_PAGE_SIZE
+        # Optional: clear cached matches if necessary, but relying on fetch is safer
+
+# --- End Initialization ---
+
+
+# === MAIN APP CONTAINER ===
+with st.container():
+
+    # --- v1.8: REVERTED TO DYNAMIC TAB LOGIC (from v1.6) ---
+    display_width = st.session_state.get("display_width")
+    window_width = st.session_state.get("window_width")
 
     if display_width is None:
         try:
             viewport()
         except Exception:
             pass
-        display_width = st.session_state.get('display_width')
-        window_width = st.session_state.get('window_width')
+        display_width = st.session_state.get("display_width")
+        window_width = st.session_state.get("window_width")
 
     if display_width is None:
         tabs_to_show = 3
@@ -323,7 +453,7 @@ with st.container():
         tabs_to_show = 2 * days_on_each_side + 1
 
     # 2. Setup date/labels based on dynamic count
-    gmt1_tz = pytz.timezone('Africa/Lagos')
+    gmt1_tz = pytz.timezone("Africa/Lagos")
     today_gmt1 = datetime.now(gmt1_tz).date()
 
     tab_labels = []
@@ -334,36 +464,126 @@ with st.container():
     for i in range(-days_on_each_side, days_on_each_side + 1):
         date = today_gmt1 + timedelta(days=i)
         tab_dates.append(date)
-        day_name = date.strftime('%a').upper()
-        date_str = date.strftime('%d %b').upper()
+        day_name = date.strftime("%a").upper()
+        date_str = date.strftime("%d %b").upper()
         if i == 0:
             label = f"TODAY\n{date_str}"
         else:
             label = f"{day_name}\n{date_str}"
         tab_labels.append(label)
-
-    # Clearing old session state match data as we now do targeted DB calls
-    if "matches_by_date" in st.session_state:
-        del st.session_state["matches_by_date"]
-    if "all_matches" in st.session_state:
-        del st.session_state["all_matches"]
+    # === END v1.8 REVERT ===
 
     # === VIEW HANDLER FOR DETAILS PAGE (Highest precedence) ===
     if "selected_match" in st.session_state and st.session_state.selected_match:
-        if "view" in st.session_state and st.session_state.view:
-            st.session_state['last_view'] = st.session_state.view
-            del st.session_state["view"]
-
+        # Header is not rendered here; this is a full-page view
         show_match_details(st.session_state.selected_match)
         st.stop()
-    
-    # === v1.4: Search Results View (Takes precedence over tabs) ===
+
+    # === v1.7: "All Matches" VIEW HANDLER ===
+    # Moved up to be a primary view, and now includes the header.
+    if (
+        "view" in st.session_state
+        and st.session_state.view
+        and st.session_state.view[0] == "all"
+    ):
+        # Reset limit on first entry to this page if coming from another view
+        if st.session_state.get("last_view_type") != "all":
+            reset_pagination_limit()
+            st.session_state.last_view_type = "all"
+
+        # 1. RENDER HEADER
+        render_header()
+
+        # 2. RENDER VIEW CONTENT
+        date = st.session_state.view[1]
+
+        if st.button("← Back to Tabs", on_click=reset_pagination_limit):
+            st.session_state.view = None
+            st.session_state.last_view_type = None
+            st.rerun()
+
+        date_start, date_end = get_utc_date_range(date)
+
+        # v1.8: Apply 7-day loading window logic for performance
+        gmt1_now = datetime.now(gmt1_tz).date()
+        min_date = gmt1_now - timedelta(days=7)
+        max_date = gmt1_now + timedelta(days=7)
+
+        matches = []
+        if min_date <= date <= max_date:
+            # v1.9: Get ALL matches for the day, then paginate in memory
+            matches = db.get_filtered_matches(
+                date_from=date_start,
+                date_to=date_end,
+                predictions_only=st.session_state.filter_predictions_only,
+                limit=None,
+                offset=0,  # Fetch all for in-memory pagination
+            )
+
+        st.markdown("---")
+        st.markdown("## All Matches")
+        st.caption(f"{date.strftime('%A, %d %b, %Y').upper()}")
+
+        if not (min_date <= date <= max_date):
+            st.info(
+                f"Data for {date.strftime('%A, %d %b, %Y').upper()} is not"
+                " pre-loaded. App only loads 7 days past/future by default."
+            )
+        elif matches:
+            matches.sort(
+                key=lambda m: parse_utc_to_gmt1(m.get("utc_date"))[1] or "99:99"
+            )
+
+            # v1.9: Pagination Logic
+            limit = st.session_state.matches_limit
+            matches_to_show = matches[:limit]
+
+            for m in matches_to_show:
+                match_card_component(m)
+
+            if len(matches) > limit:
+                st.button(
+                    "Load More",
+                    key="load_more_all_matches",
+                    on_click=load_more_matches,
+                    use_container_width=True,
+                )
+                st.caption(
+                    f"Showing **{len(matches_to_show)}** of **{len(matches)}**"
+                    " matches."
+                )
+
+        else:
+            st.info(
+                f"No matches found for {date.strftime('%A, %d %b, %Y').upper()}"
+                " matching your filters."
+            )
+
+        st.stop()  # Stop execution after rendering this view
+
+    # === SEARCH RESULTS VIEW (Takes precedence over tabs) ===
     if st.session_state.search_query.strip():
-        st.header(f"Search Results for: '{st.session_state.search_query.strip()}'")
-        
-        # 1. Search for clickable entities (Teams, Competitions)
-        search_results = db.search_teams_and_competitions(st.session_state.search_query.strip())
-        
+        # Reset limit on first entry to this page if coming from another view
+        if st.session_state.get("last_view_type") != "search":
+            reset_pagination_limit()
+            st.session_state.last_view_type = "search"
+            # Also reset cached search results if the query itself changed in the header
+            if (
+                st.session_state.get("last_search_key")
+                != st.session_state.search_query.strip()
+            ):
+                if "search_matches" in st.session_state:
+                    del st.session_state["search_matches"]
+
+        # 1. RENDER HEADER
+        render_header()
+
+        # 2. RENDER VIEW CONTENT
+        search_key = st.session_state.search_query.strip()
+        st.header(f"Search Results for: '{search_key}'")
+
+        search_results = db.search_teams_and_competitions(search_key)
+
         if search_results:
             st.subheader("Teams & Competitions")
             for item in search_results:
@@ -371,128 +591,263 @@ with st.container():
                 with search_card:
                     col1, col2, col3 = st.columns([0.1, 0.7, 0.2])
                     with col1:
-                        if item.get('emblem'):
-                            st.image(item['emblem'], width=30)
-                        elif item.get('type') == 'team':
+                        if item.get("emblem"):
+                            st.image(item["emblem"], width=30)
+                        elif item.get("type") == "team":
                             st.markdown("⚽️")
                         else:
                             st.markdown("🏆")
-
                     with col2:
                         st.markdown(f"**{item['name']}**")
                         st.caption(f"Type: {item['type'].capitalize()}")
-
                     with col3:
-                        if item['type'] == 'team':
-                            st.button("View Team", key=f"view_team_{item['id']}", 
-                                      on_click=open_team_page, args=(item['id'], item['name']),
-                                      use_container_width=True)
-                        elif item['type'] == 'competition':
-                            # Assumes the DB returns 'code' for competitions
-                            st.button("View Comp", key=f"view_comp_{item['id']}", 
-                                      on_click=open_competition_page, args=(item['code'], item['name']),
-                                      use_container_width=True)
-                        # NOTE: Player button here when player view is ready
+                        if item["type"] == "team":
+                            st.button(
+                                "View Team",
+                                key=f"view_team_{item['id']}",
+                                on_click=open_team_page,
+                                args=(item["id"], item["name"]),
+                                use_container_width=True,
+                            )
+                        elif item["type"] == "competition":
+                            st.button(
+                                "View Comp",
+                                key=f"view_comp_{item['id']}",
+                                on_click=open_competition_page,
+                                args=(item["id"], item["name"]),
+                                use_container_width=True,
+                            )
         else:
             st.info("No teams or competitions found matching your search term.")
 
-        # 2. Match Search Results (The filtered matches for all dates)
         st.subheader("Matches (Upcoming & Recent)")
-        
-        # Fetches matches over a wide date range for context (past 30 days to future 30 days)
-        # Using a fixed date range since exact data is not known, but fetching all matches is safer
-        all_filtered_matches = db.get_filtered_matches(
-            search_query=st.session_state.search_query,
-            predictions_only=st.session_state.filter_predictions_only
+
+        # v1.8: Apply 7-day loading window logic for performance
+        gmt1_now = datetime.now(gmt1_tz).date()
+        date_from = (gmt1_now - timedelta(days=7)).strftime(
+            "%Y-%m-%dT00:00:00Z"
+        )
+        date_to = (gmt1_now + timedelta(days=7)).strftime(
+            "%Y-%m-%dT23:59:59Z"
         )
 
+        if (
+            "search_matches" not in st.session_state
+            or st.session_state.get("last_search_key") != search_key
+        ):
+            all_filtered_matches = db.get_filtered_matches(
+                date_from=date_from,
+                date_to=date_to,
+                search_query=search_key,
+                predictions_only=st.session_state.filter_predictions_only,
+                limit=None,
+                offset=0,  # Fetch all for in-memory pagination
+            )
+            st.session_state.search_matches = all_filtered_matches
+            st.session_state.last_search_key = search_key
+        else:
+            all_filtered_matches = st.session_state.search_matches
+
         if all_filtered_matches:
-            # Group by date for cleaner display
+
+            # v1.9: Apply in-memory pagination to match list
+            limit = st.session_state.matches_limit
+            matches_to_display = all_filtered_matches[:limit]
+
+            # Match grouping logic (kept for search results)
             matches_by_date = {}
-            for match in all_filtered_matches:
-                date_gmt1, _ = parse_utc_to_gmt1(match['utc_date'])
+            for match in matches_to_display:
+                date_gmt1, _ = parse_utc_to_gmt1(match["utc_date"])
                 mdate = datetime.strptime(date_gmt1, "%d-%m-%Y").date()
                 matches_by_date.setdefault(mdate, []).append(match)
-            
-            # Sort by date, prioritizing future matches
+
+            # Sort the dates for display
             sorted_dates = sorted(matches_by_date.keys(), reverse=True)
-            sorted_dates.sort(key=lambda date: date >= today_gmt1, reverse=True)
+            sorted_dates.sort(
+                key=lambda date: date >= today_gmt1, reverse=True
+            )
 
             for date in sorted_dates:
                 matches_on_date = matches_by_date[date]
-                matches_on_date.sort(key=lambda m: parse_utc_to_gmt1(m.get('utc_date'))[1] or "99:99")
-                
-                expander_label = f"**{date.strftime('%A, %d %b, %Y').upper()}** ({len(matches_on_date)})"
+                matches_on_date.sort(
+                    key=lambda m: parse_utc_to_gmt1(m.get("utc_date"))[1]
+                    or "99:99"
+                )
+
+                expander_label = (
+                    f"**{date.strftime('%A, %d %b, %Y').upper()}**"
+                    f" ({len(matches_on_date)})"
+                )
                 with st.expander(expander_label, expanded=(date >= today_gmt1)):
                     for m in matches_on_date:
                         match_card_component(m)
+
+            # v1.9: Load More button
+            if len(all_filtered_matches) > limit:
+                st.button(
+                    "Load More",
+                    key="load_more_search",
+                    on_click=load_more_matches,
+                    use_container_width=True,
+                )
+                st.caption(
+                    f"Showing **{len(matches_to_display)}** of **{len(all_filtered_matches)}**"
+                    " matches."
+                )
+
         else:
-            st.info("No matches found matching your search and filter criteria across all dates.")
-        
+            st.info(
+                "No matches found matching your search and filter criteria"
+                " within 7 days (past or future)."
+            )
+
         st.stop()
-    
-    # === Competition/View Handler ===
+
+    # === COMPETITION/TEAM VIEW HANDLER ===
     elif st.session_state.get("view"):
+        # Reset limit on first entry to this page if coming from another view
+        if st.session_state.get("last_view_type") != "competition":
+            reset_pagination_limit()
+            st.session_state.last_view_type = "competition"
+
+        # 1. RENDER HEADER (Also shown on this page)
+        render_header()
+
+        # 2. RENDER VIEW CONTENT
         view_type, *args = st.session_state.view
-        
-        if st.button("←"):
+
+        if st.button("← Back to Tabs", on_click=reset_pagination_limit):
             st.session_state.view = None
+            st.session_state.last_view_type = None
             st.rerun()
 
         if view_type == "competition":
             league_code, league_name = args
             st.header(f"{league_name}")
-            
-            # Fetch and render matches for this competition (no search query needed here)
-            matches = db.get_filtered_matches(
-                competition_code=league_code,
-                predictions_only=st.session_state.filter_predictions_only
+
+            # v1.8: Apply 7-day loading window logic for performance
+            gmt1_now = datetime.now(gmt1_tz).date()
+            date_from = (gmt1_now - timedelta(days=7)).strftime(
+                "%Y-%m-%dT00:00:00Z"
             )
-            
+            date_to = (gmt1_now + timedelta(days=7)).strftime(
+                "%Y-%m-%dT23:59:59Z"
+            )
+
+            # v1.9: Fetch all for comp, then paginate in memory
+            matches = db.get_filtered_matches(
+                date_from=date_from,
+                date_to=date_to,
+                competition_code=league_code,
+                predictions_only=st.session_state.filter_predictions_only,
+                limit=None,
+                offset=0,
+            )
+
             if not matches:
-                st.info("No matches found for this competition that match your filters.")
+                st.info(
+                    "No matches found for this competition that match your"
+                    " filters (within 7 days past/future)."
+                )
                 st.stop()
-            
-            # Group by date and render
+
+            # v1.9: Apply in-memory pagination
+            limit = st.session_state.matches_limit
+            matches_to_display = matches[:limit]
+
             matches_by_date = {}
-            for match in matches:
-                date_gmt1, _ = parse_utc_to_gmt1(match['utc_date'])
+            for match in matches_to_display:
+                date_gmt1, _ = parse_utc_to_gmt1(match["utc_date"])
                 mdate = datetime.strptime(date_gmt1, "%d-%m-%Y").date()
                 matches_by_date.setdefault(mdate, []).append(match)
-            
+
             sorted_dates = sorted(matches_by_date.keys())
-            sorted_dates.sort(key=lambda date: date >= today_gmt1, reverse=True)
+            sorted_dates.sort(
+                key=lambda date: date >= today_gmt1, reverse=True
+            )
 
             for date in sorted_dates:
                 matches_on_date = matches_by_date[date]
-                matches_on_date.sort(key=lambda m: parse_utc_to_gmt1(m.get('utc_date'))[1] or "99:99")
-                
-                expander_label = f"**{date.strftime('%A, %d %b, %Y').upper()}** ({len(matches_on_date)})"
-                with st.expander(expander_label, expanded=(date == today_gmt1)):
+                matches_on_date.sort(
+                    key=lambda m: parse_utc_to_gmt1(m.get("utc_date"))[1]
+                    or "99:99"
+                )
+
+                expander_label = (
+                    f"**{date.strftime('%A, %d %b, %Y').upper()}**"
+                    f" ({len(matches_on_date)})"
+                )
+                with st.expander(
+                    expander_label, expanded=(date == today_gmt1)
+                ):
                     for m in matches_on_date:
                         match_card_component(m)
-        
+
+            # v1.9: Load More button
+            if len(matches) > limit:
+                st.button(
+                    "Load More",
+                    key="load_more_comp",
+                    on_click=load_more_matches,
+                    use_container_width=True,
+                )
+                st.caption(
+                    f"Showing **{len(matches_to_display)}** of **{len(matches)}**"
+                    " matches."
+                )
+
         elif view_type == "team":
-             _, team_id, team_name = args
-             st.header(f"{team_name}")
-             st.info("Team-specific pages are under construction.")
+            _, team_id, team_name = args
+            st.header(f"{team_name}")
+            st.info("Team-specific pages are under construction.")
 
         st.stop()
-    
-    # === MAIN TABS RENDER (Default view, no search query active) ===
-    date_from = tab_dates[0].strftime('%Y-%m-%dT00:00:00Z')
-    date_to = tab_dates[-1].strftime('%Y-%m-%dT23:59:59Z')
-    
-    all_tab_matches = db.get_filtered_matches(
-        date_from=date_from,
-        date_to=date_to,
-        predictions_only=st.session_state.filter_predictions_only
+
+    # === MAIN TABS RENDER (Default view) ===
+
+    # Reset limit when returning to tabs from Search/All Matches/Competition views
+    if st.session_state.get("last_view_type") is not None:
+        reset_pagination_limit()
+        st.session_state.last_view_type = None
+
+    # 1. RENDER HEADER
+    render_header()
+
+    # 2. RENDER TABS
+
+    # Only render matches for the selected sport
+    if st.session_state.selected_sport != "Football":
+        st.info(f"Matches for {st.session_state.selected_sport} are not available yet.")
+        st.stop()
+
+    # v1.8: Apply 7-day loading window logic for performance
+    gmt1_now = datetime.now(gmt1_tz).date()
+    min_date = gmt1_now - timedelta(days=7)
+    max_date = gmt1_now + timedelta(days=7)
+
+    # Find the intersection of dates for the database query
+    load_date_from = max(tab_dates[0], min_date).strftime(
+        "%Y-%m-%dT00:00:00Z"
     )
-    
+    load_date_to = min(tab_dates[-1], max_date).strftime(
+        "%Y-%m-%dT23:59:59Z"
+    )
+
+    # We fetch ALL matches for the visible date range (within 7-day constraint)
+    all_tab_matches = []
+    if tab_dates[0] <= max_date and tab_dates[-1] >= min_date:
+        all_tab_matches = db.get_filtered_matches(
+            date_from=load_date_from,
+            date_to=load_date_to,
+            predictions_only=st.session_state.filter_predictions_only,
+            limit=None,
+            offset=0,  # Fetch all matches for all relevant tabs
+        )
+
     matches_by_date = {d: [] for d in tab_dates}
     for match in all_tab_matches:
         try:
-            date_str, _ = parse_utc_to_gmt1(match.get('utc_date'))
+            date_str, _ = parse_utc_to_gmt1(match.get("utc_date"))
             mdate = datetime.strptime(date_str, "%d-%m-%Y").date()
             if mdate in matches_by_date:
                 matches_by_date[mdate].append(match)
@@ -500,123 +855,171 @@ with st.container():
             continue
 
     with st.container(border=True):
-        today_label = "TODAY\n" + today_gmt1.strftime('%d %b').upper()
+        today_label = "TODAY\n" + today_gmt1.strftime("%d %b").upper()
 
+        # v1.8: Reverted to using default=today_label
         tabs = st.tabs(tab_labels, default=today_label)
-        
+
     for (tab, date) in zip(tabs, tab_dates):
         with tab:
-            day_matches = matches_by_date.get(date)
-            if not day_matches:
-                st.info(f"No matches on {date.strftime('%d %b, %Y').upper()} matching your filters.")
+            # v1.8: Check if date is outside the 7-day load window
+            if not (min_date <= date <= max_date):
+                st.info(
+                    f"Data for {date.strftime('%d %b, %Y').upper()} is not"
+                    " pre-loaded. App only loads 7 days past/future by default."
+                )
                 continue
 
-            day_matches.sort(key=lambda m: parse_utc_to_gmt1(m.get('utc_date'))[1] or "99:99")
+            day_matches = matches_by_date.get(date)
+            if not day_matches:
+                st.info(
+                    f"No matches on {date.strftime('%d %b, %Y').upper()}"
+                    " matching your filters."
+                )
+                continue
 
-            # All Matches button for this day (now creates the 'all' view)
+            day_matches.sort(
+                key=lambda m: parse_utc_to_gmt1(m.get("utc_date"))[1] or "99:99"
+            )
+
             all_matches_label = f"**All Matches** ({len(day_matches)})"
             if st.button(
                 all_matches_label, key=f"all_{date}", use_container_width=True
             ):
+                # When moving to 'all' view, set the view state
                 st.session_state.view = ("all", date)
                 st.rerun()
 
             comp_dict = {}
-            
-            # --- START Grouping Logic ---
+
             for m in day_matches:
-                raw = m.get('raw_data', {})
-                if not raw:
-                    continue 
+                # v1.16: Use direct fields from db.py v1.16 query
+                code = m.get("competition_code")
                 
-                code = m.get('competition_code') # From DB Join
-                comp_name = "Unknown League"
-                comp_crest = None
-                comp_country = "Unknown Region"
-
-                # Default to FD structure
-                if 'competition' in raw and 'area' in raw:
-                    raw_comp = raw.get('competition', {})
-                    raw_area = raw.get('area', {})
-                    comp_name = raw_comp.get("name", comp_name)
-                    comp_crest = raw_comp.get("emblem")
-                    comp_country = raw_area.get("name", comp_country)
-
-                # Override with AS structure
-                elif 'league' in raw:
-                    raw_comp = raw.get('league', {})
-                    comp_name = raw_comp.get("name", comp_name)
-                    comp_crest = raw_comp.get("logo")
-                    comp_country = raw_comp.get("country", comp_country) # AS stores country in 'league'
-                
+                # Skip if match has no competition code (should be rare)
                 if not code:
-                    code = raw_comp.get('id', 'UNKNOWN') # Fallback
-                    
+                    continue
+                
                 if code not in comp_dict:
                     comp_dict[code] = {
                         "matches": [],
-                        "name": comp_name,
-                        "crest": comp_crest,
-                        "country": comp_country,
+                        "name": m.get("competition_name", "Unknown League"),
+                        "crest": m.get("competition_crest"),
+                        "country": m.get("competition_country", "Unknown Region"),
+                        "has_prediction": False,
                     }
+
+                # v1.8: Check if *any* match in this group has a prediction
+                if (
+                    m.get("prediction_data")
+                    and m.get("prediction_data").get("h2h") != []
+                ):
+                    comp_dict[code]["has_prediction"] = True
+
                 comp_dict[code]["matches"].append(m)
-            # --- END Grouping Logic ---
 
             sorted_comps = sorted(
                 comp_dict.items(), key=lambda x: x[1]["country"]
             )
 
-            # === Match Card Render Loop ===
             for code, data in sorted_comps:
+
+                # v1.8: Logic for "Show Full Predictions Only"
+                predictions_only = st.session_state.filter_predictions_only
+
+                # If toggle is on, check if this group has predictions
+                if predictions_only and not data["has_prediction"]:
+                    continue  # Skip this competition entirely
+
+                # Count *only* matches with predictions if toggle is on
+                if predictions_only:
+                    matches_to_show = [
+                        m
+                        for m in data["matches"]
+                        if m.get("prediction_data")
+                        and m.get("prediction_data").get("h2h") != []
+                    ]
+                    match_count = len(matches_to_show)
+                else:
+                    matches_to_show = data["matches"]
+                    match_count = len(matches_to_show)
+
+                if match_count == 0:
+                    continue
+
                 expander_label = (
-                    f"{data['country']} - {data['name']} ({len(data['matches'])})"
+                    f"{data['country']} - {data['name']} ({match_count})"
                 )
-                with st.expander(expander_label, expanded=False):
-                    for match_data in data['matches']:
+
+                # v1.8: Expander is open if the prediction toggle is ON
+                with st.expander(
+                    expander_label,
+                    expanded=st.session_state.filter_predictions_only,
+                ):
+                    for match_data in matches_to_show:
                         match_card_component(match_data)
-
-    
-    # === VIEW HANDLER for "All Matches" Page (Rendered only if view is set to 'all') ===
-    if "view" in st.session_state and st.session_state.view and st.session_state.view[0] == "all":
-        date = st.session_state.view[1]
-        
-        date_start, date_end = get_utc_date_range(date)
-        matches = db.get_filtered_matches(
-            date_from=date_start, 
-            date_to=date_end, 
-            predictions_only=st.session_state.filter_predictions_only
-        )
-        
-        st.markdown("---")
-        st.markdown("## All Matches")
-        st.caption(f"{date.strftime('%A, %d %b, %Y').upper()}")
-
-        if matches:
-            matches.sort(key=lambda m: parse_utc_to_gmt1(m.get('utc_date'))[1] or "99:99")
-            for m in matches:
-                match_card_component(m)
-        else:
-             st.info(f"No matches found for {date.strftime('%A, %d %b, %Y').upper()} matching your filters.")
 
 
 # === SIDEBAR ===
-# To get correct counts, we must fetch all matches without filtering.
-all_matches_for_stats = db.get_all_matches()
-upcoming_statuses = ['SCHEDULED', 'TIMED', 'TIME', 'POSTPONED']
-past_statuses = ['FINISHED', 'IN_PLAY', 'PAUSED', 'CANCELED', 'SUSPENDED', 'AWARDED', 'ABANDONED']
 
-upcoming_count = len([m for m in all_matches_for_stats if m['status'] in upcoming_statuses])
-past_count = len([m for m in all_matches_for_stats if m['status'] in past_statuses])
+# --- v1.5: Live Update Process Management ---
+st.sidebar.markdown("---")
+st.sidebar.toggle("Live Updates", key="live_update_on")
+st.sidebar.caption("Keeps DB in sync. App must stay open.")
+
+current_pid = st.session_state.sync_process_pid
+is_running = is_process_running(current_pid)
+want_running = st.session_state.live_update_on
+
+status_placeholder = st.sidebar.empty()
+
+if want_running and not is_running:
+    status_placeholder.info("Starting live sync process...")
+    try:
+        process = subprocess.Popen([sys.executable, "sync.py"])
+        st.session_state.sync_process_pid = process.pid
+        time.sleep(1)
+        st.rerun()
+    except Exception as e:
+        status_placeholder.error(f"Failed to start sync.py: {e}")
+        st.session_state.live_update_on = False
+
+elif not want_running and is_running:
+    status_placeholder.info(f"Stopping live sync process (PID: {current_pid})...")
+    kill_process_tree(current_pid)
+    st.session_state.sync_process_pid = None
+    time.sleep(1)
+    st.rerun()
+
+if is_running:
+    status_placeholder.success(f"Live sync is ON (PID: {current_pid})")
+else:
+    status_placeholder.warning("Live sync is OFF.")
+    # FIX 1: Call db.get_last_updated_time() and display it
+    last_update_time = db.get_last_updated_time()
+    if last_update_time:
+        # We can re-use the parse_utc_to_gmt1 function we imported from utils
+        date_str, time_str = parse_utc_to_gmt1(last_update_time)
+        st.sidebar.caption(f"DB last updated:\n{date_str} {time_str[:5]} (GMT+1)")
+    else:
+        st.sidebar.caption("DB last updated: Unknown")
+# --- End v1.6 Process Management ---
+
+# v1.9: VERSION DISPLAY
+st.sidebar.info("Atom v3")
+
+# --- v1.7: Sidebar Stats (PERFORMANCE FIX) ---
+status_counts = db.get_match_counts()
+upcoming_count = status_counts.get("UPCOMING", 0)
+past_count = status_counts.get("PAST", 0) + status_counts.get("OTHER", 0)
 
 st.sidebar.markdown(
     f"""
 ---
-**Sync Status** - DB: {'Ready' if st.session_state.get('initialized') else 'Initializing'}
+**DB Status** - Connection: {'Ready' if st.session_state.get('initialized') else 'Initializing'}
 - Upcoming: {upcoming_count}
 - Past: {past_count}
-- Standings: {count_table('standings_lists')}
+- Standings: {db.count_standings_lists()}
 """,
     unsafe_allow_html=True,
 )
-
-show_last_updated()

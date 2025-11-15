@@ -1,0 +1,716 @@
+{
+  "leagues": {
+    "E0": {
+      "api_football_id": 39,
+      "api_football_name": "Premier League",
+      "country": "England"
+    },
+    "E1": {
+      "api_football_id": 40,
+      "api_football_name": "Championship",
+      "country": "England"
+    },
+    "E2": {
+      "api_football_id": 41,
+      "api_football_name": "League One",
+      "country": "England"
+    },
+    "E3": {
+      "api_football_id": 42,
+      "api_football_name": "League Two",
+      "country": "England"
+    },
+    "EC": {
+      "api_football_id": 48,
+      "api_football_name": "National League",
+      "country": "England"
+    },
+    "D1": {
+      "api_football_id": 78,
+      "api_football_name": "Bundesliga 1",
+      "country": "Germany"
+    },
+    "D2": {
+      "api_football_id": 79,
+      "api_football_name": "Bundesliga 2",
+      "country": "Germany"
+    },
+    "SP1": {
+      "api_football_id": 140,
+      "api_football_name": "La Liga",
+      "country": "Spain"
+    },
+    "SP2": {
+      "api_football_id": 141,
+      "api_football_name": "La Liga 2",
+      "country": "Spain"
+    },
+    "I1": {
+      "api_football_id": 135,
+      "api_football_name": "Serie A",
+      "country": "Italy"
+    },
+    "I2": {
+      "api_football_id": 136,
+      "api_football_name": "Serie B",
+      "country": "Italy"
+    },
+    "F1": {
+      "api_football_id": 61,
+      "api_football_name": "Ligue 1",
+      "country": "France"
+    },
+    "F2": {
+      "api_football_id": 62,
+      "api_football_name": "Ligue 2",
+      "country": "France"
+    },
+    "N1": {
+      "api_football_id": 88,
+      "api_football_name": "Eredivisie",
+      "country": "Netherlands"
+    },
+    "P1": {
+      "api_football_id": 94,
+      "api_football_name": "Primeira Liga",
+      "country": "Portugal"
+    },
+    "SC0": {
+      "api_football_id": 179,
+      "api_football_name": "Premiership",
+      "country": "Scotland"
+    },
+    "SC1": {
+      "api_football_id": 180,
+      "api_football_name": "Championship",
+      "country": "Scotland"
+    },
+    "SC2": {
+      "api_football_id": 181,
+      "api_football_name": "League One",
+      "country": "Scotland"
+    },
+    "SC3": {
+      "api_football_id": 182,
+      "api_football_name": "League Two",
+      "country": "Scotland"
+    },
+    "B1": {
+      "api_football_id": 144,
+      "api_football_name": "Jupiler Pro League",
+      "country": "Belgium"
+    },
+    "G1": {
+      "api_football_id": 197,
+      "api_football_name": "Super League",
+      "country": "Greece"
+    },
+    "T1": {
+      "api_football_id": 203,
+      "api_football_name": "Süper Lig",
+      "country": "Turkey"
+    },
+    "ARG": {
+      "api_football_id": 128,
+      "api_football_name": "Liga Profesional Argentina",
+      "country": "Argentina"
+    },
+    "AUT": {
+      "api_football_id": 218,
+      "api_football_name": "Bundesliga",
+      "country": "Austria"
+    },
+    "BRA": {
+      "api_football_id": 71,
+      "api_football_name": "Serie A",
+      "country": "Brazil"
+    },
+    "CHN": {
+      "api_football_id": 169,
+      "api_football_name": "Super League",
+      "country": "China"
+    },
+    "DNK": {
+      "api_football_id": 119,
+      "api_football_name": "Superliga",
+      "country": "Denmark"
+    },
+    "FIN": {
+      "api_football_id": 244,
+      "api_football_name": "Veikkausliiga",
+      "country": "Finland"
+    },
+    "IRL": {
+      "api_football_id": 357,
+      "api_football_name": "Premier Division",
+      "country": "Ireland"
+    },
+    "JPN": {
+      "api_football_id": 98,
+      "api_football_name": "J1 League",
+      "country": "Japan"
+    },
+    "MEX": {
+      "api_football_id": 262,
+      "api_football_name": "Liga MX",
+      "country": "Mexico"
+    },
+    "NOR": {
+      "api_football_id": 103,
+      "api_football_name": "Eliteserien",
+      "country": "Norway"
+    },
+    "POL": {
+      "api_football_id": 106,
+      "api_football_name": "Ekstraklasa",
+      "country": "Poland"
+    },
+    "ROU": {
+      "api_football_id": 283,
+      "api_football_name": "Liga I",
+      "country": "Romania"
+    },
+    "RUS": {
+      "api_football_id": 235,
+      "api_football_name": "Premier League",
+      "country": "Russia"
+    },
+    "SWE": {
+      "api_football_id": 113,
+      "api_football_name": "Allsvenskan",
+      "country": "Sweden"
+    },
+    "SWZ": {
+      "api_football_id": 207,
+      "api_football_name": "Super League",
+      "country": "Switzerland"
+    },
+    "USA": {
+      "api_football_id": 253,
+      "api_football_name": "MLS",
+      "country": "USA"
+    }
+  },
+  "teams": {
+    "Arsenal": {
+      "api_football_id": 42,
+      "country": "England"
+    },
+    "Aston Villa": {
+      "api_football_id": 66,
+      "country": "England"
+    },
+    "Bournemouth": {
+      "api_football_id": 35,
+      "country": "England"
+    },
+    "Brentford": {
+      "api_football_id": 55,
+      "country": "England"
+    },
+    "Brighton": {
+      "api_football_id": 51,
+      "country": "England"
+    },
+    "Burnley": {
+      "api_football_id": 44,
+      "country": "England"
+    },
+    "Cardiff": {
+      "api_football_id": 715,
+      "country": "Wales"
+    },
+    "Chelsea": {
+      "api_football_id": 49,
+      "country": "England"
+    },
+    "Crystal Palace": {
+      "api_football_id": 52,
+      "country": "England"
+    },
+    "Everton": {
+      "api_football_id": 45,
+      "country": "England"
+    },
+    "Fulham": {
+      "api_football_id": 36,
+      "country": "England"
+    },
+    "Huddersfield": {
+      "api_football_id": 37,
+      "country": "England"
+    },
+    "Hull": {
+      "api_football_id": 38,
+      "country": "England"
+    },
+    "Ipswich": {
+      "api_football_id": 70,
+      "country": "England"
+    },
+    "Leeds": {
+      "api_football_id": 63,
+      "country": "England"
+    },
+    "Leicester": {
+      "api_football_id": 46,
+      "country": "England"
+    },
+    "Liverpool": {
+      "api_football_id": 40,
+      "country": "England"
+    },
+    "Luton": {
+      "api_football_id": 1359,
+      "country": "England"
+    },
+    "Man City": {
+      "api_football_id": 50,
+      "country": "England"
+    },
+    "Man United": {
+      "api_football_id": 33,
+      "country": "England"
+    },
+    "Man Utd": {
+      "api_football_id": 33,
+      "country": "England"
+    },
+    "Middlesbrough": {
+      "api_football_id": 64,
+      "country": "England"
+    },
+    "Newcastle": {
+      "api_football_id": 34,
+      "country": "England"
+    },
+    "Norwich": {
+      "api_football_id": 71,
+      "country": "England"
+    },
+    "Nott'm Forest": {
+      "api_football_id": 65,
+      "country": "England"
+    },
+    "Nottingham": {
+      "api_football_id": 65,
+      "country": "England"
+    },
+    "QPR": {
+      "api_football_id": 53,
+      "country": "England"
+    },
+    "Reading": {
+      "api_football_id": 1337,
+      "country": "England"
+    },
+    "Sheffield United": {
+      "api_football_id": 62,
+      "country": "England"
+    },
+    "Sheff Utd": {
+      "api_football_id": 62,
+      "country": "England"
+    },
+    "Southampton": {
+      "api_football_id": 41,
+      "country": "England"
+    },
+    "Stoke": {
+      "api_football_id": 74,
+      "country": "England"
+    },
+    "Sunderland": {
+      "api_football_id": 75,
+      "country": "England"
+    },
+    "Swansea": {
+      "api_football_id": 76,
+      "country": "Wales"
+    },
+    "Tottenham": {
+      "api_football_id": 47,
+      "country": "England"
+    },
+    "Spurs": {
+      "api_football_id": 47,
+      "country": "England"
+    },
+    "Watford": {
+      "api_football_id": 39,
+      "country": "England"
+    },
+    "West Brom": {
+      "api_football_id": 78,
+      "country": "England"
+    },
+    "West Ham": {
+      "api_football_id": 48,
+      "country": "England"
+    },
+    "Wolves": {
+      "api_football_id": 39,
+      "country": "England"
+    },
+    "Millwall": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Blackpool": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Derby": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Rochdale": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Barnet": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Woking": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Eastleigh": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Yeovil Town": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Aldershot Town": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Maidenhead United": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Hartlepool United": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Solihull Moors": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "AFC Fylde": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Halifax Town": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Ebbsfleet United": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Sutton United": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Peterborough United": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Wycombe Wanderers": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Burton Albion": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Lincoln City": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Rotherham United": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Stockport County": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Accrington Stanley": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Harrogate Town": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Chesterfield": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Barrow": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Shrewsbury Town": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Bromley": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Coventry City": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Preston North End": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Blackburn Rovers": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Wrexham": {
+      "api_football_id": "<API ID>",
+      "country": "England"
+    },
+    "Bayern Munich": {
+      "api_football_id": 157,
+      "country": "Germany"
+    },
+    "Dortmund": {
+      "api_football_id": 165,
+      "country": "Germany"
+    },
+    "Leverkusen": {
+      "api_football_id": 168,
+      "country": "Germany"
+    },
+    "RB Leipzig": {
+      "api_football_id": 173,
+      "country": "Germany"
+    },
+    "Ath Bilbao": {
+      "api_football_id": 531,
+      "country": "Spain"
+    },
+    "Ath Madrid": {
+      "api_football_id": 530,
+      "country": "Spain"
+    },
+    "Barcelona": {
+      "api_football_id": 529,
+      "country": "Spain"
+    },
+    "Real Madrid": {
+      "api_football_id": 541,
+      "country": "Spain"
+    },
+    "Sevilla": {
+      "api_football_id": 536,
+      "country": "Spain"
+    },
+    "Sociedad": {
+      "api_football_id": 548,
+      "country": "Spain"
+    },
+    "Villarreal": {
+      "api_football_id": 533,
+      "country": "Spain"
+    },
+    "Atalanta": {
+      "api_football_id": 499,
+      "country": "Italy"
+    },
+    "Fiorentina": {
+      "api_football_id": 500,
+      "country": "Italy"
+    },
+    "Inter": {
+      "api_football_id": 505,
+      "country": "Italy"
+    },
+    "Juventus": {
+      "api_football_id": 496,
+      "country": "Italy"
+    },
+    "Lazio": {
+      "api_football_id": 487,
+      "country": "Italy"
+    },
+    "Milan": {
+      "api_football_id": 489,
+      "country": "Italy"
+    },
+    "Napoli": {
+      "api_football_id": 492,
+      "country": "Italy"
+    },
+    "Roma": {
+      "api_football_id": 497,
+      "country": "Italy"
+    },
+    "Lille": {
+      "api_football_id": 79,
+      "country": "France"
+    },
+    "Lyon": {
+      "api_football_id": 80,
+      "country": "France"
+    },
+    "Marseille": {
+      "api_football_id": 81,
+      "country": "France"
+    },
+    "Monaco": {
+      "api_football_id": 91,
+      "country": "Monaco"
+    },
+    "Paris SG": {
+      "api_football_id": 85,
+      "country": "France"
+    },
+    "Rennes": {
+      "api_football_id": 94,
+      "country": "France"
+    },
+    "Ajax": {
+      "api_football_id": 194,
+      "country": "Netherlands"
+    },
+    "AZ Alkmaar": {
+      "api_football_id": 197,
+      "country": "Netherlands"
+    },
+    "Feyenoord": {
+      "api_football_id": 193,
+      "country": "Netherlands"
+    },
+    "PSV Eindhoven": {
+      "api_football_id": 199,
+      "country": "Netherlands"
+    },
+    "Benfica": {
+      "api_football_id": 211,
+      "country": "Portugal"
+    },
+    "Porto": {
+      "api_football_id": 212,
+      "country": "Portugal"
+    },
+    "Sp Lisbon": {
+      "api_football_id": 228,
+      "country": "Portugal"
+    },
+    "Sporting CP": {
+      "api_football_id": 228,
+      "country": "Portugal"
+    },
+    "Anderlecht": {
+      "api_football_id": 558,
+      "country": "Belgium"
+    },
+    "Club Brugge": {
+      "api_football_id": 569,
+      "country": "Belgium"
+    },
+    "Genk": {
+      "api_football_id": 732,
+      "country": "Belgium"
+    },
+    "Celtic": {
+      "api_football_id": 247,
+      "country": "Scotland"
+    },
+    "Rangers": {
+      "api_football_id": 257,
+      "country": "Scotland"
+    },
+    "Velez Sarsfield": {
+      "api_football_id": 437,
+      "country": "Argentina"
+    },
+    "Argentinos Jrs": {
+      "api_football_id": 441,
+      "country": "Argentina"
+    },
+    "Arsenal Sarandi": {
+      "api_football_id": 440,
+      "country": "Argentina"
+    },
+    "Union de Santa Fe": {
+      "api_football_id": 443,
+      "country": "Argentina"
+    },
+    "Racing Club": {
+      "api_football_id": 438,
+      "country": "Argentina"
+    },
+    "Atl. Rafaela": {
+      "api_football_id": 452,
+      "country": "Argentina"
+    },
+    "Colon Santa FE": {
+      "api_football_id": 444,
+      "country": "Argentina"
+    },
+    "Lanus": {
+      "api_football_id": 439,
+      "country": "Argentina"
+    },
+    "Quilmes": {
+      "api_football_id": 455,
+      "country": "Argentina"
+    },
+    "Boca Juniors": {
+      "api_football_id": 451,
+      "country": "Argentina"
+    },
+    "Newells Old Boys": {
+      "api_football_id": 446,
+      "country": "Argentina"
+    },
+    "Independiente": {
+      "api_football_id": 445,
+      "country": "Argentina"
+    },
+    "Godoy Cruz": {
+      "api_football_id": 449,
+      "country": "Argentina"
+    },
+    "All Boys": {
+      "api_football_id": 453,
+      "country": "Argentina"
+    },
+    "San Lorenzo": {
+      "api_football_id": 447,
+      "country": "Argentina"
+    },
+    "San Martin S.J.": {
+      "api_football_id": 456,
+      "country": "Argentina"
+    },
+    "River Plate": {
+      "api_football_id": 435,
+      "country": "Argentina"
+    },
+    "Belgrano": {
+      "api_football_id": 450,
+      "country": "Argentina"
+    },
+    "Tigre": {
+      "api_football_id": 448,
+      "country": "Argentina"
+    },
+    "Estudiantes L.P.": {
+      "api_football_id": 442,
+      "country": "Argentina"
+    }
+  }
+}

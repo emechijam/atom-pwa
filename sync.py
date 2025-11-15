@@ -1,35 +1,33 @@
-# sync.py v3.7 - Hybrid Live Poller (FD + AS) & Predictor Trigger
-#
-# WHAT'S NEW (v3.7):
-# - REALITY CHECK: The AS-API free plan does NOT support 14 days
-#   (their AI bot was wrong). The API server-level error confirms
-#   it's limited to 1 day past, 1 day future.
-# - CONFIG FIX: Reverting AS_DAYS_AHEAD from 14 back to 1.
-#   This stops the script from wasting 13 API calls every 6 hours
-#   on dates that will always be rejected by the free plan.
-#
-# WHAT'S NEW (v3.5):
-# - JIT POPULATION: Solved the "Skipping AS match" warning.
+# sync.py v4.14 - Enrichment Poller and Predictor Trigger
+"""
+THE ENRICHER (v4.14 - ASYNC API CALLS)
+
+WHAT'S NEW (v4.14):
+- ASYNC: Replaced ThreadPoolExecutor and 'requests' with asyncio/aiohttp for non-blocking API calls.
+- CONNECTION MANAGEMENT: DB connection acquisition/release is managed by the async worker functions.
+- CONFIG: SYNC_INTERVAL_SECONDS from .env if set.
+- RETAINED: v4.13 fixes (Priority League season determination, robust upserts).
+"""
 
 import os
 import time
 import pytz
 import logging
-import threading
-import requests
-import psycopg2
-import datetime
+import aiohttp
+import asyncio
+import datetime as dt
 import json
 import sys
 import subprocess
 import re
+import math
 from datetime import UTC
-from psycopg2.pool import ThreadedConnectionPool
 from psycopg2.extras import execute_values, RealDictCursor
 from dotenv import load_dotenv
-from queue import PriorityQueue
-from typing import List, Tuple, Dict, Any, Optional
-from concurrent.futures import ThreadPoolExecutor
+from typing import List, Tuple, Dict, Any, Optional, Set
+
+# Import database utilities
+import db_utils 
 
 # ============ CONFIG & LOGGING ============
 load_dotenv()
@@ -39,968 +37,875 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-# --- FD (football-data.org) Polling Config ---
-FD_POLL_INTERVAL_MINUTES = 5
-FD_DAYS_BEHIND = 2
-FD_DAYS_AHEAD = 30
-FD_MAX_WORKERS = 5
+# API Config
+AS_API_KEY = os.getenv("AS_API_KEY")
+AS_FIXTURES_URL = "https://v3.football.api-sports.io/fixtures"
+AS_TEAMS_URL = "https://v3.football.api-sports.io/teams"
+AS_STANDINGS_URL = "https://v3.football.api-sports.io/standings"
 
-# --- AS (api-sports.io) Polling Config ---
-AS_POLL_INTERVAL_HOURS = 0.25 #Changed to every 15mins
-AS_DAYS_BEHIND = 1  # Free plan allows yesterday
-AS_DAYS_AHEAD = 1   # <-- v3.7 FIX: Reverted to 1. 14 is not supported.
-AS_DAILY_LIMIT = 100 # Global 100/day limit
+# Poller Config
+SYNC_INTERVAL_SECONDS = int(os.getenv("SYNC_INTERVAL_SECONDS", 1800))  # Default 30min
+ENRICHMENT_CHECK_INTERVAL_SECONDS = 60 * 60
+MAX_WORKERS = 4 
+FIXTURE_UPSERT_CHUNK_SIZE = 250 
+MAPPING_FILE = "mapping.json"
 
-# --- General Config ---
-VERSION = "v3.7" # <-- Updated
-MAX_DB_CONNECTIONS = 10
+# Enrichment Config Constants from db_utils
+COOLDOWN_HOURS = db_utils.ENRICHMENT_COOLDOWN_HOURS
+BATCH_SIZE = db_utils.ENRICHMENT_BATCH_SIZE * 2 # 20 leagues, 2 calls per league (Team + Standings)
 
-# --- Free Tier Competition Codes (Must match populator.py) ---
-FREE_CODES = [
-    'BSA', 'BL1', 'CL', 'DED', 'EC', 'FL1', 'PD', 'PL', 'PPL', 'SA', 'WC',
-    'ELC', 'CLI'
-]
+# API Headers (used by aiohttp.ClientSession)
+API_HEADERS = {
+    "x-apisports-key": AS_API_KEY,
+    "Content-Type": "application/json",
+}
 
-# --- ID Management ---
-AS_ID_OFFSET = 1_000_000
+# Date utility
+TIMEZONE = pytz.timezone("UTC") # API-Football dates are typically UTC
 
-# ============ CONNECT ============
-try:
-    db_url = os.getenv("DATABASE_URL")
-    if not db_url:
-        logging.error(
-            "DATABASE_URL not found. Check .env file or Streamlit Secrets."
-        )
-        exit(1)
+# Global to store priority league IDs
+PRIORITY_LEAGUE_IDS: Set[int] = set()
+LAST_ENRICHMENT_RUN: dt.datetime = dt.datetime.now(tz=UTC) - dt.timedelta(days=1) # Initialize to allow first run
 
-    if db_url.startswith("postgresql+psycopg://"):
-        logging.warning(
-            "DSN prefix 'postgresql+psycopg://' found, "
-            "correcting to 'postgresql://'."
-        )
-        db_url = db_url.replace("postgresql+psycopg://", "postgresql://", 1)
+# ============ UTILITIES ============
 
-    db_pool = ThreadedConnectionPool(
-        minconn=1,
-        maxconn=MAX_DB_CONNECTIONS,
-        dsn=db_url,
-        cursor_factory=RealDictCursor
-    )
-    logging.info(f"Database connection pool created (Max: {MAX_DB_CONNECTIONS}).")
-except Exception as e:
-    logging.error(f"DB connection pool failed: {e}")
-    exit(1)
+def chunked(iterable, n):
+    """Simple internal chunker function."""
+    return [iterable[i:i + n] for i in range(0, len(iterable), n)]
 
-# ============ FD API & KEY ROTATOR ============
-FD_BASE_URL = "https://api.football-data.org/v4"
-FD_API_KEYS = [
-    k.strip()
-    for k in os.getenv("FOOTBALL_DATA_API_KEY", "").split(",")
-    if k.strip()
-]
-if not FD_API_KEYS:
-    logging.error(
-        "FOOTBALL_DATA_API_KEY not found. Check .env file or Streamlit Secrets."
-    )
-    exit(1)
-
-http_session = requests.Session()
-
-
-class KeyRotator:
-    """Manages FD API keys using a PriorityQueue."""
-    def __init__(self, keys: List[str]):
-        self.queue = PriorityQueue()
-        self.lock = threading.Lock()
-        if not keys:
-            logging.error("No FD API keys provided to KeyRotator.")
-            exit(1)
-        for key in keys:
-            self.queue.put((0, key))
-        logging.info(f"LOADED {len(keys)} FD KEYS — SMART COOLDOWN MODE!")
-
-    def get_next(self) -> str:
-        next_free_time, key = self.queue.get()
-        now = time.time()
-        if next_free_time > now:
-            sleep_duration = next_free_time - now
-            with self.lock:
-                logging.info(
-                    f"FD Key {key[:8]}... on cooldown. "
-                    f"Sleeping for {sleep_duration:.2f}s"
-                )
-            time.sleep(sleep_duration)
-        with self.lock:
-            logging.debug(f"FD KEY → {key[:8]}...")
-        return key
-
-    def release(self, key: str):
-        next_use = time.time() + 6.5
-        self.queue.put((next_use, key))
-
-    def penalize(self, key: str):
-        with self.lock:
-            logging.warning(f"FD PENALIZED → {key[:8]}... | Cooldown 70s")
-        next_use = time.time() + 70.0
-        self.queue.put((next_use, key))
-
-
-fd_rotator = KeyRotator(FD_API_KEYS)
-
-
-def api_call_fd(endpoint: str, params: Optional[Dict] = None) -> Dict[str, Any]:
-    """Makes an API call to football-data.org (FD)"""
-    key = ""
+def load_priority_league_ids():
+    """Loads league IDs marked as PRIORITY from mapping.json."""
+    global PRIORITY_LEAGUE_IDS
     try:
-        key = fd_rotator.get_next()
-        r = http_session.get(
-            f"{FD_BASE_URL}/{endpoint}",
-            headers={"X-Auth-Token": key},
-            params=params,
-            timeout=20,
-        )
-        r.raise_for_status()
-        try:
-            data = r.json()
-        except requests.exceptions.JSONDecodeError:
-            data = {}
-        fd_rotator.release(key)
-        return data
-    except requests.exceptions.HTTPError as http_err:
-        if http_err.response.status_code == 400:
-            logging.error(f"FD HTTP Error: {http_err} for url: {http_err.response.url}")
-        elif http_err.response.status_code == 403:
-            logging.warning(f"FD API Call Forbidden (403) for {endpoint}.")
-        elif http_err.response.status_code == 429:
-            logging.warning(f"FD API Call Rate-Limited (429) for {endpoint}.")
-        else:
-            logging.error(f"FD HTTP Error: {http_err}")
-        if key: fd_rotator.penalize(key)
-        raise http_err
-    except Exception as e:
-        logging.error(f"FD API call to {endpoint} failed: {e}")
-        if key: fd_rotator.penalize(key)
-        raise e
+        with open(MAPPING_FILE, 'r', encoding='utf-8') as f:
+            mappings = json.load(f)
+            league_map = mappings.get("leagues", {})
+            for data in league_map.values():
+                if "api_football_id" in data:
+                    PRIORITY_LEAGUE_IDS.add(data["api_football_id"])
+        logging.info(f"Loaded {len(PRIORITY_LEAGUE_IDS)} priority league IDs from {MAPPING_FILE}.")
+    except FileNotFoundError:
+        logging.error(f"Mapping file {MAPPING_FILE} not found. Priority leagues disabled.")
+    except json.JSONDecodeError:
+        logging.error(f"Could not parse {MAPPING_FILE}. Priority leagues disabled.")
 
-# ============ AS API (API-SPORTS) CALLER ============
-AS_API_KEY = os.getenv("API_SPORTS_KEY")
-AS_BASE_URL = "https://v3.football.api-sports.io"
-AS_HEADERS = {"x-apisports-key": AS_API_KEY}
-
-# AS API Limit Tracking (Global State)
-as_request_count = 0
-as_daily_reset_time = time.time() + (24 * 60 * 60)
-as_lock = threading.Lock()
-
-
-def api_call_as(endpoint: str, params: Optional[Dict] = None) -> Dict[str, Any]:
+def initialize_priority_status():
     """
-    Makes an API call to api-sports.io (AS).
-    Manages both 10/min and 100/day rate limits.
+    On startup, ensures that all leagues listed in mapping.json (PRIORITY leagues)
+    are present and marked as 'PRIORITY' in the enrichment_status table.
     """
-    global as_request_count, as_daily_reset_time
-    if not AS_API_KEY:
-        raise Exception("API_SPORTS_KEY is not configured.")
-
-    try:
-        with as_lock:
-            if time.time() > as_daily_reset_time:
-                logging.info("API-Sports daily limit counter reset.")
-                as_request_count = 0
-                as_daily_reset_time = time.time() + (24 * 60 * 60)
-
-            if as_request_count >= AS_DAILY_LIMIT:
-                raise Exception(
-                    "API-Sports 100 requests/day limit exceeded. "
-                    "Try again later."
-                )
-            as_request_count += 1
-            logging.info(
-                f"API-Sports request {as_request_count}/{AS_DAILY_LIMIT} "
-                "for the day."
-            )
-
-        r = http_session.get(
-            f"{AS_BASE_URL}{endpoint}",
-            headers=AS_HEADERS,
-            params=params,
-            timeout=20,
-        )
-        
-        # Respect 10/min limit
-        time.sleep(6.5)
-
-        r.raise_for_status()
-        data = r.json()
-
-        if not data.get("response") and data.get("errors"):
-            logging.error(f"AS API Error: {data['errors']}")
-            if isinstance(data['errors'], dict) and 'plan' in data['errors']:
-                logging.info(f"AS Plan Error: {data['errors']['plan']}")
-                return {}
-            return {}
-        
-        return data.get("response", [])
-
-    except Exception as e:
-        logging.error(f"AS API call to {endpoint} failed: {e}")
-        raise e
-
-# ============ HYBRID UPSERTS & TRANSFORMERS ============
-
-# --- START OF v3.5: JIT POPULATION ---
-# These functions are borrowed from build_leagues.py to be used by sync
-def _get_or_create_area(cur, area_name: str,
-                        country_code: str = None) -> Optional[int]:
-    """
-    Finds an existing area or creates a new one.
-    This is necessary because AS leagues are tied to countries (areas).
-    """
-    if not area_name:
-        logging.warning("Cannot create area with no name. Using NULL.")
-        return None
-        
-    # Try to find area by name
-    cur.execute("SELECT area_id FROM areas WHERE name = %s", (area_name,))
-    row = cur.fetchone()
-    if row:
-        return row['area_id']
-    
-    # Not found, create it.
-    cur.execute("SELECT COALESCE(MAX(area_id), 2272) + 1 AS next_id FROM areas")
-    next_id = cur.fetchone()['next_id']
-    
-    try:
-        cur.execute(
-            """
-            INSERT INTO areas (area_id, name, code, flag)
-            VALUES (%s, %s, %s, NULL)
-            """,
-            (next_id, area_name, country_code)
-        )
-        logging.info(f"JIT: Created new area for {area_name} with ID {next_id}")
-        return next_id
-    except psycopg2.Error as e:
-        logging.error(f"JIT: Failed to create new area {area_name}: {e}")
-        cur.connection.rollback() # Rollback this specific INSERT
-        return None
-
-def _get_or_create_as_competition(cur, league: dict,
-                                  country: dict) -> Optional[int]:
-    """
-    Finds an existing AS competition or creates a new one *on the fly*.
-    """
-    as_league_id = league.get('id')
-    if not as_league_id:
-        return None
-
-    # 1. Check if it exists
-    cur.execute(
-        "SELECT competition_id FROM competitions WHERE as_competition_id = %s",
-        (as_league_id,)
-    )
-    row = cur.fetchone()
-    if row:
-        return row['competition_id']
-        
-    # 2. Not found, create it
-    logging.warning(
-        f"JIT: Creating new competition: {league.get('name')} "
-        f"(AS ID: {as_league_id})"
-    )
-    
-    area_id = _get_or_create_area(cur, country.get('name'), country.get('code'))
-    offset_id = as_league_id + AS_ID_OFFSET
-    now = datetime.datetime.now(UTC).isoformat()
-    
-    try:
-        cur.execute(
-            """
-            INSERT INTO competitions (
-                competition_id, area_id, name, code, type, emblem,
-                last_updated, as_competition_id
-            )
-            VALUES (%s, %s, %s, NULL, %s, %s, %s, %s)
-            """,
-            (
-                offset_id, area_id, league.get('name'), league.get('type'),
-                league.get('logo'), now, as_league_id
-            )
-        )
-        return offset_id
-    except psycopg2.Error as e:
-        logging.error(f"JIT: Failed to create competition {league.get('name')}: {e}")
-        cur.connection.rollback()
-        return None
-# --- END OF v3.5: JIT POPULATION ---
-
-
-def upsert_teams(cur, teams_data: List[Dict]):
-    """
-    Upserts a list of teams (FD format).
-    """
-    if not teams_data:
+    if not PRIORITY_LEAGUE_IDS:
         return
-    sql = """
-    INSERT INTO teams (team_id, area_id, name, short_name, tla, crest,
-                       address, website, founded, club_colors, venue,
-                       last_updated, as_team_id)
-    VALUES %s
-    ON CONFLICT (team_id) DO UPDATE SET
-        area_id = EXCLUDED.area_id,
-        name = EXCLUDED.name,
-        short_name = EXCLUDED.short_name,
-        tla = EXCLUDED.tla,
-        crest = EXCLUDED.crest,
-        address = EXCLUDED.address,
-        website = EXCLUDED.website,
-        founded = EXCLUDED.founded,
-        club_colors = EXCLUDED.club_colors,
-        venue = EXCLUDED.venue,
-        last_updated = EXCLUDED.last_updated,
-        as_team_id = EXCLUDED.as_team_id;
-    """
-    unique_teams = {}
-    for t in teams_data:
-        if t and t.get('id'):
-            unique_teams[t['id']] = t
 
-    values = [
-        (
-            t["id"],
-            t.get("area", {}).get("id"),
-            t.get("name"),
-            t.get("shortName"),
-            t.get("tla"),
-            t.get("crest"),
-            t.get("address"),
-            t.get("website"),
-            t.get("founded"),
-            t.get("clubColors"),
-            t.get("venue"),
-            t.get("lastUpdated"),
-            t.get("as_team_id")
-        )
-        for t in unique_teams.values()
-    ]
-    if values:
-        execute_values(cur, sql, values, page_size=100)
+    conn = db_utils.get_connection()
+    if conn is None:
+        return
 
-
-def upsert_matches_from_fd_sync(cur, matches_data: List[Dict]):
-    """
-    Upserts a list of basic match info from the FD /matches endpoint.
-    """
-    if not matches_data:
-        return 0
-    sql = """
-    INSERT INTO matches (match_id, competition_id, season_year, utc_date, status,
-                         matchday, stage, group_name, home_team_id,
-                         away_team_id, score_winner, score_duration,
-                         score_fulltime_home, score_fulltime_away,
-                         score_halftime_home, score_halftime_away,
-                         last_updated, raw_data, details_populated)
-    VALUES %s
-    ON CONFLICT (match_id) DO UPDATE SET
-        competition_id = EXCLUDED.competition_id,
-        season_year = EXCLUDED.season_year,
-        utc_date = EXCLUDED.utc_date,
-        status = EXCLUDED.status,
-        matchday = EXCLUDED.matchday,
-        stage = EXCLUDED.stage,
-        group_name = EXCLUDED.group_name,
-        home_team_id = EXCLUDED.home_team_id,
-        away_team_id = EXCLUDED.away_team_id,
-        score_winner = EXCLUDED.score_winner,
-        score_duration = EXCLUDED.score_duration,
-        score_fulltime_home = EXCLUDED.score_fulltime_home,
-        score_fulltime_away = EXCLUDED.score_fulltime_away,
-        score_halftime_home = EXCLUDED.score_halftime_home,
-        score_halftime_away = EXCLUDED.score_halftime_away,
-        last_updated = EXCLUDED.last_updated,
-        raw_data = EXCLUDED.raw_data,
-        details_populated = FALSE;
-    """
-    values = []
-    teams_to_upsert = []
-    for m in matches_data:
-        if not m.get('id'):
-            continue
-
-        competition = m.get("competition", {})
-        season = m.get("season", {})
-        score = m.get("score", {})
-        fullTime = score.get("fullTime", {})
-        halfTime = score.get("halfTime", {})
-        home_team = m.get("homeTeam", {})
-        away_team = m.get("awayTeam", {})
-
-        season_year_str = season.get("startDate", "1900-01-01")[:4]
-        try:
-            season_year = int(season_year_str)
-        except ValueError:
-            season_year = 1900
-
-        if home_team and home_team.get('id'):
-            teams_to_upsert.append(home_team)
-        if away_team and away_team.get('id'):
-            teams_to_upsert.append(away_team)
-
-        values.append((
-            m["id"],
-            competition.get("id"),
-            season_year,
-            m.get("utcDate"),
-            m.get("status"),
-            m.get("matchday"),
-            m.get("stage"),
-            m.get("group"),
-            home_team.get("id") if home_team else None,
-            away_team.get("id") if away_team else None,
-            score.get("winner"),
-            score.get("duration"),
-            fullTime.get("home"),
-            fullTime.get("away"),
-            halfTime.get("home"),
-            halfTime.get("away"),
-            m.get("lastUpdated"),
-            json.dumps(m),
-            False
-        ))
-    if values:
-        upsert_teams(cur, teams_to_upsert)
-        execute_values(cur, sql, values, page_size=100)
-    return len(values)
-
-
-def _parse_as_matchday(round_str: Optional[str]) -> Optional[int]:
-    """
-    Safely parses the 'round' string from AS API.
-    It can be "Regular Season - 38" or "Semi-finals".
-    """
-    if not round_str:
-        return None
     try:
-        # Use regex to find the last number in the string
-        matches = re.findall(r'\d+', round_str)
-        if matches:
-            return int(matches[-1])
-        return None # "Semi-finals" has no number
-    except (ValueError, TypeError):
-        logging.debug(f"Could not parse matchday from '{round_str}'. Storing NULL.")
-        return None
+        with conn.cursor() as cursor:
+            logging.info(f"[DB Init] Checking and updating status for {len(PRIORITY_LEAGUE_IDS)} priority leagues...")
+            
+            # Use a datetime object (30 days ago) instead of None to satisfy NOT NULL constraint
+            thirty_days_ago = dt.datetime.now(tz=UTC) - dt.timedelta(days=30)
+            
+            # Columns: (league_id, status, last_enriched_at)
+            priority_values = [(lid, 'PRIORITY', thirty_days_ago) for lid in PRIORITY_LEAGUE_IDS]
+            
+            upsert_sql = """
+                INSERT INTO enrichment_status (league_id, status, last_enriched_at)
+                VALUES %s
+                ON CONFLICT (league_id) DO UPDATE SET
+                    status = EXCLUDED.status,
+                    -- If the league was previously enriched, we reset the timestamp to force re-enrichment after 30 days
+                    last_enriched_at = CASE WHEN enrichment_status.status != 'ENRICHED' OR enrichment_status.last_enriched_at < NOW() - INTERVAL '30 days' THEN EXCLUDED.last_enriched_at ELSE enrichment_status.last_enriched_at END;
+            """
+            
+            execute_values(cursor, upsert_sql, priority_values)
+            conn.commit()
+            logging.info("[DB Init] Priority league statuses ensured in enrichment_status table.")
+            
+    except Exception as e:
+        conn.rollback()
+        logging.error(f"[DB Init] Failed to initialize priority league status: {e}")
+    finally:
+        db_utils.release_connection(conn)
 
+async def async_get(session, url, params=None):
+    """Async API fetch with retry and robust error handling."""
+    for attempt in range(db_utils.MAX_RETRIES):
+        try:
+            async with session.get(url, params=params, timeout=db_utils.TIMEOUT_SECONDS) as response:
+                
+                # Check for rate limit/fatal error
+                if response.status == 403:
+                    logging.error(f"[API] FATAL 403: API Key issue or plan limit hit. Stopping API attempts.")
+                    return None
+                if response.status == 429:
+                    logging.warning(f"[API] Rate limit hit (429) for {url}. Retrying in {db_utils.RETRY_SLEEP_SECONDS}s...")
+                    await asyncio.sleep(db_utils.RETRY_SLEEP_SECONDS * (2 ** attempt))
+                    continue # Go to next attempt
+                    
+                response.raise_for_status() 
+                
+                data = await response.json()
+                
+                if data.get("errors"):
+                    logging.error(f"[API] API returned errors: {data.get('errors')} for {url}")
+                    return None
+                return data
+                
+        except aiohttp.ClientError as e:
+            logging.warning(f"[API] Client error (attempt {attempt+1}): {e} to {url}")
+        except asyncio.TimeoutError:
+            logging.warning(f"[API] Request timed out (attempt {attempt+1}): {url}")
+            
+        if attempt < db_utils.MAX_RETRIES - 1:
+            await asyncio.sleep(db_utils.RETRY_SLEEP_SECONDS * (2 ** attempt))
+            
+    logging.error(f"[API] Request to {url} failed after {db_utils.MAX_RETRIES} attempts.")
+    return None
 
-def upsert_data_from_as_sync(cur, as_matches: List[Dict],
-                             fd_as_league_ids_to_skip: set):
+# ============ HIGH-FREQUENCY SYNC LOGIC (Fixtures) ============
+
+def transform_fixture_data(fixture: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """
-    Transforms and upserts AS fixture data, skipping FD-covered leagues.
+    Transforms API data into the format needed for the fixtures table.
+    Includes Foreign Keys (league_id, team_ids, season_year) required for UPSERT.
     """
-    if not as_matches:
-        return 0
     
-    matches_to_insert = []
-    teams_to_insert = []
+    # 1. Extract IDs
+    fixture_id = fixture['fixture']['id']
     
-    # 1. Get all comp IDs from DB (with offset)
-    cur.execute(
-        "SELECT competition_id, as_competition_id FROM competitions "
-        "WHERE as_competition_id IS NOT NULL"
-    )
-    # Map AS ID -> Offset DB ID
-    as_comp_map = {
-        row['as_competition_id']: row['competition_id'] for row in cur.fetchall()
+    # 2. Extract Status
+    status = fixture['fixture']['status']
+    status_short = status['short']
+    status_long = status['long']
+    
+    # 3. Extract Goals (ensure they are integers, even if API sends None)
+    goals_home = db_utils.safe_int(fixture['goals']['home'])
+    goals_away = db_utils.safe_int(fixture['goals']['away'])
+
+    # 4. Determine Winner (based on FT goals)
+    home_winner = goals_home > goals_away if goals_home is not None and goals_away is not None else None
+    away_winner = goals_away > goals_home if goals_home is not None and goals_away is not None else None
+    
+    # 5. Extract Scores (handle None for non-existent periods)
+    score_ht_home = db_utils.safe_int(fixture['score']['halftime']['home'])
+    score_ht_away = db_utils.safe_int(fixture['score']['halftime']['away'])
+    
+    # FT scores are goals_home/away (needed for final score columns)
+    score_ft_home = goals_home
+    score_ft_away = goals_away
+    
+    score_et_home = db_utils.safe_int(fixture['score']['extratime']['home'])
+    score_et_away = db_utils.safe_int(fixture['score']['extratime']['away'])
+    
+    score_pen_home = db_utils.safe_int(fixture['score']['penalty']['home'])
+    score_pen_away = db_utils.safe_int(fixture['score']['penalty']['away'])
+
+    # 6. Calculate total goals (FT + ET)
+    # Ensure goals_home/away and extra-time scores are treated as 0 if None
+    total_goals_home = (goals_home or 0) + (score_et_home or 0)
+    total_goals_away = (goals_away or 0) + (score_et_away or 0)
+    
+    # 7. Extract Foreign Keys (NEW for UPSERT)
+    league_id = fixture['league']['id']
+    season_year = fixture['league']['season']
+    home_team_id = fixture['teams']['home']['id']
+    away_team_id = fixture['teams']['away']['id']
+    venue_id = fixture['fixture']['venue']['id'] if fixture['fixture']['venue'] and fixture['fixture']['venue']['id'] else None
+
+    # 8. Package data for UPSERT
+    update_data = {
+        'fixture_id': fixture_id,
+        'referee': fixture['fixture'].get('referee'),
+        'date': fixture['fixture']['date'], # ISO string (e.g., '2025-11-14T20:00:00+00:00')
+        'timestamp': fixture['fixture']['timestamp'], # Unix timestamp (integer)
+        'status_long': status_long,
+        'status_short': status_short,
+        'elapsed': db_utils.safe_int(fixture['fixture']['status'].get('elapsed')),
+        'home_winner': home_winner,
+        'away_winner': away_winner,
+        'goals_home': total_goals_home,
+        'goals_away': total_goals_away,
+        'score_ht_home': score_ht_home,
+        'score_ht_away': score_ht_away,
+        'score_ft_home': score_ft_home,
+        'score_ft_away': score_ft_away,
+        'score_et_home': score_et_home,
+        'score_et_away': score_et_away,
+        'score_pen_home': score_pen_home,
+        'score_pen_away': score_pen_away,
+        
+        # New fields for UPSERT (required for initial INSERT)
+        'league_id': league_id,
+        'season_year': season_year,
+        'home_team_id': home_team_id,
+        'away_team_id': away_team_id,
+        'venue_id': venue_id,
     }
 
-    for m in as_matches:
-        league = m.get("league", {})
-        country = m.get("country", {})
-        as_league_id = league.get("id")
-        
-        # 1. DE-DUPLICATION
-        if as_league_id in fd_as_league_ids_to_skip:
-            continue
-            
-        # 2. Find offset Competition ID
-        competition_id_offset = as_comp_map.get(as_league_id)
-        
-        # --- START OF v3.5: JIT LOGIC ---
-        if not competition_id_offset:
-            # This is the JIT Populator
-            # Create the competition and get its new offset ID
-            new_offset_id = _get_or_create_as_competition(cur, league, country)
-            
-            if new_offset_id:
-                competition_id_offset = new_offset_id
-                # Add to map so we don't re-create it in this batch
-                as_comp_map[as_league_id] = new_offset_id 
-            else:
-                logging.error(
-                    f"Failed to JIT-create league {league.get('name')}. "
-                    "Skipping match."
-                )
-                continue # Skip this match if creation failed
-        # --- END OF v3.5: JIT LOGIC ---
-            
-        # 3. TRANSFORM TEAMS
-        fixture = m.get("fixture", {})
-        teams = m.get("teams", {})
-        venue = fixture.get("venue", {})
-        
-        home_team = teams.get("home", {})
-        away_team = teams.get("away", {})
-        
-        if home_team.get("id"):
-            teams_to_insert.append({
-                "id": home_team["id"] + AS_ID_OFFSET,
-                "as_team_id": home_team["id"],
-                "name": home_team.get("name"),
-                "tla": None,
-                "crest": home_team.get("logo"),
-                "venue": venue.get("name"),
-                "lastUpdated": datetime.datetime.now(pytz.UTC).isoformat()
-            })
-        if away_team.get("id"):
-            teams_to_insert.append({
-                "id": away_team["id"] + AS_ID_OFFSET,
-                "as_team_id": away_team["id"],
-                "name": away_team.get("name"),
-                "tla": None,
-                "crest": away_team.get("logo"),
-                "venue": venue.get("name"),
-                "lastUpdated": datetime.datetime.now(pytz.UTC).isoformat()
-            })
+    return fixture_id, update_data
 
-        # 4. TRANSFORM MATCH
-        goals = m.get("goals", {})
-        score = m.get("score", {})
-        status_map = {
-            'TBD': 'SCHEDULED', 'NS': 'SCHEDULED', '1H': 'IN_PLAY',
-            'HT': 'IN_PLAY', '2H': 'IN_PLAY', 'ET': 'IN_PLAY',
-            'P': 'IN_PLAY', 'FT': 'FINISHED', 'AET': 'FINISHED',
-            'PEN': 'FINISHED', 'BT': 'IN_PLAY', 'SUSP': 'PAUSED',
-            'INT': 'PAUSED', 'PST': 'POSTPONED', 'CANC': 'CANCELED',
-            'ABD': 'CANCELED', 'AWD': 'FINISHED', 'WO': 'FINISHED'
-        }
-        status = status_map.get(fixture.get("status", {}).get("short"), 'SCHEDULED')
-        
-        winner_map = {True: 'HOME_TEAM', False: 'AWAY_TEAM', None: 'DRAW'}
-        winner = winner_map.get(teams.get("home", {}).get("winner"))
-
-        as_season_year = m.get("league", {}).get("season")
-        if not as_season_year:
-             try:
-                as_season_year = datetime.datetime.fromisoformat(
-                     fixture.get("date")
-                ).year
-             except:
-                as_season_year = datetime.datetime.now().year # Fallback
-
-        matches_to_insert.append({
-            "id": fixture["id"] + AS_ID_OFFSET,
-            "competition_id": competition_id_offset,
-            "season_year": as_season_year,
-            "utcDate": fixture.get("date"),
-            "status": status,
-            "matchday": _parse_as_matchday(m.get("league", {}).get("round")),
-            "group": m.get("league", {}).get("group"),
-            "homeTeam": {"id": home_team.get("id", 0) + AS_ID_OFFSET},
-            "awayTeam": {"id": away_team.get("id", 0) + AS_ID_OFFSET},
-            "score": {
-                "winner": winner,
-                "duration": "REGULAR",
-                "fullTime": {"home": goals.get("home"), "away": goals.get("away")},
-                "halfTime": {"home": score.get("halftime", {}).get("home"),
-                             "away": score.get("halftime", {}).get("away")}
-            },
-            "lastUpdated": datetime.datetime.fromtimestamp(
-                fixture.get("timestamp", 0), pytz.UTC
-            ).isoformat(),
-            "raw_data": json.dumps(m)
-        })
-
-    # 5. UPSERT BATCH
-    if teams_to_insert:
-        upsert_teams(cur, teams_to_insert)
-        
-    if not matches_to_insert:
-        return 0
-        
-    sql = """
-    INSERT INTO matches (match_id, competition_id, season_year, utc_date, status,
-                         matchday, stage, group_name, home_team_id,
-                         away_team_id, score_winner, score_duration,
-                         score_fulltime_home, score_fulltime_away,
-                         score_halftime_home, score_halftime_away,
-                         last_updated, raw_data, details_populated)
-    VALUES %s
-    ON CONFLICT (match_id) DO UPDATE SET
-        competition_id = EXCLUDED.competition_id,
-        season_year = EXCLUDED.season_year,
-        utc_date = EXCLUDED.utc_date,
-        status = EXCLUDED.status,
-        matchday = EXCLUDED.matchday,
-        stage = EXCLUDED.stage,
-        group_name = EXCLUDED.group_name,
-        home_team_id = EXCLUDED.home_team_id,
-        away_team_id = EXCLUDED.away_team_id,
-        score_winner = EXCLUDED.score_winner,
-        score_duration = EXCLUDED.score_duration,
-        score_fulltime_home = EXCLUDED.score_fulltime_home,
-        score_fulltime_away = EXCLUDED.score_fulltime_away,
-        score_halftime_home = EXCLUDED.score_halftime_home,
-        score_halftime_away = EXCLUDED.score_halftime_away,
-        last_updated = EXCLUDED.last_updated,
-        raw_data = EXCLUDED.raw_data,
-        details_populated = FALSE;
+def update_fixtures_db(fixtures_data: List[Dict[str, Any]], conn) -> Set[int]:
     """
+    UPSERTs (Inserts or Updates) parent entities and then fixtures with schedule and result details.
+    This sync function is called by the async worker and uses the provided DB connection.
+    """
+    if not fixtures_data:
+        return set()
+
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    updated_fixture_ids: Set[int] = set()
     
-    values = []
-    for m in matches_to_insert:
-        score = m.get("score", {})
-        fullTime = score.get("fullTime", {})
-        halfTime = score.get("halfTime", {})
-        
-        values.append((
-            m["id"],
-            m["competition_id"],
-            m["season_year"],
-            m.get("utcDate"),
-            m.get("status"),
-            m.get("matchday"),
-            m.get("stage"),
-            m.get("group"),
-            m.get("homeTeam", {}).get("id"),
-            m.get("awayTeam", {}).get("id"),
-            score.get("winner"),
-            score.get("duration"),
-            fullTime.get("home"),
-            fullTime.get("away"),
-            halfTime.get("home"),
-            halfTime.get("away"),
-            m.get("lastUpdated"),
-            m.get("raw_data"),
-            False
-        ))
-
-    if values:
-        execute_values(cur, sql, values, page_size=100)
-    return len(values)
-
-
-# ============ POLLING FUNCTIONS ============
-
-def get_fd_competition_id_map() -> Dict[str, int]:
-    """
-    Queries the local database to map FREE_CODES (e.g., 'PL')
-    to their API competition_id (e.g., 2021).
-    """
-    logging.info("Fetching FD competition ID map from local database...")
-    conn = None
-    try:
-        conn = db_pool.getconn()
-        with conn.cursor() as cur:
-            codes_tuple = tuple(FREE_CODES)
-            cur.execute(
-                "SELECT code, competition_id FROM competitions WHERE code IN %s",
-                (codes_tuple,)
-            )
-            rows = cur.fetchall()
-            
-            comp_map = {row['code']: row['competition_id'] for row in rows}
-            
-            if len(comp_map) < len(FREE_CODES):
-                logging.warning(
-                    "Not all free codes were found in the database. "
-                    "Run populator.py or build_leagues.py first."
-                )
-            
-            logging.info(f"Found {len(comp_map)} FD competitions to poll.")
-            return comp_map
-            
-    except Exception as e:
-        logging.error(f"Failed to get FD competition ID map: {e}")
-        return {}
-    finally:
-        if conn:
-            db_pool.putconn(conn)
-
-
-def get_as_leagues_to_skip() -> set:
-    """
-    Gets the set of AS league IDs that we should SKIP
-    because they are covered by the FD poller.
-    """
-    logging.info("Fetching AS league ID skip-list...")
-    conn = None
-    try:
-        conn = db_pool.getconn()
-        with conn.cursor() as cur:
-            codes_tuple = tuple(FREE_CODES)
-            cur.execute(
-                "SELECT as_competition_id FROM competitions "
-                "WHERE code IN %s AND as_competition_id IS NOT NULL",
-                (codes_tuple,)
-            )
-            # Return a set of AS IDs, e.g., {39, 2, 78, ...}
-            return {row['as_competition_id'] for row in cur.fetchall()}
-    except Exception as e:
-        logging.error(f"Failed to get AS skip list: {e}")
-        return set() # Return empty set on failure
-    finally:
-        if conn:
-            db_pool.putconn(conn)
-
-
-def poll_fd_competition(comp_code: str, comp_id: int,
-                        date_from: str, date_to: str) -> int:
-    """
-    Worker function to fetch and sync matches for a *single* FD competition.
-    """
-    conn = None
-    try:
-        logging.info(f"FD Polling: {comp_code} (ID: {comp_id})...")
-        params = {"dateFrom": date_from, "dateTo": date_to}
-        endpoint = f"competitions/{comp_id}/matches"
-        
-        response = api_call_fd(endpoint, params=params)
-        matches = response.get("matches", [])
-        
-        if not matches:
-            logging.info(f"No FD matches found for {comp_code}.")
-            return 0
-
-        conn = db_pool.getconn()
-        with conn.cursor() as cur:
-            count = upsert_matches_from_fd_sync(cur, matches)
-            conn.commit()
-            logging.info(
-                f"Successfully upserted {count} FD matches for {comp_code}."
-            )
-            return count
-            
-    except Exception as e:
-        logging.error(f"Failed to poll FD competition {comp_code}.")
-        if conn: conn.rollback()
-        return 0
-    finally:
-        if conn: db_pool.putconn(conn)
-
-
-def poll_as_fixtures(date_from: str, date_to: str,
-                     fd_as_ids_to_skip: set) -> int:
-    """
-    Polls AS for all fixtures in the date range, transforms, and upserts them.
-    """
-    if not AS_API_KEY:
-        logging.info("AS Polling: Skipping, API_SPORTS_KEY not set.")
-        return 0
-        
-    logging.info(
-        f"--- STARTING API-Sports Sync ({date_from} to {date_to}) ---"
-    )
-    total_matches_synced = 0
-    conn = None
+    # --- 1. Extract Parent Data and Prepare Fixture Tuples ---
+    teams_to_upsert = {}    # {team_id: {data}}
+    venues_to_upsert = {} # {venue_id: {data}}
+    seasons_to_upsert = set() # {year}
+    leagues_to_upsert = {} # {league_id: {data}}
     
-    try:
-        date_from_obj = datetime.datetime.strptime(
-            date_from, "%Y-%m-%d"
-        ).date()
-        date_to_obj = datetime.datetime.strptime(date_to, "%Y-%m-%d").date()
-        
-        current_date = date_from_obj
-        while current_date <= date_to_obj:
-            date_str = current_date.strftime("%Y-%m-%d")
-            logging.info(f"AS Polling: Fetching fixtures for {date_str}...")
-            
-            try:
-                # 1. API Call
-                as_matches = api_call_as(
-                    "/fixtures", {"date": date_str}
-                )
-                if not as_matches:
-                    logging.info(f"No AS matches found for {date_str}.")
-                    current_date += datetime.timedelta(days=1)
-                    continue
+    UPSERT_COLUMNS = [
+        'fixture_id', 'referee', 'date', 'timestamp', 'status_long', 'status_short', 'elapsed',
+        'home_winner', 'away_winner', 'goals_home', 'goals_away',
+        'score_ht_home', 'score_ht_away', 'score_ft_home', 'score_ft_away',
+        'score_et_home', 'score_et_away', 'score_pen_home', 'score_pen_away',
+        'league_id', 'season_year', 'home_team_id', 'away_team_id', 'venue_id'
+    ]
 
-                # 2. Upsert
-                conn = db_pool.getconn()
-                with conn.cursor() as cur:
-                    count = upsert_data_from_as_sync(
-                        cur, as_matches, fd_as_ids_to_skip
-                    )
-                    conn.commit()
+    fixture_tuples = []
+    
+    for fixture in fixtures_data:
+        fixture_id, data = transform_fixture_data(fixture)
+        
+        # A. Collect Team Data
+        home_team = fixture['teams']['home']
+        away_team = fixture['teams']['away']
+        league_country = fixture['league'].get('country')
+        
+        for team in [home_team, away_team]:
+            team_id = team.get('id')
+            if team_id and team_id not in teams_to_upsert:
+                # Include placeholders for code, founded, and national to ensure all 8 columns exist
+                teams_to_upsert[team_id] = {
+                    'team_id': team_id,
+                    'name': team.get('name'),
+                    'code': None, # Placeholder for FIX 2
+                    'country': league_country, 
+                    'founded': None, # Placeholder for FIX 2
+                    'national': None, # Placeholder for FIX 2
+                    'logo_url': team.get('logo'),
+                    # Only map venue if the team is the home team
+                    'venue_id': data.get('venue_id') if data.get('home_team_id') == team_id else None
+                }
+
+        # B. Collect Venue Data
+        venue = fixture['fixture']['venue']
+        venue_id = data.get('venue_id')
+        if venue_id and venue_id not in venues_to_upsert:
+            venues_to_upsert[venue_id] = {
+                'venue_id': venue_id,
+                'name': venue.get('name'),
+                'city': venue.get('city'),
+                'country': league_country, 
+            }
+        
+        # C. Collect Season/League Data
+        season_year = data['season_year']
+        league_id = data['league_id']
+        seasons_to_upsert.add(season_year)
+        
+        league = fixture['league']
+        if league_id and league_id not in leagues_to_upsert:
+             leagues_to_upsert[league_id] = {
+                'league_id': league_id,
+                'name': league.get('name'),
+                'type': league.get('type'),
+                'logo_url': league.get('logo'),
+                'country_name': league_country,
+            }
+            
+        # D. Prepare fixture tuple for bulk UPSERT
+        fixture_tuples.append(tuple(data[col] for col in UPSERT_COLUMNS))
+
+    # --- 2. JIT UPSERT PARENT ENTITIES ---
+    try:
+        # 2a. Seasons (PK: year)
+        season_values = [(year,) for year in seasons_to_upsert]
+        if season_values:
+            execute_values(cursor, "INSERT INTO seasons (year) VALUES %s ON CONFLICT (year) DO NOTHING;", season_values)
+            logging.info(f"[DB] Upserted {len(seasons_to_upsert)} unique seasons.")
+
+        # 2b. Venues (PK: venue_id)
+        # Note: Added 'country' to ensure it's set on first insert
+        venue_values = [tuple(v[col] for col in ['venue_id', 'name', 'city', 'country']) for v in venues_to_upsert.values()]
+        if venue_values:
+            venue_sql = """
+                INSERT INTO venues (venue_id, name, city, country) 
+                VALUES %s 
+                ON CONFLICT (venue_id) DO UPDATE SET 
+                    name = EXCLUDED.name, 
+                    city = EXCLUDED.city,
+                    country = EXCLUDED.country;
+            """
+            execute_values(cursor, venue_sql, venue_values)
+            logging.info(f"[DB] Upserted {len(venues_to_upsert)} unique venues.")
+
+        # 2c. Teams (PK: team_id) - Uses COALESCE to keep existing data if new data is null
+        team_values = [
+            (
+                t.get('team_id'), 
+                t.get('name'), 
+                t.get('code'), # Will be None 
+                t.get('country'), 
+                t.get('founded'), # Will be None
+                t.get('national', False), # Will be None, default to False if not provided during fixture sync
+                t.get('logo_url'), 
+                t.get('venue_id')
+            ) 
+            for t in teams_to_upsert.values()
+        ]
+
+        if team_values:
+            # Columns in SQL: (team_id, name, code, country, founded, national, logo_url, venue_id) (8 columns)
+            team_sql = """
+                INSERT INTO teams (team_id, name, code, country, founded, national, logo_url, venue_id) 
+                VALUES %s 
+                ON CONFLICT (team_id) DO UPDATE SET 
+                    name = COALESCE(EXCLUDED.name, teams.name),
+                    code = COALESCE(EXCLUDED.code, teams.code),
+                    country = COALESCE(EXCLUDED.country, teams.country), 
+                    logo_url = COALESCE(EXCLUDED.logo_url, teams.logo_url),
+                    -- ONLY update venue_id if the existing one is NULL or the new one is not NULL
+                    venue_id = COALESCE(teams.venue_id, EXCLUDED.venue_id);
+            """
+            execute_values(cursor, team_sql, team_values)
+            logging.info(f"[DB] Upserted {len(teams_to_upsert)} unique teams.")
+
+        # 2d. Leagues (PK: league_id)
+        league_values = [tuple(l[col] for col in ['league_id', 'name', 'type', 'logo_url', 'country_name']) for l in leagues_to_upsert.values()]
+        if league_values:
+            league_sql = """
+                INSERT INTO leagues (league_id, name, type, logo_url, country_name) 
+                VALUES %s 
+                ON CONFLICT (league_id) DO UPDATE SET 
+                    name = EXCLUDED.name, 
+                    type = EXCLUDED.type, 
+                    logo_url = EXCLUDED.logo_url, 
+                    country_name = EXCLUDED.country_name;
+            """
+            execute_values(cursor, league_sql, league_values)
+            logging.info(f"[DB] Upserted {len(leagues_to_upsert)} unique leagues.")
+            
+            # --- 2e. JIT UPSERT Enrichment Status (Set new leagues to PENDING/PRIORITY) ---
+            thirty_days_ago = dt.datetime.now(tz=UTC) - dt.timedelta(days=30)
+            enrichment_values = [(lid, 'PENDING' if lid not in PRIORITY_LEAGUE_IDS else 'PRIORITY', thirty_days_ago) for lid in leagues_to_upsert.keys()]
+            if enrichment_values:
+                enrichment_sql = """
+                    INSERT INTO enrichment_status (league_id, status, last_enriched_at)
+                    VALUES %s
+                    ON CONFLICT (league_id) DO NOTHING;
+                """
+                execute_values(cursor, enrichment_sql, enrichment_values)
                 
-                logging.info(
-                    f"Successfully upserted {count} new AS matches for {date_str}."
-                )
-                total_matches_synced += count
+        # --- 3. UPSERT FIXTURES (in chunks) ---
+        
+        value_placeholders = ", ".join(UPSERT_COLUMNS) 
+        upsert_sql = f"""
+            INSERT INTO fixtures ({value_placeholders}) 
+            VALUES %s
+            ON CONFLICT (fixture_id) DO UPDATE SET
+                referee = EXCLUDED.referee,
+                date = EXCLUDED.date::TIMESTAMP WITH TIME ZONE, 
+                "timestamp" = EXCLUDED.timestamp,
+                status_long = EXCLUDED.status_long,
+                status_short = EXCLUDED.status_short,
+                elapsed = EXCLUDED.elapsed::INTEGER, 
+                home_winner = EXCLUDED.home_winner::BOOLEAN,
+                away_winner = EXCLUDED.away_winner::BOOLEAN,
+                goals_home = EXCLUDED.goals_home::INTEGER,
+                goals_away = EXCLUDED.goals_away::INTEGER,
+                score_ht_home = EXCLUDED.score_ht_home::INTEGER,
+                score_ht_away = EXCLUDED.score_ht_away::INTEGER,
+                score_ft_home = EXCLUDED.score_ft_home::INTEGER,
+                score_ft_away = EXCLUDED.score_ft_away::INTEGER,
+                score_et_home = EXCLUDED.score_et_home::INTEGER, 
+                score_et_away = EXCLUDED.score_et_away::INTEGER,
+                score_pen_home = EXCLUDED.score_pen_home::INTEGER,
+                score_pen_away = EXCLUDED.score_pen_away::INTEGER,
+                
+                -- Only update FKs if they were null (optional, safety first)
+                league_id = COALESCE(fixtures.league_id, EXCLUDED.league_id),
+                season_year = COALESCE(fixtures.season_year, EXCLUDED.season_year),
+                home_team_id = COALESCE(fixtures.home_team_id, EXCLUDED.home_team_id),
+                away_team_id = COALESCE(fixtures.away_team_id, EXCLUDED.away_team_id),
+                venue_id = COALESCE(fixtures.venue_id, EXCLUDED.venue_id)
+                
+            RETURNING fixture_id, status_short;
+        """
+        total_upserted_count = 0
+        
+        for chunk in chunked(fixture_tuples, FIXTURE_UPSERT_CHUNK_SIZE):
+            execute_values(cursor, upsert_sql, chunk)
+            total_upserted_count += cursor.rowcount
+            
+            for row in cursor.fetchall():
+                if row['status_short'] in ['TBD', 'NS', '1H', 'HT', '2H', 'ET', 'P', 'INT', 'FT']:
+                    updated_fixture_ids.add(row['fixture_id'])
 
-            except Exception as e:
-                logging.error(f"Failed to process AS date {date_str}: {e}")
-                if "limit" in str(e):
-                    logging.CRITICAL(
-                        "AS daily limit hit during sync. "
-                        "Stopping AS sync cycle."
-                    )
-                    break
-            finally:
-                if conn:
-                    db_pool.putconn(conn)
-                    conn = None
-
-            current_date += datetime.timedelta(days=1)
-
-        logging.info(
-            f"--- FINISHED API-Sports Sync. {total_matches_synced} matches. ---"
-        )
-        return total_matches_synced
-
+        conn.commit()
+        logging.info(f"[DB] Successfully upserted {total_upserted_count} fixtures (across all chunks).")
+        
     except Exception as e:
-        logging.error(f"AS Polling cycle failed: {e}")
-        return total_matches_synced
+        conn.rollback()
+        logging.error(f"[DB] Error during parent or initial upsert phase: {e}")
+    finally:
+        cursor.close()
+        
+    return updated_fixture_ids
 
-
-# ============ MAIN POLLING LOOP ============
-def main():
-    logging.info(f"--- SYNC POLLER ({VERSION}) STARTING ---")
+async def worker_process_date(date_to_fetch: dt.date) -> Set[int]:
+    """Async worker to fetch data for a date and update the DB."""
+    date_str = date_to_fetch.isoformat()
+    fixtures = []
     
-    # --- Initial Data Fetch ---
-    fd_comp_map = get_fd_competition_id_map()
-    as_leagues_to_skip = get_as_leagues_to_skip()
-    
-    if not fd_comp_map:
-        logging.error("No FD competitions to poll. Run build_leagues.py first.")
-    if not as_leagues_to_skip and AS_API_KEY:
-         logging.warning(
-             "No AS skip list found. AS poller may create duplicates."
-         )
+    conn = db_utils.get_connection()
+    if conn is None:
+        return set()
+        
+    try:
+        async with aiohttp.ClientSession(headers=API_HEADERS) as session:
+            params = {"date": date_str}
+            logging.info(f"[API] Fetching fixtures for date: {date_str}...")
+            
+            data = await async_get(session, AS_FIXTURES_URL, params)
+            
+            if data and data.get("response"):
+                fixtures = data["response"]
+                logging.info(f"[API] Received {len(fixtures)} fixtures for {date_str}.")
+            
+            if fixtures:
+                # DB call remains sync/blocking, but it's executed after the async fetch
+                return update_fixtures_db(fixtures, conn)
+            
+    finally:
+        db_utils.release_connection(conn)
+        
+    return set()
 
-    last_as_poll_time = 0.0
+# ============ LOW-FREQUENCY ENRICHMENT LOGIC (Teams & Standings) ============
+
+async def fetch_and_upsert_teams(session, conn, league_id, season_year):
+    """
+    Async fetches all teams and their venues for a league, then sync updates the DB.
+    """
+    logging.info(f"[Enrichment] Fetching team details for League {league_id}, Season {season_year}.")
+    
+    params = {'league': league_id, 'season': season_year}
+    
+    try:
+        data = await async_get(session, AS_TEAMS_URL, params)
+        teams_data = data.get('response', []) if data else []
+        
+        if not teams_data:
+            logging.warning(f"[Enrichment] No team data found for League {league_id}.")
+            return 0
+            
+        # Use maps for deduplication
+        team_data_map = {}  
+        venue_data_map = {} 
+        
+        for item in teams_data:
+            team = item.get('team', {})
+            venue = item.get('venue', {})
+            
+            team_id = team.get('id')
+            venue_id = venue.get('id')
+            
+            if team_id is not None and team_id not in team_data_map:
+                # Prepare tuple for teams table (8 columns)
+                team_data_map[team_id] = (
+                    team_id, db_utils.safe_str(team.get('name')), db_utils.safe_str(team.get('code')),
+                    db_utils.safe_str(team.get('country')), db_utils.safe_int(team.get('founded')),
+                    team.get('national', False), db_utils.safe_str(team.get('logo')),
+                    db_utils.safe_int(venue_id)
+                )
+            
+            if venue_id is not None and venue_id not in venue_data_map:
+                # Prepare tuple for venues table (7 columns)
+                venue_data_map[venue_id] = (
+                    venue_id, db_utils.safe_str(venue.get('name')), db_utils.safe_str(venue.get('address')),
+                    db_utils.safe_str(venue.get('city')), db_utils.safe_int(venue.get('capacity')), 
+                    db_utils.safe_str(venue.get('surface')), db_utils.safe_str(venue.get('image'))
+                )
+        
+        team_tuples = list(team_data_map.values())
+        venue_tuples = list(venue_data_map.values())
+
+        # Upsert Venues (Synchronous DB call using provided conn)
+        with conn.cursor() as cursor:
+            venue_sql = """
+                INSERT INTO venues (venue_id, name, address, city, capacity, surface, image_url)
+                VALUES %s
+                ON CONFLICT (venue_id) DO UPDATE SET 
+                    name = COALESCE(EXCLUDED.name, venues.name), 
+                    address = EXCLUDED.address,
+                    city = EXCLUDED.city, 
+                    capacity = EXCLUDED.capacity, 
+                    surface = EXCLUDED.surface, 
+                    image_url = EXCLUDED.image_url;
+            """
+            execute_values(cursor, venue_sql, venue_tuples)
+            
+            # Upsert Teams (Synchronous DB call using provided conn)
+            team_sql = """
+                INSERT INTO teams (team_id, name, code, country, founded, national, logo_url, venue_id) 
+                VALUES %s 
+                ON CONFLICT (team_id) DO UPDATE SET 
+                    name = COALESCE(EXCLUDED.name, teams.name),
+                    code = COALESCE(EXCLUDED.code, teams.code),
+                    country = COALESCE(EXCLUDED.country, teams.country),
+                    founded = COALESCE(EXCLUDED.founded, teams.founded),
+                    national = EXCLUDED.national,
+                    logo_url = COALESCE(EXCLUDED.logo_url, teams.logo_url),
+                    venue_id = COALESCE(teams.venue_id, EXCLUDED.venue_id);
+            """
+            execute_values(cursor, team_sql, team_tuples)
+            
+        logging.info(f"[Enrichment] Successfully enriched {len(team_tuples)} unique teams for League {league_id}.")
+        return 1
+        
+    except Exception as e:
+        logging.error(f"[Enrichment] Failed to fetch/upsert teams for League {league_id}: {e}")
+        return 0
+        
+async def fetch_and_upsert_standings(session, conn, league_id, season_year):
+    """Async fetches standing data and sync updates the standings table."""
+    logging.info(f"[Enrichment] Fetching standings for League {league_id}, Season {season_year}.")
+    
+    params = {'league': league_id, 'season': season_year}
+    
+    try:
+        data = await async_get(session, AS_STANDINGS_URL, params)
+        standings_response = data.get('response', []) if data else []
+        
+        if not standings_response:
+            logging.warning(f"[Enrichment] No standings found for League {league_id}.")
+            return 0
+            
+        # Flatten the list of standing groups/tables
+        standings_lists = standings_response[0]['league']['standings']
+        
+        # Use a map for standings deduplication
+        standings_data_map = {}
+        
+        for standings_list in standings_lists:
+            for rank_data in standings_list:
+                team_id = rank_data['team']['id']
+                stats = rank_data.get('all', {})
+                
+                # Use a composite key for the map
+                composite_key = (league_id, season_year, team_id)
+                
+                if composite_key not in standings_data_map:
+                    # Prepare tuple for standings table (15 columns)
+                    standings_data_map[composite_key] = (
+                        league_id, 
+                        season_year, 
+                        team_id, 
+                        rank_data.get('rank'),
+                        rank_data.get('points'),
+                        rank_data.get('goalsDiff'),
+                        rank_data.get('group', 'N/A'),
+                        rank_data.get('form'),
+                        rank_data.get('description'),
+                        stats.get('played'),
+                        stats.get('win'),
+                        stats.get('draw'),
+                        stats.get('lose'),
+                        stats.get('goals', {}).get('for'),
+                        stats.get('goals', {}).get('against')
+                    )
+
+        standings_tuples = list(standings_data_map.values())
+        
+        # Upsert Standings (Synchronous DB call using provided conn)
+        with conn.cursor() as cursor:
+            standings_sql = """
+                INSERT INTO standings (
+                    league_id, season_year, team_id, "rank", points, goals_diff, 
+                    group_name, form, description, played, win, draw, lose, 
+                    goals_for, goals_against
+                )
+                VALUES %s
+                ON CONFLICT (league_id, season_year, team_id) DO UPDATE SET
+                    "rank" = EXCLUDED."rank",
+                    points = EXCLUDED.points,
+                    goals_diff = EXCLUDED.goals_diff,
+                    group_name = EXCLUDED.group_name,
+                    form = EXCLUDED.form,
+                    description = EXCLUDED.description,
+                    played = EXCLUDED.played,
+                    win = EXCLUDED.win,
+                    draw = EXCLUDED.draw,
+                    lose = EXCLUDED.lose,
+                    goals_for = EXCLUDED.goals_for,
+                    goals_against = EXCLUDED.goals_against,
+                    update_date = NOW();
+            """
+            execute_values(cursor, standings_sql, standings_tuples)
+
+        logging.info(f"[Enrichment] Successfully upserted {len(standings_tuples)} standings entries for League {league_id}.")
+        return 1
+        
+    except Exception as e:
+        logging.error(f"[Enrichment] Failed to fetch/upsert standings for League {league_id}: {e}")
+        return 0
+        
+async def run_enrichment_worker(league_id, season_year):
+    """Executes all enrichment tasks for a single league using async calls."""
+    conn = db_utils.get_connection()
+    if conn is None:
+        logging.error(f"[Enrichment] Failed to get DB connection for League {league_id}.")
+        return False
+        
+    total_calls = 0
+    try:
+        async with aiohttp.ClientSession(headers=API_HEADERS) as session:
+            # 1. Fetch & Upsert Teams/Venues (1 API call)
+            total_calls += await fetch_and_upsert_teams(session, conn, league_id, season_year)
+            
+            # 2. Fetch & Upsert Standings (1 API call)
+            if total_calls == 1:
+                total_calls += await fetch_and_upsert_standings(session, conn, league_id, season_year)
+            
+        # 3. Mark as enriched and commit
+        if total_calls == 2:
+            with conn.cursor() as cursor:
+                update_sql = "UPDATE enrichment_status SET status = 'ENRICHED', last_enriched_at = NOW() WHERE league_id = %s"
+                cursor.execute(update_sql, (league_id,))
+            conn.commit()
+            logging.info(f"[Enrichment] League {league_id} marked as ENRICHED.")
+            return True
+        else:
+            conn.rollback() # Rollback if either fetch failed
+            return False
+            
+    except Exception as e:
+        conn.rollback()
+        logging.error(f"[Enrichment] Worker failed for League {league_id}: {e}")
+        return False
+    finally:
+        db_utils.release_connection(conn)
+
+
+async def run_enrichment_cycle():
+    """
+    The low-frequency manager for costly enrichment tasks, now using asyncio.gather.
+    Enforces the 24-hour cool-down and 20-league batch limit.
+    """
+    global LAST_ENRICHMENT_RUN
+    
+    current_time = dt.datetime.now(tz=UTC)
+    
+    # 1. Check Global Cooldown for external leagues (non-priority)
+    time_since_last_run = current_time - LAST_ENRICHMENT_RUN
+    cooldown_delta = dt.timedelta(hours=COOLDOWN_HOURS)
+    
+    is_cooldown_active = time_since_last_run < cooldown_delta
+    
+    conn = db_utils.get_connection()
+    if conn is None:
+        return
+        
+    targets_to_run = []
+    external_targets_count = 0
+    
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # --- 2. Determine Enrichment Targets (Sync DB calls) ---
+        
+        # a) PRIORITY Leagues (from mapping.json)
+        priority_sql = f"""
+            WITH latest_seasons AS (
+                SELECT 
+                    f.league_id, 
+                    MAX(f.season_year) as season_year
+                FROM fixtures f
+                GROUP BY f.league_id
+            )
+            SELECT DISTINCT es.league_id, ls.season_year
+            FROM enrichment_status es
+            LEFT JOIN latest_seasons ls ON es.league_id = ls.league_id 
+            WHERE es.status = 'PRIORITY' 
+            AND ls.season_year IS NOT NULL
+            AND (es.last_enriched_at < NOW() - INTERVAL '{COOLDOWN_HOURS} hours' OR es.last_enriched_at IS NULL);
+        """
+        cursor.execute(priority_sql)
+        priority_targets = cursor.fetchall()
+        targets_to_run.extend(priority_targets)
+        
+        # b) EXTERNAL (Non-Priority) Leagues - Only run if cooldown permits
+        if not is_cooldown_active:
+            external_sql = f"""
+                SELECT DISTINCT es.league_id, ls.season_year
+                FROM enrichment_status es
+                JOIN league_seasons ls ON es.league_id = ls.league_id
+                WHERE es.status = 'PENDING' AND ls.is_current = TRUE
+                ORDER BY es.league_id ASC
+                LIMIT {BATCH_SIZE // 2};
+            """
+            cursor.execute(external_sql)
+            external_targets = cursor.fetchall()
+            targets_to_run.extend(external_targets)
+            external_targets_count = len(external_targets)
+            
+        if not targets_to_run:
+            logging.info("[Enrichment] No pending leagues (PRIORITY or EXTERNAL) to enrich.")
+            return
+
+        logging.info(f"[Enrichment] Running enrichment on {len(targets_to_run)} leagues (Priority: {len(priority_targets)}, External: {external_targets_count}).")
+        
+    except Exception as e:
+        conn.rollback()
+        logging.error(f"[Enrichment] Error during target selection: {e}")
+        return
+    finally:
+        db_utils.release_connection(conn)
+
+
+    # --- 3. Execute Enrichment Tasks (Async Parallel) ---
+    results = await asyncio.gather(
+        *[run_enrichment_worker(t['league_id'], t['season_year']) for t in targets_to_run]
+    )
+    
+    # --- 4. Update Cooldown Timer (After all async tasks finish) ---
+    if external_targets_count > 0:
+        # Only update the cooldown if we actually ran an external batch
+        LAST_ENRICHMENT_RUN = current_time
+        logging.info(f"[Enrichment] External enrichment batch complete. Cooldown reset to {COOLDOWN_HOURS} hours.")
+        
+
+def trigger_predictor(fixture_ids: Set[int]):
+    """
+    Executes predictor.py with the list of fixture IDs that need prediction.
+    """
+    if not fixture_ids:
+        logging.info("No fixtures need prediction. Skipping predictor.py.")
+        return
+        
+    logging.info(f"Triggering predictor.py for {len(fixture_ids)} fixtures...")
+    
+    # Convert set to comma-separated string for subprocess argument
+    id_string = ",".join(map(str, fixture_ids))
+    
+    try:
+        process = subprocess.run(
+            [sys.executable, "predictor.py", "--fixtures", id_string],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        # Only log success stdout to prevent excessive logs
+        if process.returncode == 0:
+            logging.info(f"PREDICTOR SUCCESS. STDOUT: {process.stdout.strip()}")
+        else:
+            raise subprocess.CalledProcessError(process.returncode, "predictor.py", output=process.stdout, stderr=process.stderr)
+
+    except subprocess.CalledProcessError as e:
+        logging.error(f"predictor.py failed with return code {e.returncode}")
+        logging.error(f"PREDICTOR STDOUT: {e.stdout}")
+        logging.error(f"PREDICTOR STDERR: {e.stderr}")
+    except FileNotFoundError:
+        logging.error("ERROR: predictor.py not found. Check file path.")
+    except Exception as e:
+        logging.error(f"ERROR executing predictor.py: {e}")
+
+async def main_loop_async():
+    """The main continuous polling loop using asyncio."""
+    today_utc = dt.datetime.now(tz=UTC).date()
+    yesterday_utc = today_utc - dt.timedelta(days=1)
+    tomorrow_utc = today_utc + dt.timedelta(days=1)
+    
+    dates_to_sync = [yesterday_utc, today_utc, tomorrow_utc]
+    
+    # Initialize to force first check
+    last_enrichment_check = dt.datetime.now(tz=UTC) - dt.timedelta(hours=10) 
 
     while True:
         cycle_start_time = time.time()
-        total_matches_synced = 0
-        run_predictor = False
+        
+        # 1. Run High-Frequency Fixture Sync (Parallel using asyncio.gather)
+        logging.info(f"\n--- Sync Cycle Starting for: {dates_to_sync[0].isoformat()} to {dates_to_sync[-1].isoformat()} ---")
+        
+        all_updated_ids: Set[int] = set()
         
         try:
-            # === 1. FD Poller (5-minute interval) ===
-            logging.info("--- STARTING FD Sync Cycle ---")
-            today = datetime.datetime.now(UTC)
-            fd_date_from = (
-                today - datetime.timedelta(days=FD_DAYS_BEHIND)
-            ).strftime("%Y-%m-%d")
-            fd_date_to = (
-                today + datetime.timedelta(days=FD_DAYS_AHEAD)
-            ).strftime("%Y-%m-%d")
+            results = await asyncio.gather(
+                *[worker_process_date(date) for date in dates_to_sync],
+                return_exceptions=True
+            )
             
-            logging.info(f"FD Polling: {fd_date_from} to {fd_date_to} "
-                         f"for {len(fd_comp_map)} competitions...")
+            for result in results:
+                if isinstance(result, Exception):
+                    logging.error(f"[Async Worker] Exception during fixture sync: {result}")
+                else:
+                    all_updated_ids.update(result)
             
-            with ThreadPoolExecutor(
-                max_workers=FD_MAX_WORKERS, thread_name_prefix="FDSyncWorker"
-            ) as executor:
-                futures = {
-                    executor.submit(
-                        poll_fd_competition, code, comp_id,
-                        fd_date_from, fd_date_to
-                    ): code
-                    for code, comp_id in fd_comp_map.items()
-                }
-                for future in futures:
-                    try:
-                        matches_count = future.result()
-                        total_matches_synced += matches_count
-                    except Exception as e:
-                        pass
+            logging.info(f"Total unique fixtures updated/checked for prediction: {len(all_updated_ids)}")
+            
+            # 2. Trigger Prediction on the relevant fixture IDs (Sync subprocess call)
+            if all_updated_ids:
+                # Running sync subprocess inside async is fine, but ensures it finishes before moving on
+                trigger_predictor(all_updated_ids)
 
-            if total_matches_synced > 0:
-                run_predictor = True
-
-            # === 2. AS Poller (6-hour interval) ===
-            time_since_last_as_poll = time.time() - last_as_poll_time
-            if time_since_last_as_poll > (AS_POLL_INTERVAL_HOURS * 60 * 60):
-                logging.info(
-                    f"--- {AS_POLL_INTERVAL_HOURS}h passed. "
-                    "Running AS Sync Cycle. ---"
-                )
-                as_date_from = (
-                    today - datetime.timedelta(days=AS_DAYS_BEHIND)
-                ).strftime("%Y-%m-%d")
-                as_date_to = (
-                    today + datetime.timedelta(days=AS_DAYS_AHEAD)
-                ).strftime("%Y-%m-%d")
-                
-                as_matches_count = poll_as_fixtures(
-                    as_date_from, as_date_to, as_leagues_to_skip
-                )
-                
-                total_matches_synced += as_matches_count
-                if as_matches_count > 0:
-                    run_predictor = True
-                last_as_poll_time = time.time()
-            else:
-                logging.info(
-                    "Skipping AS sync (not time yet). "
-                    f"Next run in approx. "
-                    f"{( (AS_POLL_INTERVAL_HOURS * 3600) - time_since_last_as_poll ) / 60:.0f} "
-                    "minutes."
-                )
-
-            # === 3. Run Predictor (if needed) ===
-            if run_predictor:
-                logging.info(
-                    f"Successfully synced {total_matches_synced} total matches. "
-                    "Triggering predictor.py..."
-                )
-                try:
-                    result = subprocess.run(
-                        [sys.executable, "predictor.py"],
-                        check=True,
-                        capture_output=True,
-                        text=True,
-                        encoding=sys.stdout.encoding,
-                        errors='replace'
-                    )
-                    logging.info("predictor.py finished successfully.")
-                except subprocess.CalledProcessError as e:
-                    logging.error(f"predictor.py failed: {e.returncode}")
-                    logging.error(f"PREDICTOR STDOUT: {e.stdout}")
-                    logging.error(f"PREDICTOR STDERR: {e.stderr}")
-                except FileNotFoundError:
-                    logging.error("ERROR: predictor.py not found.")
-            else:
-                logging.info("No new/updated matches found. Predictor not needed.")
+            # 3. Check and Run Low-Frequency Enrichment (Sequential async call)
+            current_time = dt.datetime.now(tz=UTC)
+            if (current_time - last_enrichment_check).total_seconds() >= ENRICHMENT_CHECK_INTERVAL_SECONDS:
+                logging.info("[MainThread] Starting low-frequency enrichment check.")
+                await run_enrichment_cycle()
+                last_enrichment_check = current_time # Reset check timer
 
         except Exception as e:
-            logging.error(f"Main poll cycle failed: {e}")
-        finally:
-            cycle_end_time = time.time()
-            logging.info(
-                f"Poll cycle finished in {cycle_end_time - cycle_start_time:.2f}s."
-            )
+            logging.error(f"[Sync] Critical error in main loop: {e}")
+        
+        cycle_end_time = time.time()
+        elapsed = cycle_end_time - cycle_start_time
+        
+        sleep_duration = SYNC_INTERVAL_SECONDS - elapsed
+        if sleep_duration < 0:
+            sleep_duration = 0
             
-            sleep_duration = (FD_POLL_INTERVAL_MINUTES * 60) - (
-                cycle_end_time - cycle_start_time
-            )
-            if sleep_duration < 0:
-                sleep_duration = 0
-                
-            logging.info(
-                f"Sleeping for {sleep_duration:.2f} seconds "
-                f"(until next 5-min interval)..."
-            )
-            time.sleep(sleep_duration)
+        logging.info(f"Cycle finished in {elapsed:.2f}s. Sleeping for {sleep_duration:.2f}s...")
+        await asyncio.sleep(sleep_duration)
+
+
+def main():
+    logging.info(f"--- Sync (Enricher) v4.14 Starting (Interval: {SYNC_INTERVAL_SECONDS / 60} min) ---")
+    if not AS_API_KEY:
+        logging.error("FATAL: AS_API_KEY not set. Sync script cannot run.")
+        sys.exit(1)
+        
+    # 1. Load priority IDs from mapping file
+    load_priority_league_ids()
+        
+    try:
+        # 2. Initialize DB Connection Pool
+        db_utils.init_connection_pool()
+        
+        # 3. CRITICAL: Initialize or confirm PRIORITY status for mapped leagues
+        initialize_priority_status() 
+        
+        # 4. Start the main async sync loop
+        asyncio.run(main_loop_async())
+        
+    except Exception as e:
+        logging.critical(f"--- SYNC POLLER CRASHED: {e} ---")
+    except KeyboardInterrupt:
+        logging.info("--- SYNC POLLER STOPPING (KeyboardInterrupt) ---")
+    finally:
+        db_utils.close_all_connections()
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        logging.info("--- SYNC POLLER STOPPING (KeyboardInterrupt) ---")
-    except Exception as e:
-        logging.error(f"--- SYNC POLLER CRASHED: {e} ---")
-    finally:
-        if 'db_pool' in globals():
-            db_pool.closeall()
-            logging.info("Database connection pool closed.")
+    main()

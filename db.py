@@ -1,237 +1,405 @@
-# db.py v1.1
+# db.py v1.17
 #
-# WHAT'S NEW (v1.1):
-# - DYNAMIC SQL: get_filtered_matches is the new core function,
-#   replacing all previous fetch functions. It accepts optional
-#   date range, competition code, search_query, and predictions_only
-#   filters.
-# - SEARCH LOGIC: Implemented search_teams_and_competitions to
-#   retrieve clickable teams and competitions from the DB for
-#   the new search results view.
-# - ALL MATCHES: Added get_all_matches for simple statistical counts.
+# WHAT'S NEW (v1.17 - CRITICAL SCHEMA FIX):
+# - CRITICAL FIX 1 (Schema): Corrected `get_filtered_matches` SELECT.
+#   The `leagues` table (hl) does not have a 'code' column.
+#   Changed `hl.code as competition_code` to `hl.league_id as competition_code`.
+# - CRITICAL FIX 2 (Schema): Corrected `get_filtered_matches` WHERE.
+#   Changed the filter for `competition_code` to use `hl.league_id`
+#   instead of the non-existent `hl.code`.
 
 import os
+import json
 import logging
 import psycopg2
+import pytz
+from datetime import datetime, timezone, timedelta
 from psycopg2.pool import ThreadedConnectionPool
-from psycopg2.extras import RealDictCursor
+from psycopg2.extras import execute_values, RealDictCursor
 from dotenv import load_dotenv
-from typing import List, Dict, Any, Optional
+from typing import Optional, Any, List, Dict
 
 load_dotenv()
 
-# --- Config and Initialization ---
-MIN_CONN = 2
-MAX_CONN = 10 
+# ============ CONFIGURATION ============
 
-db_url = os.getenv("DATABASE_URL")
-if not db_url:
-    logging.error("FATAL: DATABASE_URL not set.")
-    raise ValueError("DATABASE_URL environment variable not set.")
+# Database connection details from environment variables
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_NAME = os.getenv("DB_NAME", "football_db")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASS = os.getenv("DB_PASS", "postgres")
+DB_PORT = os.getenv("DB_PORT", "5432")
 
-if db_url.startswith("postgresql+psycopg://"):
-    db_url = db_url.replace("postgresql+psycopg://", "postgresql://", 1)
+# Connection pool setup
+db_pool = None
+MAX_CONNECTIONS = 10
+MIN_CONNECTIONS = 2
 
-# --- Global Connection Pool ---
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+
+
+def initialize_pool():
+    """Initializes the global connection pool."""
+    global db_pool
+    if db_pool is None:
+        try:
+            db_pool = ThreadedConnectionPool(
+                minconn=MIN_CONNECTIONS,
+                maxconn=MAX_CONNECTIONS,
+                host=DB_HOST,
+                database=DB_NAME,
+                user=DB_USER,
+                password=DB_PASS,
+                port=DB_PORT,
+                # Supabase requires SSL
+                sslmode='require'
+            )
+            logging.info("Database connection pool initialized successfully.")
+        except Exception as e:
+            logging.error(f"Error initializing DB pool: {e}")
+            raise
+
+# Ensure the pool is initialized on import
 try:
-    db_pool = ThreadedConnectionPool(
-        minconn=MIN_CONN,
-        maxconn=MAX_CONN,
-        dsn=db_url,
-        cursor_factory=RealDictCursor 
-    )
-    logging.info(f"Streamlit DB pool created (Min: {MIN_CONN}, Max: {MAX_CONN}).")
-except (psycopg2.OperationalError, Exception) as e:
-    logging.error(f"FATAL: Failed to create DB pool: {e}")
-    db_pool = None 
+    initialize_pool()
+except Exception:
+    logging.warning("Failed to initialize database pool on script start.")
+    pass
 
-def test_connection():
-    """Tests the connection pool by getting and putting a connection."""
-    if not db_pool:
-        logging.error("DB Pool is not initialized.")
-        return False
-        
+# ============ DB UTILITY FUNCTIONS (For Streamlit App) ============
+
+def get_last_updated_time() -> Optional[datetime]:
+    """
+    v1.15: Fetches the timestamp of the most recently *completed* match
+    as a proxy for when the database was last updated with results.
+    """
     conn = None
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            cur.execute("SELECT 1")
-        logging.info("Database connection test successful.")
-        return True
+            # v1.15 FIX: Query for max date from finished matches
+            sql = "SELECT MAX(date) as last_update FROM fixtures WHERE status_short = 'FT'"
+            cur.execute(sql)
+            result = cur.fetchone()
+            if result and result[0]:
+                # Ensure the result is timezone-aware (assuming 'date' is UTC)
+                if result[0].tzinfo is None:
+                    return result[0].replace(tzinfo=pytz.utc)
+                return result[0]
+            return None
     except Exception as e:
-        logging.error(f"Database connection test failed: {e}")
-        return False
+        logging.error(f"Failed to get last updated time: {e}")
+        return None
     finally:
         if conn:
             db_pool.putconn(conn)
 
-def get_db_conn():
-    if not db_pool:
-        raise ConnectionError("Database pool is not initialized.")
-    return db_pool.getconn()
-
-def release_db_conn(conn):
-    if db_pool:
-        db_pool.putconn(conn)
-
-# --- v1.1: NEW SEARCH AND FILTER FUNCTIONS ---
-
-def get_all_matches() -> List[Dict[str, Any]]:
+def get_match_counts() -> Dict[str, int]:
     """
-    Retrieves all matches from the DB. Used only for sidebar stats and initialization.
+    Fetches the count of matches grouped by status.
     """
     conn = None
+    counts = {}
     try:
-        conn = get_db_conn()
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT
-                    m.*,
-                    c.code as competition_code,
-                    p.prediction_data
-                FROM matches m
-                JOIN competitions c ON m.competition_id = c.competition_id
-                LEFT JOIN predictions p ON m.match_id = p.match_id
-                ORDER BY m.utc_date ASC
-            """)
-            return cur.fetchall()
-    except Exception as e:
-        logging.error(f"Error in get_all_matches: {e}")
-        return []
-    finally:
-        if conn:
-            release_db_conn(conn)
-
-
-def get_filtered_matches(date_from: Optional[str] = None, 
-                         date_to: Optional[str] = None, 
-                         competition_code: Optional[str] = None,
-                         search_query: str = "",
-                         predictions_only: bool = False) -> List[Dict[str, Any]]:
-    """
-    Fetches matches based on optional date range, competition, search, and prediction filter.
-    """
-    conn = None
-    try:
-        conn = get_db_conn()
-        with conn.cursor() as cur:
-            # Base query including joins for filtering
+        conn = db_pool.getconn()
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # v1.14 FIX: Querying the correct column 'status_short'
             sql = """
-            SELECT
-                m.match_id,
-                m.utc_date,
-                m.status,
-                m.raw_data,
-                c.code as competition_code,
-                p.prediction_data
-            FROM matches m
-            JOIN competitions c ON m.competition_id = c.competition_id
-            JOIN teams ht ON m.home_team_id = ht.team_id
-            JOIN teams at ON m.away_team_id = at.team_id
-            LEFT JOIN predictions p ON m.match_id = p.match_id
+            SELECT status_short, COUNT(*)
+            FROM fixtures
+            GROUP BY status_short
             """
-            
-            # Dynamically build WHERE clause
-            where_clauses = []
-            params = []
-
-            # 1. Date Range Filter
-            if date_from and date_to:
-                where_clauses.append("m.utc_date BETWEEN %s AND %s")
-                params.extend([date_from, date_to])
-            
-            # 2. Competition Filter
-            if competition_code:
-                where_clauses.append("c.code = %s")
-                params.append(competition_code)
-
-            # 3. Prediction Filter
-            if predictions_only:
-                # Checks if prediction_data exists and if 'h2h' is not an empty JSON array
-                where_clauses.append(
-                    "(p.prediction_data IS NOT NULL AND p.prediction_data -> 'h2h' != '[]'::jsonb)"
-                )
-            
-            # 4. Search Query Filter (Teams and Competition Name)
-            if search_query:
-                search_term = f"%{search_query}%"
-                where_clauses.append(
-                    """
-                    (ht.name ILIKE %s OR at.name ILIKE %s OR c.name ILIKE %s)
-                    """
-                )
-                params.extend([search_term, search_term, search_term])
-                
-                # NOTE: Player search is excluded as there is no 'players' table.
-
-            # Assemble the final query
-            if where_clauses:
-                sql += " WHERE " + " AND ".join(where_clauses)
-            
-            sql += " ORDER BY m.utc_date ASC;"
-
-            cur.execute(sql, tuple(params))
-            return cur.fetchall()
+            cur.execute(sql)
+            rows = cur.fetchall()
+            # Map statuses to app.py's expected keys
+            for row in rows:
+                status = row['status_short']
+                count = row['count']
+                if status in ('NS', 'TBD', 'PST'):
+                    counts['UPCOMING'] = counts.get('UPCOMING', 0) + count
+                elif status in ('FT', 'AET', 'PEN'):
+                    counts['PAST'] = counts.get('PAST', 0) + count
+                else:
+                    # e.g., 'LIVE', 'HT', '1H', '2H', 'INT'
+                    counts['OTHER'] = counts.get('OTHER', 0) + count
     except Exception as e:
-        logging.error(f"Error in get_filtered_matches: {e}")
-        return []
+        logging.error(f"Error fetching match counts: {e}")
     finally:
         if conn:
-            release_db_conn(conn)
+            db_pool.putconn(conn)
+    return counts
 
-
-def search_teams_and_competitions(query: str) -> List[Dict[str, Any]]:
+def count_standings_lists() -> int:
     """
-    Searches for teams and competitions matching the query for clickable results.
+    Counts the total number of standing entries in the 'standings' table.
     """
-    if not query:
-        return []
-
     conn = None
     try:
-        conn = get_db_conn()
+        conn = db_pool.getconn()
         with conn.cursor() as cur:
-            search_term = f"%{query}%"
-
-            # 1. Team Search
-            cur.execute("""
-                SELECT 
-                    team_id as id, 
-                    name, 
-                    'team' as type,
-                    crest as emblem 
-                FROM teams 
-                WHERE name ILIKE %s OR short_name ILIKE %s
-                LIMIT 10
-            """, (search_term, search_term))
-            team_results = cur.fetchall()
-
-            # 2. Competition Search
-            cur.execute("""
-                SELECT 
-                    competition_id as id, 
-                    name, 
-                    'competition' as type,
-                    emblem,
-                    code
-                FROM competitions 
-                WHERE name ILIKE %s OR code ILIKE %s
-                LIMIT 10
-            """, (search_term, search_term))
-            comp_results = cur.fetchall()
-            
-            # 3. Player Search Placeholder
-            # NOTE: When a 'players' table is implemented, add the search logic here:
-            # player_results = []
-            # cur.execute("SELECT player_id as id, name, 'player' as type, photo as emblem FROM players WHERE name ILIKE %s LIMIT 10", (search_term,))
-            # player_results = cur.fetchall()
-            # return team_results + comp_results + player_results
-
-            return team_results + comp_results
-
+            sql = "SELECT COUNT(*) FROM standings"
+            cur.execute(sql)
+            return cur.fetchone()[0]
     except Exception as e:
-        logging.error(f"Error in search_teams_and_competitions: {e}")
+        logging.error(f"Failed to count table standings: {e}")
+        return 0
+    finally:
+        if conn:
+            db_pool.putconn(conn)
+
+def get_all_leagues(conn=None) -> List[Dict[str, Any]]:
+    """Fetches all unique league codes and names."""
+    should_close_conn = False
+    if conn is None:
+        conn = db_pool.getconn()
+        should_close_conn = True
+
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # v1.17: Note: This query is not used by app.py, but if it were,
+            # it would need to select 'league_id' instead of 'code'.
+            sql = "SELECT league_id, name FROM leagues ORDER BY name"
+            cur.execute(sql)
+            return cur.fetchall()
+    except Exception as e:
+        logging.error(f"Error fetching leagues: {e}")
+        return []
+    finally:
+        if should_close_conn and conn:
+            db_pool.putconn(conn)
+
+def search_teams_and_competitions(search_key: str) -> List[Dict[str, Any]]:
+    """
+    v1.14: Added function (was missing).
+    Searches for teams and competitions matching the search key.
+    """
+    conn = None
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            sql = """
+            (
+                SELECT
+                    l.league_id as id,
+                    l.name,
+                    l.logo_url as emblem,
+                    'competition' as type
+                FROM leagues l
+                WHERE l.name ILIKE %s
+            )
+            UNION ALL
+            (
+                SELECT
+                    t.team_id as id,
+                    t.name,
+                    t.logo_url as emblem,
+                    'team' as type
+                FROM teams t
+                WHERE t.name ILIKE %s
+            )
+            LIMIT 10;
+            """
+            search_term = f"%{search_key}%"
+            cur.execute(sql, (search_term, search_term))
+            return cur.fetchall()
+    except Exception as e:
+        logging.error(f"Error during search: {e}")
         return []
     finally:
         if conn:
-            release_db_conn(conn)
+            db_pool.putconn(conn)
+
+
+def get_filtered_matches(
+    date_from: str,
+    date_to: str,
+    predictions_only: bool = False,
+    limit: Optional[int] = None,
+    offset: int = 0,
+    search_query: Optional[str] = None,
+    competition_code: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """
+    v1.17: Corrected 'hl.code' to 'hl.league_id' to match schema.
+    Fetches fixture data with dynamic filters for date, predictions, search,
+    competition, and pagination.
+    """
+    conn = None
+    params = []
+    
+    # Base query with corrected column names and joins
+    sql = """
+        SELECT
+            f.fixture_id,
+            f.date as utc_date, -- Alias for compatibility with app
+            f.status_short as status, -- Alias for compatibility with app
+            f.goals_home as home_score, -- Alias
+            f.goals_away as away_score, -- Alias
+            p.prediction_data,
+            
+            -- v1.17 FIX: Use league_id as the competition_code
+            hl.league_id as competition_code,
+            
+            ht.name as home_team_name,
+            ht.logo_url as home_team_crest, -- Use logo_url
+            at.name as away_team_name,
+            at.logo_url as away_team_crest, -- Use logo_url
+            
+            -- v1.16: Add competition data directly
+            hl.name as competition_name,
+            hl.logo_url as competition_crest,
+            hl.country_name as competition_country
+            
+        FROM fixtures f
+        JOIN leagues hl ON f.league_id = hl.league_id
+        JOIN teams ht ON f.home_team_id = ht.team_id
+        JOIN teams at ON f.away_team_id = at.team_id
+        LEFT JOIN predictions p ON f.fixture_id = p.fixture_id
+    """
+
+    where_clauses = []
+
+    # 1. Date Filter (Mandatory)
+    try:
+        date_start_utc = datetime.fromisoformat(date_from).astimezone(timezone.utc)
+        date_end_utc = datetime.fromisoformat(date_to).astimezone(timezone.utc)
+    except ValueError:
+        date_start_utc = datetime.strptime(date_from, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        date_end_utc = datetime.strptime(date_to, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+
+    where_clauses.append("f.date BETWEEN %s AND %s")
+    params.extend([date_start_utc, date_end_utc])
+
+    # 2. Predictions Only Filter
+    if predictions_only:
+        where_clauses.append("p.prediction_data IS NOT NULL AND p.prediction_data->>'h2h' != '[]'")
+
+    # 3. Competition Filter
+    if competition_code:
+        # v1.17 FIX: Filter on hl.league_id, not hl.code
+        where_clauses.append("hl.league_id = %s")
+        params.append(competition_code)
+
+    # 4. Search Query Filter
+    if search_query:
+        where_clauses.append("(ht.name ILIKE %s OR at.name ILIKE %s OR hl.name ILIKE %s)")
+        search_term = f"%{search_query}%"
+        params.extend([search_term, search_term, search_term])
+
+    # Assemble final query
+    if where_clauses:
+        sql += " WHERE " + " AND ".join(where_clauses)
+
+    sql += " ORDER BY f.date ASC"
+
+    # 5. Pagination
+    if limit is not None:
+        sql += " LIMIT %s"
+        params.append(limit)
+    
+    if offset > 0:
+        sql += " OFFSET %s"
+        params.append(offset)
+
+    # --- Execute Query ---
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(sql, tuple(params))
+            matches_data = cur.fetchall()
+            return matches_data
+    except Exception as e:
+        logging.error(f"Error fetching filtered matches: {e}")
+        logging.error(f"Failing SQL (approx): {sql}")
+        logging.error(f"Params: {params}")
+        return []
+    finally:
+        if conn:
+            db_pool.putconn(conn)
+
+
+# ============ DB MANIPULATION FUNCTIONS (For populator/predictor) ============
+
+def store_predictions_db(conn, predictions_to_store: List[Dict[str, Any]]):
+    """
+    Stores or updates predictions in the database.
+    """
+    if not predictions_to_store:
+        return
+
+    insert_data = []
+    for pred in predictions_to_store:
+        # v1.17: This must match what predictor.py v1.17 sends.
+        # predictor.py (line 303) sends 'fixture_id'
+        match_id = pred['fixture_id']
+        
+        class DateTimeEncoder(json.JSONEncoder):
+            def default(self, obj):
+                if isinstance(obj, datetime):
+                    return obj.isoformat()
+                return json.JSONEncoder.default(self, obj)
+        
+        # predictor.py (line 304) sends 'predictions'
+        prediction_json = json.dumps(pred['predictions'], cls=DateTimeEncoder)
+        generated_at = datetime.now(timezone.utc)
+        
+        # v1.17: Ensure tuple matches table definition
+        # Table: fixture_id (INT), prediction_data (JSONB), generated_at (TIMESTAMPTZ)
+        insert_data.append((match_id, prediction_json, generated_at))
+
+    # v1.17: This query must match the 'predictions' table schema
+    query = """
+    INSERT INTO predictions (fixture_id, prediction_data, generated_at)
+    VALUES (%s, %s::jsonb, %s)
+    ON CONFLICT (fixture_id) DO UPDATE
+    SET
+        prediction_data = EXCLUDED.prediction_data,
+        generated_at = EXCLUDED.generated_at;
+    """
+    try:
+        with conn.cursor() as cur:
+            execute_values(cur, query, insert_data, page_size=100)
+        conn.commit()
+        logging.info(f"Successfully stored/updated {len(predictions_to_store)} predictions.")
+    except psycopg2.Error as e:
+        conn.rollback()
+        logging.error(f"PostgreSQL error during prediction storage: {e}")
+        raise e
+    except Exception as e:
+        conn.rollback()
+        logging.error(f"General error during prediction storage: {e}")
+        raise e
+
+# ============ HELPER FUNCTIONS FOR WIDGETS (JSONB Extraction) ============
+
+def get_h2h_data(prediction_data: dict) -> list:
+    if prediction_data:
+        return prediction_data.get('h2h', [])
+    return []
+
+def get_last_7_home_data(prediction_data: dict) -> list:
+    if prediction_data:
+        return prediction_data.get('home_last7', [])
+    return []
+
+def get_last_7_away_data(prediction_data: dict) -> list:
+    if prediction_data:
+        return prediction_data.get('away_last7', [])
+    return []
+
+def get_tags(prediction_data: dict, team_type: str) -> list:
+    if prediction_data:
+        if team_type == 'home':
+            return prediction_data.get('home_tags', ["Let's learn"])
+        elif team_type == 'away':
+            return prediction_data.get('away_tags', ["Let's learn"])
+    return ["Let's learn"]
+
+# =======================================================================
+def close_pool():
+    global db_pool
+    if db_pool:
+        db_pool.closeall()
+        db_pool = None
+import atexit
+atexit.register(close_pool)

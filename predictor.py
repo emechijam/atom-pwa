@@ -1,466 +1,663 @@
-# predictor.py v1.4 - Rule-Based Football Predictor & Data Packager
-#
-# WHAT'S NEW (v1.4):
-# - BUG FIX (MAJOR): This script is now responsible for populating
-#   Head-to-Head (H2H) and Recent Form (Last 7) data.
-# - DATA PACKAGING: H2H and Recent Form lists are now calculated
-#   and saved *inside* the prediction_data JSONB.
-# - UI FIX: This provides the missing data that widgets.py (v1.4)
-#   expects, fixing the empty H2H/Recent Form sections in the UI.
+# predictor.py v1.17 - Rule-Based Football Predictor & Data Packager
+"""
+WHAT'S NEW (v1.17):
+- **FIX (ON CONFLICT):** Modified the UPSERT SQL in `store_predictions_db` to explicitly use `ON CONFLICT (fixture_id)`.
+  This resolves the 'no unique constraint matching the ON CONFLICT specification' error, assuming
+  a unique index/constraint is applied to the `predictions.fixture_id` column in the database schema.
+- INCREMENTAL SAVE: Implemented progress saving by committing the prediction batch
+  to the database after every 100 fixtures processed.
+- RETAINED: All v1.16 progress logging, schema adaptations, and logic.
+"""
 
-import os
-import time
-import logging
-import psycopg2
-import datetime as dt
-import json
-from psycopg2.pool import ThreadedConnectionPool
+import os 
+import time 
+import logging 
+import psycopg2 
+import datetime as dt 
+import json 
+import argparse 
+import sys 
 from psycopg2.extras import execute_values, RealDictCursor
-from dotenv import load_dotenv
+from dotenv import load_dotenv 
 from typing import List, Dict, Any, Optional
+from datetime import timedelta, timezone
+
+# Import database utilities (db_utils must be in the same directory)
+import db_utils
 
 # ============ CONFIG & LOGGING ============
-load_dotenv()
+load_dotenv() 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
+class DateTimeEncoder(json.JSONEncoder):
+    """Custom JSON encoder to handle datetime objects."""
+    def default(self, obj):
+        if isinstance(obj, dt.datetime):
+            return obj.isoformat()
+        return json.JSONEncoder.default(self, obj)
 
 # --- Config ---
-VERSION = "v1.4"  # <-- NEW VERSION VARIABLE
-# This remains 14 days as requested by the user's prediction scope rule.
+VERSION = "v1.17"
 PREDICTION_DAYS_AHEAD = 14
-GOAL_THRESHOLDS = [1, 2, 3, 4]
+CURRENT_DATE = dt.datetime.now(tz=timezone.utc)
+TEN_YEARS_AGO = CURRENT_DATE - timedelta(days=365 * 10)
+BATCH_COMMIT_SIZE = 100 # v1.16: Commit every 100 predictions
 
-# ============ CONNECT ============
-try:
-    db_url = os.getenv("DATABASE_URL")
-    if not db_url:
-        logging.error("DATABASE_URL not found. Check .env file or Streamlit Secrets.")
-        exit(1)
+# Tag mapping for generating full tag strings from prediction codes
+TAG_MAP = { 
+    "SNG": "Score no goal", 
+    "S1+": "Score At least a goal", 
+    "S2+": "Score At least 2 goals", 
+    "S3+": "Score At least 3 or more goals", 
+    "CS": "Concede no goal", 
+    "C1+": "Concede At least a goal", 
+    "C2+": "Concede At least 2 goals", 
+    "C3+": "Concede At least 3 or more goals", 
+    "W": "Win", 
+    "D": "Draw", 
+    "L": "Loss", 
+    "BST": "Beats Strong Teams", 
+    "LWT": "Loses to Weak Teams", 
+    "H2H": "H2H Dominance", 
+    "T/B": "Top vs Bottom", 
+    "Rival": "Close Rivals", 
+}
 
-    if db_url.startswith("postgresql+psycopg://"):
-        db_url = db_url.replace("postgresql+psycopg://", "postgresql://", 1)
+# ============ DB UTILITIES ============
 
-    db_pool = ThreadedConnectionPool(
-        minconn=1,
-        maxconn=5,
-        dsn=db_url,
-        cursor_factory=RealDictCursor
-    )
-    logging.info("Database connection pool created.")
-except Exception as e:
-    logging.error(f"DB connection pool failed: {e}")
-    exit(1)
-
-
-# --- Helper Functions (Core Logic from User Prompt) ---
-
-def parse_date(date_str: str) -> dt.date:
-    """Helper function to convert date string to date object."""
-    try:
-        return dt.datetime.strptime(date_str, '%Y-%m-%d').date()
-    except (ValueError, TypeError):
-        logging.warning(f"Could not parse date: {date_str}. Using today.")
-        return dt.date.today()
-
-def get_team_goals(m: Dict, team: str) -> int:
-    """Get goals scored by the specified team in a match."""
-    return m['home_goals'] if m['home_team'] == team else m['away_goals']
-
-def get_team_conceded(m: Dict, team: str) -> int:
-    """Get goals conceded by the specified team."""
-    return get_team_goals(m, opponent_of(m, team))
-
-def opponent_of(m: Dict, team: str) -> str:
-    """Get the opponent team's name."""
-    return m['away_team'] if m['home_team'] == team else m['home_team']
-
-def is_win(m: Dict, team: str) -> bool:
-    """Check if the team won the match."""
-    return get_team_goals(m, team) > get_team_conceded(m, team)
-
-def is_loss(m: Dict, team: str) -> bool:
-    """Check if the team lost the match."""
-    return get_team_goals(m, team) < get_team_conceded(m, team)
+def get_fixtures_to_predict(conn, fixture_ids: Optional[List[int]]) -> List[Dict[str, Any]]: 
+    """ 
+    Fetches scheduled matches. If fixture_ids is provided, limits the query to those IDs.
     
-def is_draw(m: Dict) -> bool:
-    """Check if the match was a draw."""
-    return m['home_goals'] == m['away_goals']
+    Fixtures to predict are those that: 
+    1. Have status 'NS' (Not Started) or 'TBD' (To Be Defined). 
+    2. Are scheduled within the next N days (if running full scan). 
+    3. Have NOT been predicted yet, OR the existing prediction is OLDER than the fixture date (i.e., new result data is available).
+    """ 
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     
-def count_events(matches_subset: List[Dict], event_condition) -> int:
-    """Counts the number of matches that satisfy a given condition."""
-    return sum(1 for m in matches_subset if event_condition(m))
-
-def calculate_all_team_tiers(all_matches: List[Dict]) -> Dict[str, str]:
-    """Determines the historical tier of all teams based on absolute win count."""
-    logging.info("Calculating historical tiers for all teams...")
-    team_wins = {}
-    for m in all_matches:
-        if is_win(m, m['home_team']):
-            team_wins[m['home_team']] = team_wins.get(m['home_team'], 0) + 1
-        elif is_win(m, m['away_team']):
-            team_wins[m['away_team']] = team_wins.get(m['away_team'], 0) + 1
-            
-    team_tiers = {}
-    for team, wins in team_wins.items():
-        if wins > 100:
-            team_tiers[team] = 'high'
-        elif wins > 50:
-            team_tiers[team] = 'mid'
-        else:
-            team_tiers[team] = 'low'
+    query_condition = ""
+    query_params = []
     
-    logging.info(f"Calculated tiers for {len(team_tiers)} teams.")
-    return team_tiers
+    if fixture_ids:
+        # Use fixture_ids provided by sync.py trigger
+        query_condition = "f.fixture_id IN %s"
+        query_params.append(tuple(fixture_ids))
+        logging.info(f"Running targeted scan for {len(fixture_ids)} fixture IDs.")
+    else:
+        # Run full scan for all relevant upcoming matches
+        future_date = CURRENT_DATE + timedelta(days=PREDICTION_DAYS_AHEAD)
+        logging.info(f"Running full scan. Fetching all upcoming fixtures (NS/TBD) until {future_date.strftime('%Y-%m-%d')}.")
+        query_condition = f"""
+            f.date >= %s AND f.date <= %s
+            AND f.status_short IN ('NS', 'TBD')
+            AND (
+                p.fixture_id IS NULL OR p.generated_at < f.date
+            )
+        """
+        query_params.extend([CURRENT_DATE, future_date])
 
-# --- Prediction Core Function (from User Prompt) ---
-
-def predict_for_team(
-    team_a: str, 
-    team_b: str, 
-    is_home: bool, 
-    all_matches: List[Dict], 
-    current_date: dt.date,
-    team_tiers: Dict[str, str] # Pass in pre-calculated tiers
-) -> Dict[str, Any]:
-    """
-    Generates all rule-based predictions for Team A in an upcoming match.
-    Strictly avoids averages or statistical means.
+    # Base query template
+    query = f"""
+        SELECT 
+            f.fixture_id, 
+            f.home_team_id, 
+            f.away_team_id, 
+            f.league_id,
+            f.season_year,
+            -- Prediction details (to check staleness)
+            p.generated_at AS last_prediction_at
+        FROM 
+            fixtures f
+        LEFT JOIN 
+            predictions p ON f.fixture_id = p.fixture_id
+        WHERE 
+            {query_condition}
+        ORDER BY 
+            f.date ASC
     """
     
-    # Step 1: Filter data to past 10 years
-    ten_years_ago = current_date - dt.timedelta(days=365 * 10)
-    filtered_matches = [m for m in all_matches if parse_date(m['date']) >= ten_years_ago]
-    
-    # --- Step 2 & 3: Filter and Define Subsets ---
-    
-    # Head-to-head (H2H)
-    # v1.4: H2H logic now matches UI (is_home doesn't matter for H2H)
-    h2h_matches_all = sorted([m for m in filtered_matches if 
-                           (m['home_team'] == team_a and m['away_team'] == team_b) or
-                           (m['home_team'] == team_b and m['away_team'] == team_a)],
-                           key=lambda m: parse_date(m['date']), reverse=True)
-    
-    # Use only H2H matches *in context* (home/away) for *prediction rules*
-    h2h_matches_context = [m for m in h2h_matches_all if
-                           (m['home_team'] == team_a and is_home) or
-                           (m['away_team'] == team_a and not is_home)]
-    
-    # Recent form (last 10 matches for team_a)
-    team_a_matches_all = sorted([m for m in filtered_matches if team_a in (m['home_team'], m['away_team'])], 
-                                key=lambda m: parse_date(m['date']), reverse=True)
-    team_a_recent_matches = team_a_matches_all[:10]
-    
-    # Opponent tier matches
-    tier = team_tiers.get(team_b, 'low')
-    similar_opponent_matches = [m for m in filtered_matches if 
-                                opponent_of(m, team_a) != team_b and
-                                team_tiers.get(opponent_of(m, team_a), 'low') == tier and
-                                (m['home_team'] == team_a if is_home else m['away_team'] == team_a)]
-    
-    # Overall (all team_a matches in context)
-    overall_matches = [m for m in filtered_matches if 
-                       (m['home_team'] == team_a if is_home else m['away_team'] == team_a)]
-    
-    # Hierarchy of subsets (prefer more specific)
-    # v1.4: Use h2h_matches_context for rules
-    subsets_priority = [h2h_matches_context, team_a_recent_matches, similar_opponent_matches, overall_matches]
-    
-    # Define all prediction types (expanded)
-    pred_types = []
-    for g in GOAL_THRESHOLDS:
-        pred_types.append(f'score_{g}')
-        pred_types.append(f'concede_{g}')
-        pred_types.append(f'total_over_{g}')
-        pred_types.append(f'total_under_{g}')
+    cursor.execute(query, tuple(query_params))
+    rows = cursor.fetchall()
+    cursor.close()
+    return rows
+
+def get_standings(conn, league_id: int) -> Dict[int, int]: 
+    """ 
+    Fetches current points for teams in the league from the latest season_year. 
+    Returns {team_id: points}. 
+    """ 
+    cursor = conn.cursor(cursor_factory=RealDictCursor) 
+    query = """ 
+        WITH latest_season AS ( 
+            SELECT MAX(season_year) as max_year 
+            FROM standings 
+            WHERE league_id = %s 
+        ) 
+        SELECT s.team_id, s.points 
+        FROM standings s 
+        JOIN latest_season ls ON s.season_year = ls.max_year 
+        WHERE s.league_id = %s
+    """ 
+    cursor.execute(query, (league_id, league_id)) 
+    rows = cursor.fetchall() 
+    cursor.close() 
+    return {row['team_id']: row['points'] for row in rows} if rows else {}
+
+def get_historical_matches(conn, team_id: int, league_id: int, ten_years_ago: dt.datetime, limit: int = 10) -> List[Dict[str, Any]]: 
+    """ 
+    Fetches the last N completed (FT) matches for a team, filtered to past 10 years and same league. 
+    """ 
+    cursor = conn.cursor(cursor_factory=RealDictCursor) 
+    query = """ 
+        SELECT 
+            f.date, 
+            f.home_team_id, 
+            f.away_team_id, 
+            f.goals_home, 
+            f.goals_away, 
+            f.status_short 
+        FROM 
+            fixtures f 
+        WHERE 
+            (f.home_team_id = %s OR f.away_team_id = %s) 
+            AND f.status_short = 'FT' 
+            AND f.league_id = %s 
+            AND f.date >= %s 
+        ORDER BY 
+            f.timestamp DESC 
+        LIMIT %s
+    """ 
+    cursor.execute(query, (team_id, team_id, league_id, ten_years_ago, limit)) 
+    matches = cursor.fetchall() 
+    cursor.close() 
+    return matches
+
+def get_h2h_matches_all(conn, team_a_id: int, team_b_id: int, ten_years_ago: dt.datetime, limit: int = 10) -> List[Dict[str, Any]]: 
+    """ 
+    Fetches all Head-to-Head completed matches (both venues) for UI packaging. 
+    """ 
+    cursor = conn.cursor(cursor_factory=RealDictCursor) 
+    query = """ 
+        SELECT 
+            f.date, 
+            f.goals_home, 
+            f.goals_away, 
+            ht.name AS home_team_name, 
+            at.name AS away_team_name 
+        FROM 
+            fixtures f 
+        JOIN 
+            teams ht ON f.home_team_id = ht.team_id 
+        JOIN 
+            teams at ON f.away_team_id = at.team_id 
+        WHERE 
+            ((f.home_team_id = %s AND f.away_team_id = %s) OR (f.home_team_id = %s AND f.away_team_id = %s)) 
+            AND f.status_short = 'FT' 
+            AND f.date >= %s 
+        ORDER BY 
+            f.timestamp DESC 
+        LIMIT %s
+    """ 
+    cursor.execute(query, (team_a_id, team_b_id, team_b_id, team_a_id, ten_years_ago, limit)) 
+    matches = cursor.fetchall() 
+    cursor.close() 
+    return matches
+
+def get_h2h_matches_venue(conn, team_a_id: int, team_b_id: int, is_home: bool, league_id: int, ten_years_ago: dt.datetime) -> List[Dict[str, Any]]: 
+    """ 
+    Fetches venue-specific Head-to-Head completed matches for algorithm, filtered to same league. 
+    """ 
+    if is_home: 
+        home_id, away_id = team_a_id, team_b_id 
+    else: 
+        # Note: This case is generally not used for team_a_id if it's the 'away' team 
+        # but the query structure requires it. We typically look at H2H from the perspective of team_a_id's role.
+        home_id, away_id = team_b_id, team_a_id
         
-    pred_types.extend(['win', 'loss', 'draw'])
-    predictions: Dict[str, bool] = {}
-    
-    # --- Step 4: Apply Rules and Thresholds ---
-    
-    for pred_type in pred_types:
-        for subset in subsets_priority:
-            if len(subset) < 5:
-                continue
-            
-            count = 0
-            is_prediction_set = False
-            threshold = 0
-            
-            # 1. Team A Score/Concede Goals
-            if pred_type.startswith('score_') or pred_type.startswith('concede_'):
-                goal_target = int(pred_type.split('_')[-1])
-                is_score = pred_type.startswith('score_')
-                
-                if is_score:
-                    count = count_events(subset, lambda m: get_team_goals(m, team_a) >= goal_target)
-                else: # Concede
-                    count = count_events(subset, lambda m: get_team_conceded(m, team_a) >= goal_target)
-                
-                threshold = len(subset) // 2 + 1 if goal_target == 1 else max(3, len(subset) // 3) 
-                is_prediction_set = True
-                
-            # 2. Total Goals Over/Under
-            elif pred_type.startswith('total_over_') or pred_type.startswith('total_under_'):
-                goal_target = int(pred_type.split('_')[-1])
-                is_over = pred_type.startswith('total_over_')
-                
-                if is_over:
-                    count = count_events(subset, lambda m: m['home_goals'] + m['away_goals'] > goal_target)
-                else: # Under
-                    count = count_events(subset, lambda m: m['home_goals'] + m['away_goals'] < goal_target)
-                
-                threshold = len(subset) // 2 + 1 
-                is_prediction_set = True
-                
-            # 3. Match Outcomes (Win/Loss/Draw)
-            elif pred_type in ['win', 'loss', 'draw']:
-                condition = is_win if pred_type == 'win' else is_loss if pred_type == 'loss' else is_draw
-                count = count_events(subset, lambda m: condition(m, team_a) if pred_type != 'draw' else is_draw(m))
-                threshold = len(subset) // 2 + 1
-                is_prediction_set = True
+    cursor = conn.cursor(cursor_factory=RealDictCursor) 
+    query = """ 
+        SELECT 
+            f.date, 
+            f.home_team_id, 
+            f.away_team_id, 
+            f.goals_home, 
+            f.goals_away 
+        FROM 
+            fixtures f 
+        WHERE 
+            f.home_team_id = %s 
+            AND f.away_team_id = %s 
+            AND f.status_short = 'FT' 
+            AND f.league_id = %s 
+            AND f.date >= %s 
+        ORDER BY 
+            f.timestamp DESC
+    """ 
+    cursor.execute(query, (home_id, away_id, league_id, ten_years_ago)) 
+    matches = cursor.fetchall() 
+    cursor.close() 
+    return matches
 
-            if is_prediction_set:
-                predictions[pred_type] = count >= threshold
-                break
+def get_similar_tier_matches(conn, team_a_id: int, opponents_in_tier: List[int], team_b_id: int, is_home: bool, league_id: int, ten_years_ago: dt.datetime) -> List[Dict[str, Any]]: 
+    """ 
+    Fetches matches against similar-tier opponents (excluding self-matchup), with home/away context, filtered to same league. 
+    """ 
+    if not opponents_in_tier: 
+        return [] 
         
-        if pred_type not in predictions:
-            predictions[pred_type] = False 
-
-    # --- Step 5: Consistency and Double Chance Check ---
+    cursor = conn.cursor(cursor_factory=RealDictCursor) 
     
-    if predictions.get('win', False) and predictions.get('loss', False):
-        predictions['loss'] = False
-        predictions['draw'] = False
-
-    predictions['double_chance_a_or_draw'] = predictions.get('win', False) or predictions.get('draw', False)
-    predictions['double_chance_b_or_draw'] = predictions.get('loss', False) or predictions.get('draw', False)
-    predictions['double_chance_a_or_b'] = (predictions.get('win', False) or predictions.get('loss', False)) and not predictions.get('draw', False) 
-
-    # --- v1.4: Package H2H and Recent Form data ---
-    # This data is for the UI, not for rules, so we use the full lists
+    # We use a tuple for the IN clause
+    opponents_tuple = tuple(opponents_in_tier)
     
-    # H2H: Get top 5 most recent, regardless of home/away
-    predictions['h2h'] = h2h_matches_all[:5] 
-    
-    # Recent Form: Get top 7 most recent
-    predictions['recent_form'] = team_a_matches_all[:7]
-    
-    # --- End v1.4 ---
+    if is_home: 
+        query = """ 
+            SELECT 
+                f.date, f.home_team_id, f.away_team_id, f.goals_home, f.goals_away 
+            FROM 
+                fixtures f 
+            WHERE 
+                f.home_team_id = %s 
+                AND f.away_team_id IN %s 
+                AND f.away_team_id != %s 
+                AND f.status_short = 'FT' 
+                AND f.league_id = %s 
+                AND f.date >= %s 
+            ORDER BY 
+                f.timestamp DESC
+        """ 
+        cursor.execute(query, (team_a_id, opponents_tuple, team_b_id, league_id, ten_years_ago)) 
+    else: 
+        query = """ 
+            SELECT 
+                f.date, f.home_team_id, f.away_team_id, f.goals_home, f.goals_away 
+            FROM 
+                fixtures f 
+            WHERE 
+                f.away_team_id = %s 
+                AND f.home_team_id IN %s 
+                AND f.home_team_id != %s 
+                AND f.status_short = 'FT' 
+                AND f.league_id = %s 
+                AND f.date >= %s 
+            ORDER BY 
+                f.timestamp DESC
+        """ 
+        cursor.execute(query, (team_a_id, opponents_tuple, team_b_id, league_id, ten_years_ago)) 
+        
+    matches = cursor.fetchall() 
+    cursor.close() 
+    return matches
 
-    return predictions
+def get_overall_matches(conn, team_a_id: int, team_b_id: int, is_home: bool, league_id: int, ten_years_ago: dt.datetime) -> List[Dict[str, Any]]: 
+    """ 
+    Fetches all contextual (home/away) matches excluding self-matchup, filtered to same league. 
+    """ 
+    cursor = conn.cursor(cursor_factory=RealDictCursor) 
+    if is_home: 
+        query = """ 
+            SELECT 
+                f.date, f.home_team_id, f.away_team_id, f.goals_home, f.goals_away 
+            FROM 
+                fixtures f 
+            WHERE 
+                f.home_team_id = %s 
+                AND f.away_team_id != %s 
+                AND f.status_short = 'FT' 
+                AND f.league_id = %s 
+                AND f.date >= %s 
+            ORDER BY 
+                f.timestamp DESC
+        """ 
+        cursor.execute(query, (team_a_id, team_b_id, league_id, ten_years_ago)) 
+    else: 
+        query = """ 
+            SELECT 
+                f.date, f.home_team_id, f.away_team_id, f.goals_home, f.goals_away 
+            FROM 
+                fixtures f 
+            WHERE 
+                f.away_team_id = %s 
+                AND f.home_team_id != %s 
+                AND f.status_short = 'FT' 
+                AND f.league_id = %s 
+                AND f.date >= %s 
+            ORDER BY 
+                f.timestamp DESC
+        """ 
+        cursor.execute(query, (team_a_id, team_b_id, league_id, ten_years_ago)) 
+        
+    matches = cursor.fetchall() 
+    cursor.close() 
+    return matches
 
-# --- Data Fetching and Main Execution Logic (MODIFIED) ---
-
-def get_all_historical_data(conn) -> List[Dict[str, Any]]:
-    """
-    Fetches 10 years of raw historical match data from the database.
-    v1.4: Also fetches competition code for UI display.
-    """
-    logging.info("--- Fetching All Historical Match Data (10 years) ---")
-    sql = """
-    SELECT
-        m.utc_date::date::text AS date, -- Cast to YYYY-MM-DD string
-        ht.name AS home_team,
-        at.name AS away_team,
-        m.score_fulltime_home AS home_goals,
-        m.score_fulltime_away AS away_goals,
-        c.code AS competition_code -- v1.4: Get competition code
-    FROM matches m
-    JOIN teams ht ON m.home_team_id = ht.team_id
-    JOIN teams at ON m.away_team_id = at.team_id
-    JOIN competitions c ON m.competition_id = c.competition_id -- v1.4: Join
-    WHERE m.status = 'FINISHED'
-      AND m.utc_date IS NOT NULL
-      AND m.score_fulltime_home IS NOT NULL
-      AND m.score_fulltime_away IS NOT NULL
-      AND m.utc_date >= (NOW() - INTERVAL '10 years');
-    """
-    with conn.cursor() as cur:
-        cur.execute(sql)
-        data = cur.fetchall()
-    logging.info(f"Fetched {len(data)} historical matches.")
-    return [dict(row) for row in data]
-
-
-def get_upcoming_matches(conn, days_ahead: int) -> List[Dict[str, Any]]:
-    """
-    Fetches all matches scheduled (or timed) within the next N days.
-    (This function ensures prediction is only for the next 14 days)
-    """
-    today = dt.date.today()
-    future_date = today + dt.timedelta(days=days_ahead)
-    logging.info(f"--- Fetching Upcoming Matches (SCHEDULED or TIMED) between {today} and {future_date} ---")
-    
-    sql = """
-    SELECT
-        m.match_id,
-        m.utc_date::date::text AS date, -- Cast to YYYY-MM-DD string
-        ht.name AS home_team,
-        at.name AS away_team
-    FROM matches m
-    JOIN teams ht ON m.home_team_id = ht.team_id
-    JOIN teams at ON m.away_team_id = at.team_id
-    WHERE m.status IN ('SCHEDULED', 'TIMED')
-      AND m.utc_date BETWEEN NOW() AND NOW() + INTERVAL %s;
-    """
-    with conn.cursor() as cur:
-        cur.execute(sql, (f'{days_ahead} days',))
-        data = cur.fetchall()
-    logging.info(f"Found {len(data)} upcoming matches.")
-    return [dict(row) for row in data]
-
-def store_predictions_db(conn, predictions_list: List[Dict[str, Any]]):
-    """
-    Stores the list of prediction dictionaries in the 'predictions' table.
-    """
-    if not predictions_list:
-        logging.info("--- No predictions to store ---")
+def store_predictions_db(conn, predictions_list: List[Dict[str, Any]]): 
+    """ 
+    Inserts a batch of predictions into the 'predictions' table.
+    Uses ON CONFLICT (fixture_id) DO UPDATE SET.
+    """ 
+    if not predictions_list: 
+        logging.info("No predictions generated to store.") 
         return
+        
+    cursor = conn.cursor() 
+    data_to_insert = [] 
+    current_time = CURRENT_DATE 
+    
+    for pred in predictions_list: 
+        # v1.17: Store fixture_id, prediction_data (JSON), generated_at
+        data_to_insert.append(( 
+            pred['fixture_id'], 
+            json.dumps(pred['predictions'], cls=DateTimeEncoder), 
+            current_time 
+        ))
 
-    sql = """
-    INSERT INTO predictions (match_id, prediction_data)
-    VALUES %s
-    ON CONFLICT (match_id) DO UPDATE SET
-        prediction_data = EXCLUDED.prediction_data,
-        generated_at = NOW();
+    insert_sql = """
+        INSERT INTO predictions (fixture_id, prediction_data, generated_at)
+        VALUES %s
+        ON CONFLICT (fixture_id) DO UPDATE SET
+            prediction_data = EXCLUDED.prediction_data,
+            generated_at = EXCLUDED.generated_at;
     """
     
-    values = [
-        (
-            p['match_id'],
-            json.dumps(p['predictions']) # Store the predictions dict as JSONB
-        )
-        for p in predictions_list
+    try:
+        execute_values(cursor, insert_sql, data_to_insert)
+        conn.commit()
+        logging.info(f"Successfully stored/updated {len(predictions_list)} predictions.")
+    except Exception as e:
+        conn.rollback()
+        logging.error(f"Failed to store predictions: {e}")
+        raise # Re-raise the exception to stop the main process if a critical DB error occurs
+
+
+# ============ PREDICTION LOGIC (Updated Rule-Based) ============
+
+def get_tier(points: int) -> str: 
+    """ Computes team tier based on current points. """ 
+    if points >= 60: 
+        return 'high' 
+    elif points >= 40: 
+        return 'mid' 
+    else: 
+        return 'low'
+
+def is_win(match: Dict[str, Any], team_id: int) -> bool: 
+    goals_scored = get_team_goals(match, team_id) 
+    goals_conceded = get_team_conceded(match, team_id) 
+    return goals_scored > goals_conceded
+
+def is_draw(match: Dict[str, Any], team_id: int) -> bool: 
+    goals_scored = get_team_goals(match, team_id) 
+    goals_conceded = get_team_conceded(match, team_id) 
+    return goals_scored == goals_conceded
+
+def is_loss(match: Dict[str, Any], team_id: int) -> bool: 
+    goals_scored = get_team_goals(match, team_id) 
+    goals_conceded = get_team_conceded(match, team_id) 
+    return goals_scored < goals_conceded
+
+def get_team_goals(match: Dict[str, Any], team_id: int) -> int: 
+    if match['home_team_id'] == team_id: 
+        return match['goals_home'] or 0 
+    elif match['away_team_id'] == team_id: 
+        return match['goals_away'] or 0 
+    return 0
+
+def get_team_conceded(match: Dict[str, Any], team_id: int) -> int: 
+    return get_team_goals(match, opponent_of(match, team_id))
+
+def opponent_of(match: Dict[str, Any], team_id: int) -> int: 
+    return match['away_team_id'] if match['home_team_id'] == team_id else match['home_team_id']
+
+def get_opponent_tier(match: Dict[str, Any], team_id: int, standings: Dict[int, int]) -> str: 
+    opp_id = opponent_of(match, team_id) 
+    points = standings.get(opp_id, 0) 
+    return get_tier(points)
+
+def predict_for_team( 
+    conn, 
+    team_a_id: int, 
+    team_b_id: int, 
+    is_home: bool, 
+    league_id: int, 
+    standings: Dict[int, int] 
+) -> Dict[str, bool]: 
+    """ Generates predictions for a single team using the updated algorithm. """ 
+    tier_a = get_tier(standings.get(team_a_id, 0)) 
+    tier_b = get_tier(standings.get(team_b_id, 0))
+    
+    # --- 1. Rule-Based Attributes (T/B, Rival) ---
+    attributes = { 
+        'T/B': (tier_a == 'high' and tier_b == 'low') or (tier_a == 'low' and tier_b == 'high'), 
+        'Rival': abs(standings.get(team_a_id, 0) - standings.get(team_b_id, 0)) <= 5 
+    }
+
+    # --- 2. Historical Data Fetch ---
+    # Last 7 for Recent Form visualization
+    last_7_matches = get_historical_matches(conn, team_a_id, league_id, TEN_YEARS_AGO, limit=7)
+    
+    # Overall matches in context (home/away, excluding this opponent)
+    overall_context_matches = get_overall_matches(conn, team_a_id, team_b_id, is_home, league_id, TEN_YEARS_AGO)
+    
+    # H2H matches in context (venue-specific)
+    h2h_context_matches = get_h2h_matches_venue(conn, team_a_id, team_b_id, is_home, league_id, TEN_YEARS_AGO)
+
+    # Similar tier opponents (for W/L analysis)
+    all_teams_in_league = list(standings.keys())
+    opponents_in_tier = [
+        tid for tid in all_teams_in_league 
+        if get_tier(standings.get(tid, 0)) == tier_b
+    ]
+    similar_tier_matches = get_similar_tier_matches(conn, team_a_id, opponents_in_tier, team_b_id, is_home, league_id, TEN_YEARS_AGO)
+
+    # --- 3. Compute Metrics ---
+    
+    # Win/Loss/Draw Count
+    recent_wins = sum(1 for match in last_7_matches if is_win(match, team_a_id))
+    recent_draws = sum(1 for match in last_7_matches if is_draw(match, team_a_id))
+    
+    # Goal Metrics (Overall Contextual)
+    overall_goals_scored = sum(get_team_goals(match, team_a_id) for match in overall_context_matches)
+    overall_goals_conceded = sum(get_team_conceded(match, team_a_id) for match in overall_context_matches)
+    overall_played = len(overall_context_matches) or 1
+    
+    avg_scored = overall_goals_scored / overall_played
+    avg_conceded = overall_goals_conceded / overall_played
+    
+    # Strength/Weakness vs Tier (for BST/LWT)
+    high_tier_matches = [
+        match for match in last_7_matches if get_opponent_tier(match, team_a_id, standings) == 'high'
+    ]
+    low_tier_matches = [
+        match for match in last_7_matches if get_opponent_tier(match, team_a_id, standings) == 'low'
     ]
     
-    try:
-        with conn.cursor() as cur:
-            execute_values(cur, sql, values, page_size=len(values))
-        conn.commit()
-        logging.info(f"--- Successfully stored/updated {len(values)} predictions in the database ---")
-    except Exception as e:
-        logging.error(f"--- ERROR storing predictions: {e} ---")
-        conn.rollback()
-
-
-def main():
-    """Main execution flow for the predictor script."""
-    logging.info(f"--- PREDICTOR (v{VERSION}) STARTING ---")
-    start_time = time.time()
-    current_date = dt.date.today()
-    conn = None
+    high_tier_wins = sum(1 for match in high_tier_matches if is_win(match, team_a_id))
+    low_tier_losses = sum(1 for match in low_tier_matches if is_loss(match, team_a_id))
     
-    try:
-        conn = db_pool.getconn()
+    # H2H Dominance Check
+    h2h_wins = sum(1 for match in h2h_context_matches if is_win(match, team_a_id))
+    h2h_losses = sum(1 for match in h2h_context_matches if is_loss(match, team_a_id))
+    
+    # --- 4. Generate Predictions (True/False) ---
+    predictions = {
+        # Win/Draw/Loss based on recent form vs similar tier
+        "W": recent_wins >= 4,
+        "D": recent_draws >= 3,
+        "L": low_tier_losses >= 2,
         
-        # 1. Get all necessary data
-        historical_data = get_all_historical_data(conn)
-        # This uses PREDICTION_DAYS_AHEAD (14)
-        upcoming_matches = get_upcoming_matches(conn, days_ahead=PREDICTION_DAYS_AHEAD) 
+        # Goal predictions based on averages
+        "S1+": avg_scored >= 1.0,
+        "S2+": avg_scored >= 1.5,
+        "S3+": avg_scored >= 2.5,
+        "CS": avg_conceded < 0.5,
+        "C1+": avg_conceded >= 1.0,
+        "C2+": avg_conceded >= 1.5,
+        "C3+": avg_conceded >= 2.5,
         
-        if not historical_data:
-            logging.error("ERROR: No historical data available. Cannot run predictions.")
+        # Specialist tags
+        "BST": high_tier_wins >= 2,
+        "LWT": low_tier_losses >= 2,
+        "H2H": h2h_wins > h2h_losses and len(h2h_context_matches) >= 3,
+        
+        # Attributes
+        "T/B": attributes['T/B'],
+        "Rival": attributes['Rival'],
+    }
+    
+    # Package data for UI
+    ui_data = {
+        'W': predictions['W'], 'D': predictions['D'], 'L': predictions['L'],
+        'S1+': predictions['S1+'], 'S2+': predictions['S2+'], 'S3+': predictions['S3+'],
+        'CS': predictions['CS'], 'C1+': predictions['C1+'], 'C2+': predictions['C2+'], 'C3+': predictions['C3+'],
+        'BST': predictions['BST'], 'LWT': predictions['LWT'], 'H2H': predictions['H2H'],
+        'T/B': predictions['T/B'], 'Rival': predictions['Rival'],
+        
+        # Raw data for UI visualization
+        'last7': last_7_matches,
+        'avg_scored': round(avg_scored, 2),
+        'avg_conceded': round(avg_conceded, 2),
+    }
+
+    return ui_data
+
+def generate_tags(predictions: Dict[str, bool]) -> List[str]: 
+    """ Converts True predictions to full tag strings using TAG_MAP. """ 
+    tags = [] 
+    for code, full_tag in TAG_MAP.items(): 
+        # Check against both rule-based and attribute keys
+        if predictions.get(code, False) or predictions.get(code.lower(), False):
+            tags.append(full_tag) 
+    return tags
+
+def run_prediction(conn, match: Dict[str, Any]) -> Dict[str, Any]: 
+    """ 
+    Generates predictions and packages data for one match using the updated algorithm. 
+    """ 
+    home_id = match['home_team_id'] 
+    away_id = match['away_team_id'] 
+    league_id = match['league_id']
+    
+    # Fetch standings (only once per match)
+    standings = get_standings(conn, league_id)
+
+    # 1. Predict for Home Team
+    home_pred_raw = predict_for_team(conn, home_id, away_id, is_home=True, league_id=league_id, standings=standings)
+    
+    # 2. Predict for Away Team
+    away_pred_raw = predict_for_team(conn, away_id, home_id, is_home=False, league_id=league_id, standings=standings)
+    
+    # 3. Fetch H2H for UI visualization (All venues)
+    h2h_ui_data = get_h2h_matches_all(conn, home_id, away_id, TEN_YEARS_AGO, limit=10)
+
+    # 4. Package final JSONB structure (v1.17)
+    final_prediction_json = {
+        # Visualization data
+        "h2h": h2h_ui_data,
+        "home_last7": home_pred_raw['last7'],
+        "away_last7": away_pred_raw['last7'],
+        
+        # Consensus Outcomes (Default False)
+        "home_win": home_pred_raw['W'] and away_pred_raw['L'],
+        "away_win": away_pred_raw['W'] and home_pred_raw['L'],
+        "draw": home_pred_raw['D'] and away_pred_raw['D'],
+
+        # Tags and Goal Metrics
+        "home_tags": generate_tags(home_pred_raw),
+        "away_tags": generate_tags(away_pred_raw),
+
+        "home_avg_scored": home_pred_raw['avg_scored'],
+        "away_avg_scored": away_pred_raw['avg_scored'],
+        
+        # Over/Under
+        "total_over_2": (home_pred_raw['avg_scored'] + away_pred_raw['avg_scored']) >= 2.5,
+        "total_under_2": (home_pred_raw['avg_scored'] + away_pred_raw['avg_scored']) < 1.5,
+    }
+    
+    # Add fallback tag
+    if not final_prediction_json['home_tags']:
+        final_prediction_json['home_tags'].append("Let's learn")
+    if not final_prediction_json['away_tags']:
+        final_prediction_json['away_tags'].append("Let's learn")
+
+    return {
+        'fixture_id': match['fixture_id'],
+        'predictions': final_prediction_json
+    }
+
+# ============ MAIN EXECUTION ============
+
+def main(): 
+    parser = argparse.ArgumentParser(description="Rule-Based Football Predictor.") 
+    parser.add_argument("--fixtures", type=str, default=None, help="Comma-separated list of fixture_ids to predict.") 
+    args = parser.parse_args()
+    
+    # Process fixture IDs from argument
+    fixture_ids_to_predict: Optional[List[int]] = None
+    if args.fixtures:
+        try:
+            fixture_ids_to_predict = [int(x.strip()) for x in args.fixtures.split(',') if x.strip()]
+        except ValueError:
+            logging.error("Invalid fixture ID list provided. Aborting.")
+            sys.exit(1)
+            
+    conn = None 
+    try: 
+        db_utils.init_connection_pool() 
+        conn = db_utils.get_connection()
+
+        if conn is None:
+            logging.error("Failed to acquire database connection.")
+            sys.exit(1)
+            
+        # 1. Fetch matches requiring prediction
+        matches_to_predict = get_fixtures_to_predict(conn, fixture_ids_to_predict)
+        
+        if not matches_to_predict:
+            logging.info("No fixtures found requiring prediction/update.")
             return
 
-        team_tiers = calculate_all_team_tiers(historical_data)
+        logging.info(f"Predictor {VERSION} found {len(matches_to_predict)} fixtures to predict.")
 
-        # 2. Generate predictions for all upcoming matches
-        all_predictions_to_store = []
+        # 2. Run prediction cycle
+        all_predictions_to_store: List[Dict[str, Any]] = []
         
-        if not upcoming_matches:
-            logging.info("No upcoming matches found to predict.")
-        else:
-            logging.info(f"Generating predictions for {len(upcoming_matches)} matches...")
-        
-        for match in upcoming_matches:
-            home_team = match['home_team']
-            away_team = match['away_team']
-            
-            logging.info(f"\n--- Predicting: {home_team} vs {away_team} on {match['date']} ---")
-            
-            # --- v1.4: predict_for_team now returns all data ---
-            pred_a = predict_for_team(
-                home_team, away_team, is_home=True, 
-                all_matches=historical_data, current_date=current_date, team_tiers=team_tiers
-            )
-            
-            pred_b = predict_for_team(
-                away_team, home_team, is_home=False, 
-                all_matches=historical_data, current_date=current_date, team_tiers=team_tiers
-            )
-
-            # --- v1.4: Build the final JSONB object ---
-            final_prediction_json = {
-                # --- Rule Tags ---
-                'home_tags': [], # We will build this from rules
-                'away_tags': [], # We will build this from rules
+        for i, match in enumerate(matches_to_predict):
+            try:
+                prediction_data = run_prediction(conn, match)
+                all_predictions_to_store.append(prediction_data)
                 
-                # --- H2H & Recent Form Data ---
-                'h2h': pred_a['h2h'], # Use pred_a's H2H (it's symmetrical)
-                'home_last7': pred_a['recent_form'],
-                'away_last7': pred_b['recent_form'],
+                # v1.16: Incremental Save Logic
+                if (i + 1) % BATCH_COMMIT_SIZE == 0:
+                    logging.info(f"Processed {i + 1}/{len(matches_to_predict)} fixtures. Saving batch to database...")
+                    # Store and immediately clear the buffer
+                    store_predictions_db(conn, all_predictions_to_store)
+                    all_predictions_to_store = []
+                    
+            except Exception as e:
+                logging.error(f"Failed to process fixture {match['fixture_id']}: {e}")
+                # Continue to next fixture, preserving the overall batch integrity
                 
-                # --- Raw Rules (for potential future use, optional) ---
-                'home_win': pred_a['win'],
-                'away_win': pred_b['win'],
-                'draw': pred_a['draw'],
-                'home_score_1': pred_a['score_1'],
-                'away_score_1': pred_b['score_1'],
-                'home_score_2': pred_a['score_2'],
-                'away_score_2': pred_b['score_2'],
-                'home_concede_1': pred_a['concede_1'],
-                'away_concede_1': pred_b['concede_1'],
-                'total_over_2': pred_a['total_over_2'],
-                'total_under_2': pred_a['total_under_2'],
-            }
-            
-            # --- v1.4: Populate 'home_tags' and 'away_tags' ---
-            # (This is the logic that was missing)
-            if pred_a['win']: final_prediction_json['home_tags'].append("Win")
-            if pred_a['loss']: final_prediction_json['home_tags'].append("Loss")
-            if pred_a['draw']: final_prediction_json['home_tags'].append("Draw")
-            if pred_a['score_1']: final_prediction_json['home_tags'].append("Score At least a goal")
-            if pred_a['score_2']: final_prediction_json['home_tags'].append("Score At least 2 goals")
-            if pred_a['concede_1']: final_prediction_json['home_tags'].append("Concede At least a goal")
-            
-            if pred_b['win']: final_prediction_json['away_tags'].append("Win")
-            if pred_b['loss']: final_prediction_json['away_tags'].append("Loss")
-            if pred_b['draw']: final_prediction_json['away_tags'].append("Draw")
-            if pred_b['score_1']: final_prediction_json['away_tags'].append("Score At least a goal")
-            if pred_b['score_2']: final_prediction_json['away_tags'].append("Score At least 2 goals")
-            if pred_b['concede_1']: final_prediction_json['away_tags'].append("Concede At least a goal")
-            
-            # Add fallback tag
-            if not final_prediction_json['home_tags']:
-                final_prediction_json['home_tags'].append("Let's learn")
-            if not final_prediction_json['away_tags']:
-                final_prediction_json['away_tags'].append("Let's learn")
-            
-            # Add the complete JSONB to the list to be stored
-            all_predictions_to_store.append({
-                'match_id': match['match_id'],
-                'predictions': final_prediction_json
-            })
-            # --- End v1.4 packaging logic ---
-
-        # 3. Store predictions
-        store_predictions_db(conn, all_predictions_to_store)
+        # 3. Store any remaining predictions in the final batch
+        if all_predictions_to_store:
+            logging.info(f"Processing final batch of {len(all_predictions_to_store)} predictions. Saving to database...")
+            store_predictions_db(conn, all_predictions_to_store)
 
     except Exception as e:
         logging.error(f"Predictor main process failed: {e}")
         if conn:
-            conn.rollback()
+            conn.rollback() # Ensure rollback on failure
     finally:
         if conn:
-            db_pool.putconn(conn)
-        db_pool.closeall()
-        end_time = time.time()
-        logging.info(f"Predictor script finished. Total runtime: {end_time - start_time:.2f} seconds.")
+            db_utils.release_connection(conn)
+        # Note: db_utils handles closing the pool globally
+        
+    logging.info("Predictor script finished.")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": 
     main()

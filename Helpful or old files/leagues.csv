@@ -1,0 +1,1208 @@
+league_id,league_name,league_type,league_logo,country_name,country_code,country_flag,current_season_year,current_season_start
+4,Euro Championship,Cup,https://media.api-sports.io/football/leagues/4.png,World,,,2024,6/14/2024
+21,Confederations Cup,Cup,https://media.api-sports.io/football/leagues/21.png,World,,,2017,6/17/2017
+62,Ligue 2,League,https://media.api-sports.io/football/leagues/62.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/9/2025
+61,Ligue 1,League,https://media.api-sports.io/football/leagues/61.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/17/2025
+144,Jupiler Pro League,League,https://media.api-sports.io/football/leagues/144.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2025,7/25/2025
+71,Serie A,League,https://media.api-sports.io/football/leagues/71.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,3/29/2025
+39,Premier League,League,https://media.api-sports.io/football/leagues/39.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/15/2025
+78,Bundesliga,League,https://media.api-sports.io/football/leagues/78.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/22/2025
+135,Serie A,League,https://media.api-sports.io/football/leagues/135.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,8/23/2025
+88,Eredivisie,League,https://media.api-sports.io/football/leagues/88.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2025,8/8/2025
+94,Primeira Liga,League,https://media.api-sports.io/football/leagues/94.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,8/8/2025
+140,La Liga,League,https://media.api-sports.io/football/leagues/140.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,8/15/2025
+179,Premiership,League,https://media.api-sports.io/football/leagues/179.png,Scotland,GB-SCT,https://media.api-sports.io/flags/gb-sct.svg,2025,8/2/2025
+180,Championship,League,https://media.api-sports.io/football/leagues/180.png,Scotland,GB-SCT,https://media.api-sports.io/flags/gb-sct.svg,2025,8/1/2025
+1,World Cup,Cup,https://media.api-sports.io/football/leagues/1.png,World,,,2022,11/20/2022
+803,Asian Games,Cup,https://media.api-sports.io/football/leagues/803.png,World,,,2022,9/19/2023
+804,Caribbean Cup,Cup,https://media.api-sports.io/football/leagues/804.png,World,,,2016,3/22/2016
+390,Premier League,League,https://media.api-sports.io/football/leagues/390.png,Lebanon,LB,https://media.api-sports.io/flags/lb.svg,2025,9/19/2025
+261,National Division,League,https://media.api-sports.io/football/leagues/261.png,Luxembourg,LU,https://media.api-sports.io/flags/lu.svg,2025,8/2/2025
+306,Second Division,League,https://media.api-sports.io/football/leagues/306.png,Qatar,QA,https://media.api-sports.io/flags/qa.svg,2025,8/19/2025
+305,Stars League,League,https://media.api-sports.io/football/leagues/305.png,Qatar,QA,https://media.api-sports.io/flags/qa.svg,2025,8/14/2025
+40,Championship,League,https://media.api-sports.io/football/leagues/40.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/8/2025
+46,EFL Trophy,Cup,https://media.api-sports.io/football/leagues/46.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/26/2025
+45,FA Cup,Cup,https://media.api-sports.io/football/leagues/45.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/1/2025
+47,FA Trophy,Cup,https://media.api-sports.io/football/leagues/47.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/22/2025
+48,League Cup,Cup,https://media.api-sports.io/football/leagues/48.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,7/29/2025
+43,National League,League,https://media.api-sports.io/football/leagues/43.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+41,League One,League,https://media.api-sports.io/football/leagues/41.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/1/2025
+42,League Two,League,https://media.api-sports.io/football/leagues/42.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/2/2025
+568,Eerste Divisie,League,https://media.api-sports.io/football/leagues/568.png,Suriname,SR,https://media.api-sports.io/flags/sr.svg,2025,10/25/2025
+571,Vysshaya Liga,League,https://media.api-sports.io/football/leagues/571.png,Tajikistan,TJ,https://media.api-sports.io/flags/tj.svg,2025,3/7/2025
+586,West Bank Premier League,League,https://media.api-sports.io/football/leagues/586.png,Palestine,PS,https://media.api-sports.io/flags/ps.svg,2023,8/17/2023
+588,National League,League,https://media.api-sports.io/football/leagues/588.png,Myanmar,MM,https://media.api-sports.io/flags/mm.svg,2025,8/15/2025
+591,Pro League,League,https://media.api-sports.io/football/leagues/591.png,Trinidad-And-Tobago,TT,https://media.api-sports.io/flags/tt.svg,2026,10/24/2025
+335,Cup,Cup,https://media.api-sports.io/football/leagues/335.png,Ukraine,UA,https://media.api-sports.io/flags/ua.svg,2025,8/22/2025
+336,Druha Liga,League,https://media.api-sports.io/football/leagues/336.png,Ukraine,UA,https://media.api-sports.io/flags/ua.svg,2025,7/26/2025
+334,Persha Liga,League,https://media.api-sports.io/football/leagues/334.png,Ukraine,UA,https://media.api-sports.io/flags/ua.svg,2025,8/1/2025
+333,Premier League,League,https://media.api-sports.io/football/leagues/333.png,Ukraine,UA,https://media.api-sports.io/flags/ua.svg,2025,8/2/2025
+301,Pro League,League,https://media.api-sports.io/football/leagues/301.png,United-Arab-Emirates,AE,https://media.api-sports.io/flags/ae.svg,2025,8/16/2025
+303,Division 1,League,https://media.api-sports.io/football/leagues/303.png,United-Arab-Emirates,AE,https://media.api-sports.io/flags/ae.svg,2025,9/19/2025
+302,League Cup,Cup,https://media.api-sports.io/football/leagues/302.png,United-Arab-Emirates,AE,https://media.api-sports.io/flags/ae.svg,2025,8/30/2025
+269,Segunda División,League,https://media.api-sports.io/football/leagues/269.png,Uruguay,UY,https://media.api-sports.io/flags/uy.svg,2025,3/8/2025
+202,Ligue 1,League,https://media.api-sports.io/football/leagues/202.png,Tunisia,TN,https://media.api-sports.io/flags/tn.svg,2025,8/9/2025
+203,Süper Lig,League,https://media.api-sports.io/football/leagues/203.png,Turkey,TR,https://media.api-sports.io/flags/tr.svg,2025,8/8/2025
+204,1. Lig,League,https://media.api-sports.io/football/leagues/204.png,Turkey,TR,https://media.api-sports.io/flags/tr.svg,2025,8/10/2025
+205,2. Lig,League,https://media.api-sports.io/football/leagues/205.png,Turkey,TR,https://media.api-sports.io/flags/tr.svg,2025,8/23/2025
+206,Cup,Cup,https://media.api-sports.io/football/leagues/206.png,Turkey,TR,https://media.api-sports.io/flags/tr.svg,2025,9/2/2025
+552,3. Lig - Group 1,League,https://media.api-sports.io/football/leagues/552.png,Turkey,TR,https://media.api-sports.io/flags/tr.svg,2025,9/7/2025
+553,3. Lig - Group 2,League,https://media.api-sports.io/football/leagues/553.png,Turkey,TR,https://media.api-sports.io/flags/tr.svg,2025,9/7/2025
+554,3. Lig - Group 3,League,https://media.api-sports.io/football/leagues/554.png,Turkey,TR,https://media.api-sports.io/flags/tr.svg,2025,9/7/2025
+63,National 1,League,https://media.api-sports.io/football/leagues/63.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/8/2025
+66,Coupe de France,Cup,https://media.api-sports.io/football/leagues/66.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,11/14/2025
+65,Coupe de la Ligue,Cup,https://media.api-sports.io/football/leagues/65.png,France,FR,https://media.api-sports.io/flags/fr.svg,2019,7/26/2019
+67,National 2 - Group A,League,https://media.api-sports.io/football/leagues/67.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/16/2025
+68,National 2 - Group B,League,https://media.api-sports.io/football/leagues/68.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/15/2025
+69,National 2 - Group C,League,https://media.api-sports.io/football/leagues/69.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/15/2025
+70,National 2 - Group D,League,https://media.api-sports.io/football/leagues/70.png,France,FR,https://media.api-sports.io/flags/fr.svg,2023,8/26/2023
+7,Asian Cup,Cup,https://media.api-sports.io/football/leagues/7.png,World,,,2023,1/12/2024
+8,World Cup - Women,Cup,https://media.api-sports.io/football/leagues/8.png,World,,,2023,7/20/2023
+186,Ligue 1,League,https://media.api-sports.io/football/leagues/186.png,Algeria,DZ,https://media.api-sports.io/flags/dz.svg,2025,8/21/2025
+187,Ligue 2,League,https://media.api-sports.io/football/leagues/187.png,Algeria,DZ,https://media.api-sports.io/flags/dz.svg,2025,9/13/2025
+512,2nd Division - Group A,League,https://media.api-sports.io/football/leagues/512.png,Albania,AL,https://media.api-sports.io/flags/al.svg,2024,9/21/2024
+513,2nd Division - Group B,League,https://media.api-sports.io/football/leagues/513.png,Albania,AL,https://media.api-sports.io/flags/al.svg,2024,9/22/2024
+312,1a Divisió,League,https://media.api-sports.io/football/leagues/312.png,Andorra,AD,https://media.api-sports.io/flags/ad.svg,2025,10/11/2025
+313,2a Divisió,League,https://media.api-sports.io/football/leagues/313.png,Andorra,AD,https://media.api-sports.io/flags/ad.svg,2024,9/29/2024
+131,Primera B Metropolitana,League,https://media.api-sports.io/football/leagues/131.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2025,2/7/2025
+129,Primera Nacional,League,https://media.api-sports.io/football/leagues/129.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2025,2/7/2025
+132,Primera C,League,https://media.api-sports.io/football/leagues/132.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2025,3/7/2025
+133,Primera D,League,https://media.api-sports.io/football/leagues/133.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2023,3/18/2023
+134,Torneo Federal A,League,https://media.api-sports.io/football/leagues/134.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2025,3/15/2025
+188,A-League,League,https://media.api-sports.io/football/leagues/188.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,10/17/2025
+191,Brisbane Premier League,League,https://media.api-sports.io/football/leagues/191.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,2/22/2025
+193,Northern Territory Premier League,League,https://media.api-sports.io/football/leagues/193.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,3/14/2025
+220,Cup,Cup,https://media.api-sports.io/football/leagues/220.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,7/25/2025
+219,2. Liga,League,https://media.api-sports.io/football/leagues/219.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/1/2025
+218,Bundesliga,League,https://media.api-sports.io/football/leagues/218.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/1/2025
+418,Birinci Dasta,League,https://media.api-sports.io/football/leagues/418.png,Azerbaijan,AZ,https://media.api-sports.io/flags/az.svg,2025,9/11/2025
+419,Premyer Liqa,League,https://media.api-sports.io/football/leagues/419.png,Azerbaijan,AZ,https://media.api-sports.io/flags/az.svg,2025,8/15/2025
+222,Regionalliga - Mitte,League,https://media.api-sports.io/football/leagues/222.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/1/2025
+221,Regionalliga - Ost,League,https://media.api-sports.io/football/leagues/221.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/1/2025
+223,Regionalliga - West,League,https://media.api-sports.io/football/leagues/223.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,7/30/2025
+110,Premier League,League,https://media.api-sports.io/football/leagues/110.png,Wales,GB-WLS,https://media.api-sports.io/flags/gb-wls.svg,2025,8/8/2025
+112,Welsh Cup,Cup,https://media.api-sports.io/football/leagues/112.png,Wales,GB-WLS,https://media.api-sports.io/flags/gb-wls.svg,2025,9/19/2025
+299,Primera División,League,https://media.api-sports.io/football/leagues/299.png,Venezuela,VE,https://media.api-sports.io/flags/ve.svg,2025,1/24/2025
+300,Segunda División,League,https://media.api-sports.io/football/leagues/300.png,Venezuela,VE,https://media.api-sports.io/flags/ve.svg,2025,3/28/2025
+406,Professional League,League,https://media.api-sports.io/football/leagues/406.png,Oman,OM,https://media.api-sports.io/flags/om.svg,2025,8/16/2025
+322,Premier League,League,https://media.api-sports.io/football/leagues/322.png,Jamaica,JM,https://media.api-sports.io/flags/jm.svg,2025,8/24/2025
+387,League,League,https://media.api-sports.io/football/leagues/387.png,Jordan,JO,https://media.api-sports.io/flags/jo.svg,2025,7/31/2025
+388,1. Division,League,https://media.api-sports.io/football/leagues/388.png,Kazakhstan,KZ,https://media.api-sports.io/flags/kz.svg,2025,4/9/2025
+330,Premier League,League,https://media.api-sports.io/football/leagues/330.png,Kuwait,KW,https://media.api-sports.io/flags/kw.svg,2025,9/12/2025
+119,Superliga,League,https://media.api-sports.io/football/leagues/119.png,Denmark,DK,https://media.api-sports.io/flags/dk.svg,2025,7/18/2025
+120,1. Division,League,https://media.api-sports.io/football/leagues/120.png,Denmark,DK,https://media.api-sports.io/flags/dk.svg,2025,7/18/2025
+124,Denmark Series - Group 1,League,https://media.api-sports.io/football/leagues/124.png,Denmark,DK,https://media.api-sports.io/flags/dk.svg,2025,8/8/2025
+125,Denmark Series - Group 2,League,https://media.api-sports.io/football/leagues/125.png,Denmark,DK,https://media.api-sports.io/flags/dk.svg,2025,8/8/2025
+126,Denmark Series - Group 3,League,https://media.api-sports.io/football/leagues/126.png,Denmark,DK,https://media.api-sports.io/flags/dk.svg,2025,8/8/2025
+234,Liga Nacional,League,https://media.api-sports.io/football/leagues/234.png,Honduras,HN,https://media.api-sports.io/flags/hn.svg,2025,7/23/2025
+381,HKFA 1st Division,League,https://media.api-sports.io/football/leagues/381.png,Hong-Kong,HK,https://media.api-sports.io/flags/hk.svg,2025,9/7/2025
+380,Premier League,League,https://media.api-sports.io/football/leagues/380.png,Hong-Kong,HK,https://media.api-sports.io/flags/hk.svg,2025,8/29/2025
+273,Magyar Kupa,Cup,https://media.api-sports.io/football/leagues/273.png,Hungary,HU,https://media.api-sports.io/flags/hu.svg,2025,8/2/2025
+271,NB I,League,https://media.api-sports.io/football/leagues/271.png,Hungary,HU,https://media.api-sports.io/flags/hu.svg,2025,7/25/2025
+272,NB II,League,https://media.api-sports.io/football/leagues/272.png,Hungary,HU,https://media.api-sports.io/flags/hu.svg,2025,7/27/2025
+233,Premier League,League,https://media.api-sports.io/football/leagues/233.png,Egypt,EG,https://media.api-sports.io/flags/eg.svg,2025,8/8/2025
+370,Primera Division,League,https://media.api-sports.io/football/leagues/370.png,El-Salvador,SV,https://media.api-sports.io/flags/sv.svg,2025,7/20/2025
+328,Esiliiga A,League,https://media.api-sports.io/football/leagues/328.png,Estonia,EE,https://media.api-sports.io/flags/ee.svg,2025,3/1/2025
+329,Meistriliiga,League,https://media.api-sports.io/football/leagues/329.png,Estonia,EE,https://media.api-sports.io/flags/ee.svg,2025,2/28/2025
+326,Erovnuli Liga 2,League,https://media.api-sports.io/football/leagues/326.png,Georgia,GE,https://media.api-sports.io/flags/ge.svg,2025,3/8/2025
+570,Premier League,League,https://media.api-sports.io/football/leagues/570.png,Ghana,GH,https://media.api-sports.io/flags/gh.svg,2025,9/12/2025
+377,Division d'Honneur,League,https://media.api-sports.io/football/leagues/377.png,Guadeloupe,GP,https://media.api-sports.io/flags/gp.svg,2024,8/31/2024
+339,Liga Nacional,League,https://media.api-sports.io/football/leagues/339.png,Guatemala,GT,https://media.api-sports.io/flags/gt.svg,2025,7/19/2025
+338,Primera Division,League,https://media.api-sports.io/football/leagues/338.png,Guatemala,GT,https://media.api-sports.io/flags/gt.svg,2024,7/27/2024
+199,Cup,Cup,https://media.api-sports.io/football/leagues/199.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2025,8/18/2025
+198,Football League,League,https://media.api-sports.io/football/leagues/198.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2020,3/27/2021
+197,Super League 1,League,https://media.api-sports.io/football/leagues/197.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2025,8/23/2025
+79,2. Bundesliga,League,https://media.api-sports.io/football/leagues/79.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/1/2025
+80,3. Liga,League,https://media.api-sports.io/football/leagues/80.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/1/2025
+529,Super Cup,Cup,https://media.api-sports.io/football/leagues/529.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/16/2025
+81,DFB Pokal,Cup,https://media.api-sports.io/football/leagues/81.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/15/2025
+15,FIFA Club World Cup,Cup,https://media.api-sports.io/football/leagues/15.png,World,,,2025,6/15/2025
+2,UEFA Champions League,Cup,https://media.api-sports.io/football/leagues/2.png,World,,,2025,7/8/2025
+311,1st Division,League,https://media.api-sports.io/football/leagues/311.png,Albania,AL,https://media.api-sports.io/flags/al.svg,2025,8/23/2025
+310,Superliga,League,https://media.api-sports.io/football/leagues/310.png,Albania,AL,https://media.api-sports.io/flags/al.svg,2025,8/22/2025
+422,Premier League,League,https://media.api-sports.io/football/leagues/422.png,Barbados,BB,https://media.api-sports.io/flags/bb.svg,2024,1/19/2025
+480,Olympics Men,Cup,https://media.api-sports.io/football/leagues/480.png,World,,,2024,7/24/2024
+364,1. Liga,League,https://media.api-sports.io/football/leagues/364.png,Latvia,LV,https://media.api-sports.io/flags/lv.svg,2025,3/28/2025
+365,Virsliga,League,https://media.api-sports.io/football/leagues/365.png,Latvia,LV,https://media.api-sports.io/flags/lv.svg,2025,3/5/2025
+361,1 Lyga,League,https://media.api-sports.io/football/leagues/361.png,Lithuania,LT,https://media.api-sports.io/flags/lt.svg,2025,3/7/2025
+362,A Lyga,League,https://media.api-sports.io/football/leagues/362.png,Lithuania,LT,https://media.api-sports.io/flags/lt.svg,2025,2/28/2025
+528,Community Shield,Cup,https://media.api-sports.io/football/leagues/528.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/10/2025
+72,Serie B,League,https://media.api-sports.io/football/leagues/72.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,4/4/2025
+75,Serie C,League,https://media.api-sports.io/football/leagues/75.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,4/12/2025
+76,Serie D,League,https://media.api-sports.io/football/leagues/76.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,4/19/2025
+585,Premier League,League,https://media.api-sports.io/football/leagues/585.png,Uganda,UG,https://media.api-sports.io/flags/ug.svg,2025,9/26/2025
+598,Première Division,League,https://media.api-sports.io/football/leagues/598.png,Mali,ML,https://media.api-sports.io/flags/ml.svg,2024,11/23/2024
+253,Major League Soccer,League,https://media.api-sports.io/football/leagues/253.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,2/22/2025
+257,US Open Cup,Cup,https://media.api-sports.io/football/leagues/257.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,3/18/2025
+268,Primera División - Apertura,League,https://media.api-sports.io/football/leagues/268.png,Uruguay,UY,https://media.api-sports.io/flags/uy.svg,2025,1/31/2025
+270,Primera División - Clausura,League,https://media.api-sports.io/football/leagues/270.png,Uruguay,UY,https://media.api-sports.io/flags/uy.svg,2025,8/1/2025
+369,Super League,League,https://media.api-sports.io/football/leagues/369.png,Uzbekistan,UZ,https://media.api-sports.io/flags/uz.svg,2025,3/7/2025
+296,Thai League 1,League,https://media.api-sports.io/football/leagues/296.png,Thailand,TH,https://media.api-sports.io/flags/th.svg,2025,8/15/2025
+297,Thai League 2,League,https://media.api-sports.io/football/leagues/297.png,Thailand,TH,https://media.api-sports.io/flags/th.svg,2025,8/15/2025
+551,Super Cup,Cup,https://media.api-sports.io/football/leagues/551.png,Turkey,TR,https://media.api-sports.io/flags/tr.svg,2024,8/3/2024
+366,1. Deild,League,https://media.api-sports.io/football/leagues/366.png,Faroe-Islands,FO,https://media.api-sports.io/flags/fo.svg,2025,3/7/2025
+367,Meistaradeildin,League,https://media.api-sports.io/football/leagues/367.png,Faroe-Islands,FO,https://media.api-sports.io/flags/fo.svg,2025,3/7/2025
+245,Ykkönen,League,https://media.api-sports.io/football/leagues/245.png,Finland,FI,https://media.api-sports.io/flags/fi.svg,2025,4/11/2025
+244,Veikkausliiga,League,https://media.api-sports.io/football/leagues/244.png,Finland,FI,https://media.api-sports.io/flags/fi.svg,2025,4/5/2025
+246,Suomen Cup,Cup,https://media.api-sports.io/football/leagues/246.png,Finland,FI,https://media.api-sports.io/flags/fi.svg,2025,2/9/2025
+247,Kakkonen - Lohko A,League,https://media.api-sports.io/football/leagues/247.png,Finland,FI,https://media.api-sports.io/flags/fi.svg,2025,4/19/2025
+248,Kakkonen - Lohko B,League,https://media.api-sports.io/football/leagues/248.png,Finland,FI,https://media.api-sports.io/flags/fi.svg,2025,4/12/2025
+249,Kakkonen - Lohko C,League,https://media.api-sports.io/football/leagues/249.png,Finland,FI,https://media.api-sports.io/flags/fi.svg,2025,4/17/2025
+526,Trophée des Champions,Cup,https://media.api-sports.io/football/leagues/526.png,France,FR,https://media.api-sports.io/flags/fr.svg,2024,8/10/2024
+242,Liga Pro,League,https://media.api-sports.io/football/leagues/242.png,Ecuador,EC,https://media.api-sports.io/flags/ec.svg,2025,2/15/2025
+243,Liga Pro Serie B,League,https://media.api-sports.io/football/leagues/243.png,Ecuador,EC,https://media.api-sports.io/flags/ec.svg,2025,3/18/2025
+539,Super Cup,Cup,https://media.api-sports.io/football/leagues/539.png,Egypt,EG,https://media.api-sports.io/flags/eg.svg,2026,11/6/2025
+535,CECAFA Senior Challenge Cup,Cup,https://media.api-sports.io/football/leagues/535.png,World,,,2021,7/18/2021
+397,Girabola,League,https://media.api-sports.io/football/leagues/397.png,Angola,AO,https://media.api-sports.io/flags/ao.svg,2025,9/8/2025
+343,First League,League,https://media.api-sports.io/football/leagues/343.png,Armenia,AM,https://media.api-sports.io/flags/am.svg,2025,8/5/2025
+342,Premier League,League,https://media.api-sports.io/football/leagues/342.png,Armenia,AM,https://media.api-sports.io/flags/am.svg,2025,8/1/2025
+481,Northern NSW NPL,League,https://media.api-sports.io/football/leagues/481.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,2/13/2025
+116,Premier League,League,https://media.api-sports.io/football/leagues/116.png,Belarus,BY,https://media.api-sports.io/flags/by.svg,2025,3/13/2025
+117,1. Division,League,https://media.api-sports.io/football/leagues/117.png,Belarus,BY,https://media.api-sports.io/flags/by.svg,2025,3/28/2025
+118,2. Division,League,https://media.api-sports.io/football/leagues/118.png,Belarus,BY,https://media.api-sports.io/flags/by.svg,2024,4/27/2024
+400,Super League,League,https://media.api-sports.io/football/leagues/400.png,Zambia,ZM,https://media.api-sports.io/flags/zm.svg,2025,8/16/2025
+340,V.League 1,League,https://media.api-sports.io/football/leagues/340.png,Vietnam,VN,https://media.api-sports.io/flags/vn.svg,2026,8/15/2025
+102,Emperor Cup,Cup,https://media.api-sports.io/football/leagues/102.png,Japan,JP,https://media.api-sports.io/flags/jp.svg,2025,5/24/2025
+101,J-League Cup,Cup,https://media.api-sports.io/football/leagues/101.png,Japan,JP,https://media.api-sports.io/flags/jp.svg,2025,3/20/2025
+98,J1 League,League,https://media.api-sports.io/football/leagues/98.png,Japan,JP,https://media.api-sports.io/flags/jp.svg,2025,2/14/2025
+99,J2 League,League,https://media.api-sports.io/football/leagues/99.png,Japan,JP,https://media.api-sports.io/flags/jp.svg,2025,2/15/2025
+100,J3 League,League,https://media.api-sports.io/football/leagues/100.png,Japan,JP,https://media.api-sports.io/flags/jp.svg,2025,2/15/2025
+389,Premier League,League,https://media.api-sports.io/football/leagues/389.png,Kazakhstan,KZ,https://media.api-sports.io/flags/kz.svg,2025,3/1/2025
+276,FKF Premier League,League,https://media.api-sports.io/football/leagues/276.png,Kenya,KE,https://media.api-sports.io/flags/ke.svg,2025,9/19/2025
+121,DBU Pokalen,Cup,https://media.api-sports.io/football/leagues/121.png,Denmark,DK,https://media.api-sports.io/flags/dk.svg,2025,7/29/2025
+379,Ligue Haïtienne,League,https://media.api-sports.io/football/leagues/379.png,Haiti,HT,https://media.api-sports.io/flags/ht.svg,2025,3/23/2025
+28,SAFF Championship,Cup,https://media.api-sports.io/football/leagues/28.png,World,,,2023,6/21/2023
+505,League Cup,Cup,https://media.api-sports.io/football/leagues/505.png,Singapore,SG,https://media.api-sports.io/flags/sg.svg,2017,7/7/2017
+421,Division di Honor,League,https://media.api-sports.io/football/leagues/421.png,Aruba,AW,https://media.api-sports.io/flags/aw.svg,2025,10/25/2025
+420,Cup,Cup,https://media.api-sports.io/football/leagues/420.png,Azerbaijan,AZ,https://media.api-sports.io/flags/az.svg,2025,10/9/2025
+298,FA Cup,Cup,https://media.api-sports.io/football/leagues/298.png,Thailand,TH,https://media.api-sports.io/flags/th.svg,2025,10/29/2025
+376,National Football League,League,https://media.api-sports.io/football/leagues/376.png,Fiji,FJ,https://media.api-sports.io/flags/fj.svg,2025,2/22/2025
+64,Feminine Division 1,League,https://media.api-sports.io/football/leagues/64.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,9/6/2025
+3,UEFA Europa League,Cup,https://media.api-sports.io/football/leagues/3.png,World,,,2025,7/10/2025
+327,Erovnuli Liga,League,https://media.api-sports.io/football/leagues/327.png,Georgia,GE,https://media.api-sports.io/flags/ge.svg,2025,2/28/2025
+378,Ligue 1,League,https://media.api-sports.io/football/leagues/378.png,Guinea,GN,https://media.api-sports.io/flags/gn.svg,2025,10/26/2025
+807,AFC Challenge Cup,Cup,https://media.api-sports.io/football/leagues/807.png,World,,,2014,3/2/2013
+19,African Nations Championship,Cup,https://media.api-sports.io/football/leagues/19.png,World,,,2024,8/2/2025
+24,ASEAN Championship,Cup,https://media.api-sports.io/football/leagues/24.png,World,,,2024,10/8/2024
+37,World Cup - Qualification Intercontinental Play-offs,Cup,https://media.api-sports.io/football/leagues/37.png,World,,,2022,6/13/2022
+520,Acreano,League,https://media.api-sports.io/football/leagues/520.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/25/2025
+547,Super Cup,Cup,https://media.api-sports.io/football/leagues/547.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2024,1/2/2025
+519,Super Cup,Cup,https://media.api-sports.io/football/leagues/519.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,7/20/2025
+527,Super Cup,Cup,https://media.api-sports.io/football/leagues/527.png,Chile,CL,https://media.api-sports.io/flags/cl.svg,2025,1/25/2025
+122,2. Division,League,https://media.api-sports.io/football/leagues/122.png,Denmark,DK,https://media.api-sports.io/flags/dk.svg,2025,8/1/2025
+123,2nd Division - Group 2,League,https://media.api-sports.io/football/leagues/123.png,Denmark,DK,https://media.api-sports.io/flags/dk.svg,2020,8/28/2020
+128,Liga Profesional Argentina,League,https://media.api-sports.io/football/leagues/128.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2025,1/23/2025
+183,League One,League,https://media.api-sports.io/football/leagues/183.png,Scotland,GB-SCT,https://media.api-sports.io/flags/gb-sct.svg,2025,8/2/2025
+184,League Two,League,https://media.api-sports.io/football/leagues/184.png,Scotland,GB-SCT,https://media.api-sports.io/flags/gb-sct.svg,2025,8/2/2025
+6,Africa Cup of Nations,Cup,https://media.api-sports.io/football/leagues/6.png,World,,,2025,12/21/2025
+9,Copa America,Cup,https://media.api-sports.io/football/leagues/9.png,World,,,2024,6/21/2024
+363,Premier League,League,https://media.api-sports.io/football/leagues/363.png,Ethiopia,ET,https://media.api-sports.io/flags/et.svg,2025,10/18/2025
+22,CONCACAF Gold Cup,Cup,https://media.api-sports.io/football/leagues/22.png,World,,,2025,6/15/2025
+23,EAFF E-1 Football Championship,Cup,https://media.api-sports.io/football/leagues/23.png,World,,,2025,7/7/2025
+27,OFC Champions League,Cup,https://media.api-sports.io/football/leagues/27.png,World,,,2025,2/9/2025
+567,Ligi kuu Bara,League,https://media.api-sports.io/football/leagues/567.png,Tanzania,TZ,https://media.api-sports.io/flags/tz.svg,2025,9/17/2025
+255,USL Championship,League,https://media.api-sports.io/football/leagues/255.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,3/9/2025
+925,Super Cup,Cup,https://media.api-sports.io/football/leagues/925.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2015,7/18/2015
+569,Premier League,League,https://media.api-sports.io/football/leagues/569.png,Kyrgyzstan,KG,https://media.api-sports.io/flags/kg.svg,2025,3/4/2025
+592,Division 2 - Norra Götaland,League,https://media.api-sports.io/football/leagues/592.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,3/28/2025
+593,Division 2 - Norra Svealand,League,https://media.api-sports.io/football/leagues/593.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,3/29/2025
+594,Division 2 - Norrland,League,https://media.api-sports.io/football/leagues/594.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,4/12/2025
+595,Division 2 - Södra Svealand,League,https://media.api-sports.io/football/leagues/595.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,3/28/2025
+596,Division 2 - Västra Götaland,League,https://media.api-sports.io/football/leagues/596.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,3/28/2025
+597,Division 2 - Östra Götaland,League,https://media.api-sports.io/football/leagues/597.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,3/28/2025
+511,Cup,Cup,https://media.api-sports.io/football/leagues/511.png,Tunisia,TN,https://media.api-sports.io/flags/tn.svg,2024,1/18/2025
+141,Segunda División,League,https://media.api-sports.io/football/leagues/141.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,8/15/2025
+136,Serie B,League,https://media.api-sports.io/football/leagues/136.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,8/22/2025
+103,Eliteserien,League,https://media.api-sports.io/football/leagues/103.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2025,3/29/2025
+89,Eerste Divisie,League,https://media.api-sports.io/football/leagues/89.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2025,8/8/2025
+95,Segunda Liga,League,https://media.api-sports.io/football/leagues/95.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,8/9/2025
+113,Allsvenskan,League,https://media.api-sports.io/football/leagues/113.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,3/29/2025
+162,Primera División,League,https://media.api-sports.io/football/leagues/162.png,Costa-Rica,CR,https://media.api-sports.io/flags/cr.svg,2025,7/25/2025
+164,Úrvalsdeild,League,https://media.api-sports.io/football/leagues/164.png,Iceland,IS,https://media.api-sports.io/flags/is.svg,2025,4/5/2025
+169,Super League,League,https://media.api-sports.io/football/leagues/169.png,China,CN,https://media.api-sports.io/flags/cn.svg,2025,2/22/2025
+137,Coppa Italia,Cup,https://media.api-sports.io/football/leagues/137.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,8/9/2025
+200,Botola Pro,League,https://media.api-sports.io/football/leagues/200.png,Morocco,MA,https://media.api-sports.io/flags/ma.svg,2025,9/12/2025
+207,Super League,League,https://media.api-sports.io/football/leagues/207.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2025,7/25/2025
+210,HNL,League,https://media.api-sports.io/football/leagues/210.png,Croatia,HR,https://media.api-sports.io/flags/hr.svg,2025,8/1/2025
+235,Premier League,League,https://media.api-sports.io/football/leagues/235.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2025,7/18/2025
+239,Primera A,League,https://media.api-sports.io/football/leagues/239.png,Colombia,CO,https://media.api-sports.io/flags/co.svg,2025,1/24/2025
+250,Division Profesional - Apertura,League,https://media.api-sports.io/football/leagues/250.png,Paraguay,PY,https://media.api-sports.io/flags/py.svg,2025,1/24/2025
+73,Copa Do Brasil,Cup,https://media.api-sports.io/football/leagues/73.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,2/18/2025
+90,KNVB Beker,Cup,https://media.api-sports.io/football/leagues/90.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2025,9/2/2025
+145,Challenger Pro League,League,https://media.api-sports.io/football/leagues/145.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2025,8/8/2025
+173,Second League,League,https://media.api-sports.io/football/leagues/173.png,Bulgaria,BG,https://media.api-sports.io/flags/bg.svg,2025,7/25/2025
+170,League One,League,https://media.api-sports.io/football/leagues/170.png,China,CN,https://media.api-sports.io/flags/cn.svg,2025,3/15/2025
+189,Capital Territory NPL,League,https://media.api-sports.io/football/leagues/189.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,3/30/2025
+240,Primera B,League,https://media.api-sports.io/football/leagues/240.png,Colombia,CO,https://media.api-sports.io/flags/co.svg,2025,1/31/2025
+211,First NL,League,https://media.api-sports.io/football/leagues/211.png,Croatia,HR,https://media.api-sports.io/flags/hr.svg,2025,8/15/2025
+138,Serie C - Girone A,League,https://media.api-sports.io/football/leagues/138.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,8/23/2025
+146,Super League Women,League,https://media.api-sports.io/football/leagues/146.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2025,9/6/2025
+74,Brasileiro Women,League,https://media.api-sports.io/football/leagues/74.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,3/22/2025
+44,FA WSL,League,https://media.api-sports.io/football/leagues/44.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,9/5/2025
+82,Frauen Bundesliga,League,https://media.api-sports.io/football/leagues/82.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,9/6/2025
+139,Serie A Women,League,https://media.api-sports.io/football/leagues/139.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,10/4/2025
+91,Eredivisie Women,League,https://media.api-sports.io/football/leagues/91.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2025,9/6/2025
+142,Primera División Femenina,League,https://media.api-sports.io/football/leagues/142.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,8/30/2025
+130,Copa Argentina,Cup,https://media.api-sports.io/football/leagues/130.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2025,1/23/2025
+190,A-League Women,League,https://media.api-sports.io/football/leagues/190.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,10/31/2025
+236,First League,League,https://media.api-sports.io/football/leagues/236.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2025,7/19/2025
+165,1. Deild,League,https://media.api-sports.io/football/leagues/165.png,Iceland,IS,https://media.api-sports.io/flags/is.svg,2025,5/2/2025
+251,Division Intermedia,League,https://media.api-sports.io/football/leagues/251.png,Paraguay,PY,https://media.api-sports.io/flags/py.svg,2025,3/28/2025
+104,1. Division,League,https://media.api-sports.io/football/leagues/104.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2025,3/31/2025
+114,Superettan,League,https://media.api-sports.io/football/leagues/114.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,3/29/2025
+208,Challenge League,League,https://media.api-sports.io/football/leagues/208.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2025,7/25/2025
+262,Liga MX,League,https://media.api-sports.io/football/leagues/262.png,Mexico,MX,https://media.api-sports.io/flags/mx.svg,2025,7/12/2025
+263,Liga de Expansión MX,League,https://media.api-sports.io/football/leagues/263.png,Mexico,MX,https://media.api-sports.io/flags/mx.svg,2025,8/2/2025
+259,Canadian Championship,Cup,https://media.api-sports.io/football/leagues/259.png,Canada,CA,https://media.api-sports.io/flags/ca.svg,2025,4/29/2025
+278,Super League,League,https://media.api-sports.io/football/leagues/278.png,Malaysia,MY,https://media.api-sports.io/flags/my.svg,2025,8/8/2025
+279,Premier League,League,https://media.api-sports.io/football/leagues/279.png,Malaysia,MY,https://media.api-sports.io/flags/my.svg,2022,3/5/2022
+280,Premiership,League,https://media.api-sports.io/football/leagues/280.png,New-Zealand,NZ,https://media.api-sports.io/flags/nz.svg,2020,11/14/2020
+281,Primera División,League,https://media.api-sports.io/football/leagues/281.png,Peru,PE,https://media.api-sports.io/flags/pe.svg,2025,2/7/2025
+282,Segunda División,League,https://media.api-sports.io/football/leagues/282.png,Peru,PE,https://media.api-sports.io/flags/pe.svg,2025,4/4/2025
+283,Liga I,League,https://media.api-sports.io/football/leagues/283.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2025,7/12/2025
+284,Liga II,League,https://media.api-sports.io/football/leagues/284.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2025,8/2/2025
+286,Super Liga,League,https://media.api-sports.io/football/leagues/286.png,Serbia,RS,https://media.api-sports.io/flags/rs.svg,2025,7/19/2025
+287,Prva Liga,League,https://media.api-sports.io/football/leagues/287.png,Serbia,RS,https://media.api-sports.io/flags/rs.svg,2025,8/2/2025
+288,Premier Soccer League,League,https://media.api-sports.io/football/leagues/288.png,South-Africa,ZA,https://media.api-sports.io/flags/za.svg,2025,8/9/2025
+289,1st Division,League,https://media.api-sports.io/football/leagues/289.png,South-Africa,ZA,https://media.api-sports.io/flags/za.svg,2025,8/22/2025
+290,Persian Gulf Pro League,League,https://media.api-sports.io/football/leagues/290.png,Iran,IR,https://media.api-sports.io/flags/ir.svg,2025,8/18/2025
+291,Azadegan League,League,https://media.api-sports.io/football/leagues/291.png,Iran,IR,https://media.api-sports.io/flags/ir.svg,2025,8/28/2025
+292,K League 1,League,https://media.api-sports.io/football/leagues/292.png,South-Korea,KR,https://media.api-sports.io/flags/kr.svg,2025,2/15/2025
+293,K League 2,League,https://media.api-sports.io/football/leagues/293.png,South-Korea,KR,https://media.api-sports.io/flags/kr.svg,2025,2/22/2025
+307,Pro League,League,https://media.api-sports.io/football/leagues/307.png,Saudi-Arabia,SA,https://media.api-sports.io/flags/sa.svg,2025,8/28/2025
+308,Division 1,League,https://media.api-sports.io/football/leagues/308.png,Saudi-Arabia,SA,https://media.api-sports.io/flags/sa.svg,2025,9/11/2025
+309,Division 2,League,https://media.api-sports.io/football/leagues/309.png,Saudi-Arabia,SA,https://media.api-sports.io/flags/sa.svg,2018,10/19/2018
+514,Coupe Nationale,Cup,https://media.api-sports.io/football/leagues/514.png,Algeria,DZ,https://media.api-sports.io/flags/dz.svg,2024,12/30/2024
+521,Amapaense,League,https://media.api-sports.io/football/leagues/521.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,3/8/2025
+522,Amazonense,League,https://media.api-sports.io/football/leagues/522.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/25/2025
+524,Olympics Women,Cup,https://media.api-sports.io/football/leagues/524.png,World,,,2024,7/25/2024
+531,UEFA Super Cup,Cup,https://media.api-sports.io/football/leagues/531.png,World,,,2025,8/13/2025
+543,Super Cup,Cup,https://media.api-sports.io/football/leagues/543.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2024,8/3/2025
+550,Super Cup,Cup,https://media.api-sports.io/football/leagues/550.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,7/31/2025
+555,Supercupa,Cup,https://media.api-sports.io/football/leagues/555.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2025,7/5/2025
+556,Super Cup,Cup,https://media.api-sports.io/football/leagues/556.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,1/7/2026
+497,Japan Football League,League,https://media.api-sports.io/football/leagues/497.png,Japan,JP,https://media.api-sports.io/flags/jp.svg,2025,3/8/2025
+127,Denmark Series - Group 4,League,https://media.api-sports.io/football/leagues/127.png,Denmark,DK,https://media.api-sports.io/flags/dk.svg,2025,8/9/2025
+563,Ettan - Norra,League,https://media.api-sports.io/football/leagues/563.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,3/28/2025
+564,Ettan - Södra,League,https://media.api-sports.io/football/leagues/564.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,3/28/2025
+252,Division Profesional - Clausura,League,https://media.api-sports.io/football/leagues/252.png,Paraguay,PY,https://media.api-sports.io/flags/py.svg,2025,7/4/2025
+166,2. Deild,League,https://media.api-sports.io/football/leagues/166.png,Iceland,IS,https://media.api-sports.io/flags/is.svg,2025,5/2/2025
+368,Premier League,League,https://media.api-sports.io/football/leagues/368.png,Singapore,SG,https://media.api-sports.io/flags/sg.svg,2025,8/23/2025
+314,Cup,Cup,https://media.api-sports.io/football/leagues/314.png,Bosnia,BA,https://media.api-sports.io/flags/ba.svg,2025,10/28/2025
+315,Premijer Liga,League,https://media.api-sports.io/football/leagues/315.png,Bosnia,BA,https://media.api-sports.io/flags/ba.svg,2025,7/26/2025
+371,First League,League,https://media.api-sports.io/football/leagues/371.png,Macedonia,MK,https://media.api-sports.io/flags/mk.svg,2025,8/8/2025
+382,Liga Leumit,League,https://media.api-sports.io/football/leagues/382.png,Israel,IL,https://media.api-sports.io/flags/il.svg,2025,8/24/2025
+383,Ligat Ha'al,League,https://media.api-sports.io/football/leagues/383.png,Israel,IL,https://media.api-sports.io/flags/il.svg,2025,8/23/2025
+386,Ligue 1,League,https://media.api-sports.io/football/leagues/386.png,Ivory-Coast,CI,https://media.api-sports.io/flags/ci.svg,2025,8/16/2025
+392,Challenge League,League,https://media.api-sports.io/football/leagues/392.png,Malta,MT,https://media.api-sports.io/flags/mt.svg,2025,9/13/2025
+393,Premier League,League,https://media.api-sports.io/football/leagues/393.png,Malta,MT,https://media.api-sports.io/flags/mt.svg,2025,8/16/2025
+394,Super Liga,League,https://media.api-sports.io/football/leagues/394.png,Moldova,MD,https://media.api-sports.io/flags/md.svg,2025,6/21/2025
+396,Primera Division,League,https://media.api-sports.io/football/leagues/396.png,Nicaragua,NI,https://media.api-sports.io/flags/ni.svg,2025,7/17/2025
+96,Taça de Portugal,Cup,https://media.api-sports.io/football/leagues/96.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,8/30/2025
+399,NPFL,League,https://media.api-sports.io/football/leagues/399.png,Nigeria,NG,https://media.api-sports.io/flags/ng.svg,2026,8/22/2025
+401,Premier Soccer League,League,https://media.api-sports.io/football/leagues/401.png,Zimbabwe,ZW,https://media.api-sports.io/flags/zw.svg,2025,2/28/2025
+402,Sudani Premier League,League,https://media.api-sports.io/football/leagues/402.png,Sudan,SD,https://media.api-sports.io/flags/sd.svg,2025,1/10/2025
+403,Ligue 1,League,https://media.api-sports.io/football/leagues/403.png,Senegal,SN,https://media.api-sports.io/flags/sn.svg,2025,11/1/2025
+404,Campionato,League,https://media.api-sports.io/football/leagues/404.png,San-Marino,SM,https://media.api-sports.io/flags/sm.svg,2025,8/30/2025
+411,Elite One,League,https://media.api-sports.io/football/leagues/411.png,Cameroon,CM,https://media.api-sports.io/flags/cm.svg,2025,12/7/2024
+410,C-League,League,https://media.api-sports.io/football/leagues/410.png,Cambodia,KH,https://media.api-sports.io/flags/kh.svg,2025,8/9/2025
+417,Premier League,League,https://media.api-sports.io/football/leagues/417.png,Bahrain,BH,https://media.api-sports.io/flags/bh.svg,2025,9/11/2025
+415,Championnat National,League,https://media.api-sports.io/football/leagues/415.png,Benin,BJ,https://media.api-sports.io/flags/bj.svg,2025,9/27/2025
+414,Premier League,League,https://media.api-sports.io/football/leagues/414.png,Bermuda,BM,https://media.api-sports.io/flags/bm.svg,2024,9/28/2024
+413,Super League,League,https://media.api-sports.io/football/leagues/413.png,Bhutan,BT,https://media.api-sports.io/flags/bt.svg,2025,2/10/2025
+412,Premier League,League,https://media.api-sports.io/football/leagues/412.png,Botswana,BW,https://media.api-sports.io/flags/bw.svg,2025,8/15/2025
+398,Premier League,League,https://media.api-sports.io/football/leagues/398.png,Bangladesh,BD,https://media.api-sports.io/flags/bd.svg,2026,9/26/2025
+16,CONCACAF Champions League,Cup,https://media.api-sports.io/football/leagues/16.png,World,,,2025,2/5/2025
+17,AFC Champions League,Cup,https://media.api-sports.io/football/leagues/17.png,World,,,2025,8/12/2025
+25,Gulf Cup of Nations,Cup,https://media.api-sports.io/football/leagues/25.png,World,,,2024,12/21/2024
+26,International Champions Cup,Cup,https://media.api-sports.io/football/leagues/26.png,World,,,2019,7/17/2019
+317,1st League - RS,League,https://media.api-sports.io/football/leagues/317.png,Bosnia,BA,https://media.api-sports.io/flags/ba.svg,2025,8/16/2025
+316,1st League - FBiH,League,https://media.api-sports.io/football/leagues/316.png,Bosnia,BA,https://media.api-sports.io/flags/ba.svg,2025,8/23/2025
+295,K3 League,League,https://media.api-sports.io/football/leagues/295.png,South-Korea,KR,https://media.api-sports.io/flags/kr.svg,2025,3/1/2025
+495,Hazfi Cup,Cup,https://media.api-sports.io/football/leagues/495.png,Iran,IR,https://media.api-sports.io/flags/ir.svg,2024,11/21/2024
+496,Liga Alef,League,https://media.api-sports.io/football/leagues/496.png,Israel,IL,https://media.api-sports.io/flags/il.svg,2025,9/4/2025
+506,2. liga,League,https://media.api-sports.io/football/leagues/506.png,Slovakia,SK,https://media.api-sports.io/flags/sk.svg,2025,7/25/2025
+805,Copa Centroamericana,Cup,https://media.api-sports.io/football/leagues/805.png,World,,,2016,1/13/2017
+806,OFC Nations Cup,Cup,https://media.api-sports.io/football/leagues/806.png,World,,,2024,3/20/2024
+488,U19 Bundesliga,League,https://media.api-sports.io/football/leagues/488.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/2/2025
+559,League Cup,Cup,https://media.api-sports.io/football/leagues/559.png,Northern-Ireland,GB-NIR,https://media.api-sports.io/flags/gb-nir.svg,2025,8/12/2025
+560,Presidents Cup,Cup,https://media.api-sports.io/football/leagues/560.png,United-Arab-Emirates,AE,https://media.api-sports.io/flags/ae.svg,2025,9/13/2025
+561,Premier Intermediate League,League,https://media.api-sports.io/football/leagues/561.png,Northern-Ireland,GB-NIR,https://media.api-sports.io/flags/gb-nir.svg,2025,8/23/2025
+407,Championship,League,https://media.api-sports.io/football/leagues/407.png,Northern-Ireland,GB-NIR,https://media.api-sports.io/flags/gb-nir.svg,2025,8/8/2025
+408,Premiership,League,https://media.api-sports.io/football/leagues/408.png,Northern-Ireland,GB-NIR,https://media.api-sports.io/flags/gb-nir.svg,2025,8/9/2025
+331,Division 1,League,https://media.api-sports.io/football/leagues/331.png,Kuwait,KW,https://media.api-sports.io/flags/kw.svg,2025,9/14/2025
+584,Premier League,League,https://media.api-sports.io/football/leagues/584.png,Libya,LY,https://media.api-sports.io/flags/ly.svg,2024,12/11/2024
+589,Taiwan Football Premier League,League,https://media.api-sports.io/football/leagues/589.png,Chinese-Taipei,TW,https://media.api-sports.io/flags/tw.svg,2025,8/17/2025
+258,Canadian Soccer League,League,https://media.api-sports.io/football/leagues/258.png,Canada,CA,https://media.api-sports.io/flags/ca.svg,2025,6/22/2025
+274,Liga 1,League,https://media.api-sports.io/football/leagues/274.png,Indonesia,ID,https://media.api-sports.io/flags/id.svg,2025,8/8/2025
+304,Liga Panameña de Fútbol,League,https://media.api-sports.io/football/leagues/304.png,Panama,PA,https://media.api-sports.io/flags/pa.svg,2025,1/18/2025
+766,China Cup,Cup,https://media.api-sports.io/football/leagues/766.png,World,,,2019,3/21/2019
+827,Crown Prince Cup,Cup,https://media.api-sports.io/football/leagues/827.png,Saudi-Arabia,SA,https://media.api-sports.io/flags/sa.svg,2017,9/7/2017
+372,Second League,League,https://media.api-sports.io/football/leagues/372.png,Macedonia,MK,https://media.api-sports.io/flags/mk.svg,2025,8/23/2025
+174,Cup,Cup,https://media.api-sports.io/football/leagues/174.png,Bulgaria,BG,https://media.api-sports.io/flags/bg.svg,2025,10/11/2025
+10,Friendlies,Cup,https://media.api-sports.io/football/leagues/10.png,World,,,2025,1/4/2025
+14,UEFA Youth League,League,https://media.api-sports.io/football/leagues/14.png,World,,,2025,9/16/2025
+18,AFC Cup,Cup,https://media.api-sports.io/football/leagues/18.png,World,,,2025,8/13/2025
+20,CAF Confederation Cup,Cup,https://media.api-sports.io/football/leagues/20.png,World,,,2025,9/16/2025
+38,UEFA U21 Championship,Cup,https://media.api-sports.io/football/leagues/38.png,World,,,2025,6/11/2025
+425,Premier League,League,https://media.api-sports.io/football/leagues/425.png,Syria,SY,https://media.api-sports.io/flags/sy.svg,2024,10/25/2024
+77,Alagoano,Cup,https://media.api-sports.io/football/leagues/77.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/11/2025
+337,Druha Liga - Group B,League,https://media.api-sports.io/football/leagues/337.png,Ukraine,UA,https://media.api-sports.io/flags/ua.svg,2021,7/25/2021
+185,League Cup,Cup,https://media.api-sports.io/football/leagues/185.png,Scotland,GB-SCT,https://media.api-sports.io/flags/gb-sct.svg,2025,7/11/2025
+490,World Cup - U20,Cup,https://media.api-sports.io/football/leagues/490.png,World,,,2025,9/27/2025
+492,Tweede Divisie,League,https://media.api-sports.io/football/leagues/492.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2025,8/16/2025
+498,Cup,Cup,https://media.api-sports.io/football/leagues/498.png,Kazakhstan,KZ,https://media.api-sports.io/flags/kz.svg,2025,3/15/2025
+504,King's Cup,Cup,https://media.api-sports.io/football/leagues/504.png,Saudi-Arabia,SA,https://media.api-sports.io/flags/sa.svg,2026,8/31/2025
+507,Cup,Cup,https://media.api-sports.io/football/leagues/507.png,South-Africa,ZA,https://media.api-sports.io/flags/za.svg,2024,12/3/2024
+508,League Cup,Cup,https://media.api-sports.io/football/leagues/508.png,South-Africa,ZA,https://media.api-sports.io/flags/za.svg,2025,10/3/2025
+510,1. Liga Promotion,League,https://media.api-sports.io/football/leagues/510.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2025,8/2/2025
+31,World Cup - Qualification CONCACAF,Cup,https://media.api-sports.io/football/leagues/31.png,World,,,2026,3/22/2024
+32,World Cup - Qualification Europe,Cup,https://media.api-sports.io/football/leagues/32.png,World,,,2024,3/21/2025
+33,World Cup - Qualification Oceania,Cup,https://media.api-sports.io/football/leagues/33.png,World,,,2026,9/5/2024
+34,World Cup - Qualification South America,Cup,https://media.api-sports.io/football/leagues/34.png,World,,,2026,9/7/2023
+29,World Cup - Qualification Africa,Cup,https://media.api-sports.io/football/leagues/29.png,World,,,2023,11/15/2023
+30,World Cup - Qualification Asia,Cup,https://media.api-sports.io/football/leagues/30.png,World,,,2026,10/12/2023
+149,Second Amateur Division - VFV A,League,https://media.api-sports.io/football/leagues/149.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2025,8/30/2025
+150,Second Amateur Division - VFV B,League,https://media.api-sports.io/football/leagues/150.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2025,8/30/2025
+151,Third Amateur Division - VFV A,League,https://media.api-sports.io/football/leagues/151.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/31/2024
+152,Third Amateur Division - VFV B,League,https://media.api-sports.io/football/leagues/152.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/31/2024
+175,Third League - Northeast,League,https://media.api-sports.io/football/leagues/175.png,Bulgaria,BG,https://media.api-sports.io/flags/bg.svg,2025,8/16/2025
+176,Third League - Northwest,League,https://media.api-sports.io/football/leagues/176.png,Bulgaria,BG,https://media.api-sports.io/flags/bg.svg,2025,8/23/2025
+177,Third League - Southeast,League,https://media.api-sports.io/football/leagues/177.png,Bulgaria,BG,https://media.api-sports.io/flags/bg.svg,2025,8/2/2025
+178,Third League - Southwest,League,https://media.api-sports.io/football/leagues/178.png,Bulgaria,BG,https://media.api-sports.io/flags/bg.svg,2025,8/2/2025
+49,National League - Play-offs,League,https://media.api-sports.io/football/leagues/49.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2018,5/1/2019
+491,Løgmanssteypid,Cup,https://media.api-sports.io/football/leagues/491.png,Faroe-Islands,FO,https://media.api-sports.io/flags/fo.svg,2025,4/7/2025
+493,UEFA U19 Championship,Cup,https://media.api-sports.io/football/leagues/493.png,World,,,2025,6/13/2025
+499,Malaysia Cup,Cup,https://media.api-sports.io/football/leagues/499.png,Malaysia,MY,https://media.api-sports.io/flags/my.svg,2024,11/20/2024
+530,Super Cup,Cup,https://media.api-sports.io/football/leagues/530.png,Georgia,GE,https://media.api-sports.io/flags/ge.svg,2025,6/26/2025
+516,Super Cup,Cup,https://media.api-sports.io/football/leagues/516.png,Algeria,DZ,https://media.api-sports.io/flags/dz.svg,2024,1/17/2025
+537,CONCACAF U20,Cup,https://media.api-sports.io/football/leagues/537.png,World,,,2023,7/19/2024
+544,FA Cup,Cup,https://media.api-sports.io/football/leagues/544.png,Hong-Kong,HK,https://media.api-sports.io/flags/hk.svg,2025,2/2/2025
+545,AIFF Super Cup,Cup,https://media.api-sports.io/football/leagues/545.png,India,IN,https://media.api-sports.io/flags/in.svg,2026,10/25/2025
+557,Super Cup,Cup,https://media.api-sports.io/football/leagues/557.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2019,3/17/2019
+256,USL League Two,League,https://media.api-sports.io/football/leagues/256.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,5/4/2025
+373,1. SNL,League,https://media.api-sports.io/football/leagues/373.png,Slovenia,SI,https://media.api-sports.io/flags/si.svg,2025,7/18/2025
+374,2. SNL,League,https://media.api-sports.io/football/leagues/374.png,Slovenia,SI,https://media.api-sports.io/flags/si.svg,2025,8/8/2025
+391,Super League,League,https://media.api-sports.io/football/leagues/391.png,Malawi,MW,https://media.api-sports.io/flags/mw.svg,2025,4/5/2025
+143,Copa del Rey,Cup,https://media.api-sports.io/football/leagues/143.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/27/2025
+405,National Soccer League,League,https://media.api-sports.io/football/leagues/405.png,Rwanda,RW,https://media.api-sports.io/flags/rw.svg,2025,9/12/2025
+409,Premier League,League,https://media.api-sports.io/football/leagues/409.png,Namibia,NA,https://media.api-sports.io/flags/na.svg,2018,11/9/2018
+416,Premier League,League,https://media.api-sports.io/football/leagues/416.png,Belize,BZ,https://media.api-sports.io/flags/bz.svg,2025,8/3/2025
+212,Cup,Cup,https://media.api-sports.io/football/leagues/212.png,Croatia,HR,https://media.api-sports.io/flags/hr.svg,2025,8/26/2025
+384,State Cup,Cup,https://media.api-sports.io/football/leagues/384.png,Israel,IL,https://media.api-sports.io/flags/il.svg,2025,9/29/2025
+285,Cupa României,Cup,https://media.api-sports.io/football/leagues/285.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2025,7/19/2025
+321,Cup,Cup,https://media.api-sports.io/football/leagues/321.png,Cyprus,CY,https://media.api-sports.io/flags/cy.svg,2025,10/1/2025
+106,Ekstraklasa,League,https://media.api-sports.io/football/leagues/106.png,Poland,PL,https://media.api-sports.io/flags/pl.svg,2025,7/18/2025
+172,First League,League,https://media.api-sports.io/football/leagues/172.png,Bulgaria,BG,https://media.api-sports.io/flags/bg.svg,2025,7/18/2025
+5,UEFA Nations League,Cup,https://media.api-sports.io/football/leagues/5.png,World,,,2024,9/5/2024
+163,Liga de Ascenso,League,https://media.api-sports.io/football/leagues/163.png,Costa-Rica,CR,https://media.api-sports.io/flags/cr.svg,2025,8/16/2025
+111,FAW Championship,League,https://media.api-sports.io/football/leagues/111.png,Wales,GB-WLS,https://media.api-sports.io/flags/gb-wls.svg,2025,7/25/2025
+265,Primera División,League,https://media.api-sports.io/football/leagues/265.png,Chile,CL,https://media.api-sports.io/flags/cl.svg,2025,2/15/2025
+266,Primera B,League,https://media.api-sports.io/football/leagues/266.png,Chile,CL,https://media.api-sports.io/flags/cl.svg,2025,2/23/2025
+277,Super League,League,https://media.api-sports.io/football/leagues/277.png,Kenya,KE,https://media.api-sports.io/flags/ke.svg,2025,9/27/2025
+318,1. Division,League,https://media.api-sports.io/football/leagues/318.png,Cyprus,CY,https://media.api-sports.io/flags/cy.svg,2025,8/23/2025
+319,2. Division,League,https://media.api-sports.io/football/leagues/319.png,Cyprus,CY,https://media.api-sports.io/flags/cy.svg,2025,9/12/2025
+320,3. Division,League,https://media.api-sports.io/football/leagues/320.png,Cyprus,CY,https://media.api-sports.io/flags/cy.svg,2025,9/27/2025
+201,Botola 2,League,https://media.api-sports.io/football/leagues/201.png,Morocco,MA,https://media.api-sports.io/flags/ma.svg,2025,9/27/2025
+323,Indian Super League,League,https://media.api-sports.io/football/leagues/323.png,India,IN,https://media.api-sports.io/flags/in.svg,2024,9/13/2024
+324,I-League,League,https://media.api-sports.io/football/leagues/324.png,India,IN,https://media.api-sports.io/flags/in.svg,2024,11/22/2024
+107,I Liga,League,https://media.api-sports.io/football/leagues/107.png,Poland,PL,https://media.api-sports.io/flags/pl.svg,2025,7/18/2025
+332,Super Liga,League,https://media.api-sports.io/football/leagues/332.png,Slovakia,SK,https://media.api-sports.io/flags/sk.svg,2025,7/26/2025
+345,Czech Liga,League,https://media.api-sports.io/football/leagues/345.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,7/19/2025
+346,FNL,League,https://media.api-sports.io/football/leagues/346.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,7/18/2025
+355,First League,League,https://media.api-sports.io/football/leagues/355.png,Montenegro,ME,https://media.api-sports.io/flags/me.svg,2025,8/4/2025
+356,Second League,League,https://media.api-sports.io/football/leagues/356.png,Montenegro,ME,https://media.api-sports.io/flags/me.svg,2025,8/16/2025
+344,Primera División,League,https://media.api-sports.io/football/leagues/344.png,Bolivia,BO,https://media.api-sports.io/flags/bo.svg,2025,3/28/2025
+718,Piala Indonesia,Cup,https://media.api-sports.io/football/leagues/718.png,Indonesia,ID,https://media.api-sports.io/flags/id.svg,2018,5/8/2018
+808,CONCACAF Nations League - Qualification,Cup,https://media.api-sports.io/football/leagues/808.png,World,,,2018,9/6/2018
+942,Serie C - Girone B,League,https://media.api-sports.io/football/leagues/942.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,8/22/2025
+943,Serie C - Girone C,League,https://media.api-sports.io/football/leagues/943.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,8/24/2025
+698,FA Women's Cup,Cup,https://media.api-sports.io/football/leagues/698.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,10/25/2025
+714,Cup,Cup,https://media.api-sports.io/football/leagues/714.png,Egypt,EG,https://media.api-sports.io/flags/eg.svg,2024,12/15/2024
+716,Senior Shield,Cup,https://media.api-sports.io/football/leagues/716.png,Hong-Kong,HK,https://media.api-sports.io/flags/hk.svg,2025,9/3/2025
+768,Arab Club Champions Cup,Cup,https://media.api-sports.io/football/leagues/768.png,World,,,2023,3/2/2023
+769,Premier League Asia Trophy,Cup,https://media.api-sports.io/football/leagues/769.png,World,,,2019,7/17/2019
+770,Pacific Games,Cup,https://media.api-sports.io/football/leagues/770.png,World,,,2023,11/17/2023
+772,Leagues Cup,Cup,https://media.api-sports.io/football/leagues/772.png,World,,,2025,7/29/2025
+773,Sudamericano U20,Cup,https://media.api-sports.io/football/leagues/773.png,World,,,2025,1/23/2025
+638,Kvindeliga,League,https://media.api-sports.io/football/leagues/638.png,Denmark,DK,https://media.api-sports.io/flags/dk.svg,2025,8/9/2025
+642,Curaçao Sekshon Pagá,League,https://media.api-sports.io/football/leagues/642.png,Curacao,CW,https://media.api-sports.io/flags/cw.svg,2023,10/9/2023
+655,Copa Constitució,Cup,https://media.api-sports.io/football/leagues/655.png,Andorra,AD,https://media.api-sports.io/flags/ad.svg,2024,1/11/2025
+664,Superliga,League,https://media.api-sports.io/football/leagues/664.png,Kosovo,XK,https://media.api-sports.io/flags/xk.svg,2025,8/17/2025
+665,Cup,Cup,https://media.api-sports.io/football/leagues/665.png,Kosovo,XK,https://media.api-sports.io/flags/xk.svg,2024,12/3/2024
+677,QSL Cup,Cup,https://media.api-sports.io/football/leagues/677.png,Qatar,QA,https://media.api-sports.io/flags/qa.svg,2025,9/1/2025
+35,Asian Cup - Qualification,Cup,https://media.api-sports.io/football/leagues/35.png,World,,,2024,9/5/2024
+224,Landesliga - Burgenland,League,https://media.api-sports.io/football/leagues/224.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/8/2025
+225,Landesliga - Karnten,League,https://media.api-sports.io/football/leagues/225.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/1/2025
+226,Landesliga - Niederosterreich,League,https://media.api-sports.io/football/leagues/226.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/8/2025
+227,Landesliga - Oberosterreich,League,https://media.api-sports.io/football/leagues/227.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/8/2025
+228,Landesliga - Salzburg,League,https://media.api-sports.io/football/leagues/228.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/1/2025
+229,Landesliga - Steiermark,League,https://media.api-sports.io/football/leagues/229.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/1/2025
+230,Landesliga - Tirol,League,https://media.api-sports.io/football/leagues/230.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/15/2025
+231,Landesliga - Vorarlbergliga,League,https://media.api-sports.io/football/leagues/231.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/15/2025
+232,Landesliga - Wien,League,https://media.api-sports.io/football/leagues/232.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/14/2025
+148,Second Amateur Division - ACFF,League,https://media.api-sports.io/football/leagues/148.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2025,8/23/2025
+153,Provincial - Antwerpen,League,https://media.api-sports.io/football/leagues/153.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/31/2024
+154,Provincial - Brabant VFV,League,https://media.api-sports.io/football/leagues/154.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/31/2024
+155,Provincial - Hainaut,League,https://media.api-sports.io/football/leagues/155.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/17/2024
+156,Provincial - Liege,League,https://media.api-sports.io/football/leagues/156.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/17/2024
+157,Provincial - Limburg,League,https://media.api-sports.io/football/leagues/157.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/31/2024
+158,Provincial - Luxembourg,League,https://media.api-sports.io/football/leagues/158.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/24/2024
+159,Provincial - Namur,League,https://media.api-sports.io/football/leagues/159.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/17/2024
+160,Provincial - Oost-Vlaanderen,League,https://media.api-sports.io/football/leagues/160.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/31/2024
+161,Provincial - West-Vlaanderen,League,https://media.api-sports.io/football/leagues/161.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/31/2024
+423,Ligue 1,League,https://media.api-sports.io/football/leagues/423.png,Burkina-Faso,BF,https://media.api-sports.io/flags/bf.svg,2025,9/21/2025
+424,Ligue 1,League,https://media.api-sports.io/football/leagues/424.png,Congo-DR,CG,https://media.api-sports.io/flags/cg.svg,2025,10/22/2025
+213,Third NL - Istok,League,https://media.api-sports.io/football/leagues/213.png,Croatia,HR,https://media.api-sports.io/flags/hr.svg,2025,8/30/2025
+214,Third NL - Jug,League,https://media.api-sports.io/football/leagues/214.png,Croatia,HR,https://media.api-sports.io/flags/hr.svg,2025,8/30/2025
+215,Third NL - Sjever,League,https://media.api-sports.io/football/leagues/215.png,Croatia,HR,https://media.api-sports.io/flags/hr.svg,2025,8/23/2025
+216,Third NL - Sredite,League,https://media.api-sports.io/football/leagues/216.png,Croatia,HR,https://media.api-sports.io/flags/hr.svg,2025,8/30/2025
+217,Third NL - Zapad,League,https://media.api-sports.io/football/leagues/217.png,Croatia,HR,https://media.api-sports.io/flags/hr.svg,2025,8/23/2025
+348,3. liga - CFL A,League,https://media.api-sports.io/football/leagues/348.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,8/8/2025
+349,3. liga - MSFL,League,https://media.api-sports.io/football/leagues/349.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,8/1/2025
+350,4. liga - Divizie A,League,https://media.api-sports.io/football/leagues/350.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,8/8/2025
+351,4. liga - Divizie B,League,https://media.api-sports.io/football/leagues/351.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,8/8/2025
+352,4. liga - Divizie C,League,https://media.api-sports.io/football/leagues/352.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,8/9/2025
+353,4. liga - Divizie D,League,https://media.api-sports.io/football/leagues/353.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,8/1/2025
+354,4. liga - Divizie E,League,https://media.api-sports.io/football/leagues/354.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,8/1/2025
+50,National League - North,League,https://media.api-sports.io/football/leagues/50.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+51,National League - South,League,https://media.api-sports.io/football/leagues/51.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+52,Non League Div One - Isthmian North,League,https://media.api-sports.io/football/leagues/52.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+53,Non League Div One - Isthmian South Central,League,https://media.api-sports.io/football/leagues/53.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+54,Non League Div One - Northern West,League,https://media.api-sports.io/football/leagues/54.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+55,Non League Div One - Northern Midlands,League,https://media.api-sports.io/football/leagues/55.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+56,Non League Div One - Southern South,League,https://media.api-sports.io/football/leagues/56.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+57,Non League Div One - Isthmian South East,League,https://media.api-sports.io/football/leagues/57.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+58,Non League Premier - Isthmian,League,https://media.api-sports.io/football/leagues/58.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/8/2025
+59,Non League Premier - Northern,League,https://media.api-sports.io/football/leagues/59.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+60,Non League Premier - Southern South,League,https://media.api-sports.io/football/leagues/60.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+92,Derde Divisie - Saturday,League,https://media.api-sports.io/football/leagues/92.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2025,8/16/2025
+93,Derde Divisie - Sunday,League,https://media.api-sports.io/football/leagues/93.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2025,8/16/2025
+109,II Liga - East,League,https://media.api-sports.io/football/leagues/109.png,Poland,PL,https://media.api-sports.io/flags/pl.svg,2025,7/25/2025
+341,Cup,Cup,https://media.api-sports.io/football/leagues/341.png,Vietnam,VN,https://media.api-sports.io/flags/vn.svg,2026,9/12/2025
+238,Youth Championship,League,https://media.api-sports.io/football/leagues/238.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2025,3/7/2025
+83,Regionalliga - Bayern,League,https://media.api-sports.io/football/leagues/83.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,7/24/2025
+84,Regionalliga - Nord,League,https://media.api-sports.io/football/leagues/84.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,7/25/2025
+85,Regionalliga - Nordost,League,https://media.api-sports.io/football/leagues/85.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,7/25/2025
+86,Regionalliga - SudWest,League,https://media.api-sports.io/football/leagues/86.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/1/2025
+87,Regionalliga - West,League,https://media.api-sports.io/football/leagues/87.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,7/25/2025
+426,Serie D - Girone A,League,https://media.api-sports.io/football/leagues/426.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,9/6/2025
+427,Serie D - Girone B,League,https://media.api-sports.io/football/leagues/427.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,9/6/2025
+428,Serie D - Girone C,League,https://media.api-sports.io/football/leagues/428.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,9/7/2025
+429,Serie D - Girone D,League,https://media.api-sports.io/football/leagues/429.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,9/7/2025
+430,Serie D - Girone E,League,https://media.api-sports.io/football/leagues/430.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,9/7/2025
+431,Serie D - Girone F,League,https://media.api-sports.io/football/leagues/431.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,9/7/2025
+432,Serie D - Girone G,League,https://media.api-sports.io/football/leagues/432.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,9/7/2025
+433,Serie D - Girone H,League,https://media.api-sports.io/football/leagues/433.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,9/7/2025
+434,Serie D - Girone I,League,https://media.api-sports.io/football/leagues/434.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,9/7/2025
+435,Primera División RFEF - Group 1,League,https://media.api-sports.io/football/leagues/435.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,8/29/2025
+436,Primera División RFEF - Group 2,League,https://media.api-sports.io/football/leagues/436.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,8/29/2025
+437,Primera División RFEF - Group 3,League,https://media.api-sports.io/football/leagues/437.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2020,10/17/2020
+438,Primera División RFEF - Group 4,League,https://media.api-sports.io/football/leagues/438.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2020,10/18/2020
+439,Tercera División RFEF - Group 1,League,https://media.api-sports.io/football/leagues/439.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+440,Tercera División RFEF - Group 2,League,https://media.api-sports.io/football/leagues/440.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+441,Tercera División RFEF - Group 3,League,https://media.api-sports.io/football/leagues/441.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+442,Tercera División RFEF - Group 4,League,https://media.api-sports.io/football/leagues/442.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+443,Tercera División RFEF - Group 5,League,https://media.api-sports.io/football/leagues/443.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+444,Tercera División RFEF - Group 6,League,https://media.api-sports.io/football/leagues/444.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+445,Tercera División RFEF - Group 7,League,https://media.api-sports.io/football/leagues/445.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+446,Tercera División RFEF - Group 8,League,https://media.api-sports.io/football/leagues/446.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+447,Tercera División RFEF - Group 9,League,https://media.api-sports.io/football/leagues/447.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+448,Tercera División RFEF - Group 10,League,https://media.api-sports.io/football/leagues/448.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/5/2025
+449,Tercera División RFEF - Group 11,League,https://media.api-sports.io/football/leagues/449.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+450,Tercera División RFEF - Group 12,League,https://media.api-sports.io/football/leagues/450.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/5/2025
+451,Tercera División RFEF - Group 13,League,https://media.api-sports.io/football/leagues/451.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+452,Tercera División RFEF - Group 14,League,https://media.api-sports.io/football/leagues/452.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+453,Tercera División RFEF - Group 15,League,https://media.api-sports.io/football/leagues/453.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/5/2025
+454,Tercera División RFEF - Group 16,League,https://media.api-sports.io/football/leagues/454.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+455,Tercera División RFEF - Group 17,League,https://media.api-sports.io/football/leagues/455.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+456,Tercera División RFEF - Group 18,League,https://media.api-sports.io/football/leagues/456.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+457,Campeonato de Portugal Prio - Group A,League,https://media.api-sports.io/football/leagues/457.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,8/10/2025
+458,Campeonato de Portugal Prio - Group B,League,https://media.api-sports.io/football/leagues/458.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,8/9/2025
+459,Campeonato de Portugal Prio - Group C,League,https://media.api-sports.io/football/leagues/459.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,8/10/2025
+460,Campeonato de Portugal Prio - Group D,League,https://media.api-sports.io/football/leagues/460.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,8/9/2025
+461,National 3 - Group A,League,https://media.api-sports.io/football/leagues/461.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/23/2025
+462,National 3 - Group B,League,https://media.api-sports.io/football/leagues/462.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/23/2025
+463,National 3 - Group C,League,https://media.api-sports.io/football/leagues/463.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/23/2025
+464,National 3 - Group D,League,https://media.api-sports.io/football/leagues/464.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/23/2025
+465,National 3 - Group E,League,https://media.api-sports.io/football/leagues/465.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/23/2025
+466,National 3 - Group F,League,https://media.api-sports.io/football/leagues/466.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/23/2025
+467,National 3 - Group H,League,https://media.api-sports.io/football/leagues/467.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/22/2025
+468,National 3 - Group I,League,https://media.api-sports.io/football/leagues/468.png,France,FR,https://media.api-sports.io/flags/fr.svg,2024,8/24/2024
+469,National 3 - Group J,League,https://media.api-sports.io/football/leagues/469.png,France,FR,https://media.api-sports.io/flags/fr.svg,2024,8/24/2024
+470,National 3 - Group K,League,https://media.api-sports.io/football/leagues/470.png,France,FR,https://media.api-sports.io/flags/fr.svg,2023,8/26/2023
+471,National 3 - Group L,League,https://media.api-sports.io/football/leagues/471.png,France,FR,https://media.api-sports.io/flags/fr.svg,2022,8/27/2022
+472,National 3 - Group M,League,https://media.api-sports.io/football/leagues/472.png,France,FR,https://media.api-sports.io/flags/fr.svg,2022,8/28/2022
+473,2. Division - Group 1,League,https://media.api-sports.io/football/leagues/473.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2025,3/29/2025
+474,2. Division - Group 2,League,https://media.api-sports.io/football/leagues/474.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2025,3/29/2025
+484,Frauenliga,League,https://media.api-sports.io/football/leagues/484.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2025,8/15/2025
+485,Federation Cup,Cup,https://media.api-sports.io/football/leagues/485.png,Bahrain,BH,https://media.api-sports.io/flags/bh.svg,2023,10/14/2023
+486,Coppa,Cup,https://media.api-sports.io/football/leagues/486.png,Belarus,BY,https://media.api-sports.io/flags/by.svg,2025,5/3/2025
+487,First Amateur Division,League,https://media.api-sports.io/football/leagues/487.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2025,8/27/2025
+489,USL League One,League,https://media.api-sports.io/football/leagues/489.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,3/8/2025
+494,Super League 2,League,https://media.api-sports.io/football/leagues/494.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2025,9/13/2025
+501,Copa Paraguay,Cup,https://media.api-sports.io/football/leagues/501.png,Paraguay,PY,https://media.api-sports.io/flags/py.svg,2025,5/28/2025
+502,Copa Bicentenario,Cup,https://media.api-sports.io/football/leagues/502.png,Peru,PE,https://media.api-sports.io/flags/pe.svg,2020,6/10/2021
+503,Copa Perú,Cup,https://media.api-sports.io/football/leagues/503.png,Peru,PE,https://media.api-sports.io/flags/pe.svg,2025,9/13/2025
+509,8 Cup,Cup,https://media.api-sports.io/football/leagues/509.png,South-Africa,ZA,https://media.api-sports.io/flags/za.svg,2025,8/2/2025
+566,Ligue A,League,https://media.api-sports.io/football/leagues/566.png,Burundi,BI,https://media.api-sports.io/flags/bi.svg,2025,8/15/2025
+572,Srpska Liga - Belgrade,League,https://media.api-sports.io/football/leagues/572.png,Serbia,RS,https://media.api-sports.io/flags/rs.svg,2025,8/22/2025
+573,Srpska Liga - Vojvodina,League,https://media.api-sports.io/football/leagues/573.png,Serbia,RS,https://media.api-sports.io/flags/rs.svg,2025,8/16/2025
+574,Srpska Liga - East,League,https://media.api-sports.io/football/leagues/574.png,Serbia,RS,https://media.api-sports.io/flags/rs.svg,2025,8/16/2025
+575,Srpska Liga - West,League,https://media.api-sports.io/football/leagues/575.png,Serbia,RS,https://media.api-sports.io/flags/rs.svg,2025,8/16/2025
+576,Gamma Ethniki - Group 1,League,https://media.api-sports.io/football/leagues/576.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2025,9/21/2025
+577,Gamma Ethniki - Group 2,League,https://media.api-sports.io/football/leagues/577.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2025,9/21/2025
+578,Gamma Ethniki - Group 3,League,https://media.api-sports.io/football/leagues/578.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2025,9/13/2025
+579,Gamma Ethniki - Group 4,League,https://media.api-sports.io/football/leagues/579.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2025,9/21/2025
+580,Gamma Ethniki - Group 5,League,https://media.api-sports.io/football/leagues/580.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2025,9/21/2025
+581,Gamma Ethniki - Group 6,League,https://media.api-sports.io/football/leagues/581.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2025,9/20/2025
+582,Gamma Ethniki - Group 7,League,https://media.api-sports.io/football/leagues/582.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2021,10/23/2021
+583,Gamma Ethniki - Group 8,League,https://media.api-sports.io/football/leagues/583.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2020,10/10/2020
+587,World Cup - U17,Cup,https://media.api-sports.io/football/leagues/587.png,World,,,2025,2/7/2025
+590,A Division,League,https://media.api-sports.io/football/leagues/590.png,Nepal,NP,https://media.api-sports.io/flags/np.svg,2023,3/3/2023
+599,1. Liga Classic - Group 1,League,https://media.api-sports.io/football/leagues/599.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2025,8/9/2025
+600,1. Liga Classic - Group 2,League,https://media.api-sports.io/football/leagues/600.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2025,8/8/2025
+601,1. Liga Classic - Group 3,League,https://media.api-sports.io/football/leagues/601.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2025,8/9/2025
+613,Baiano - 2,League,https://media.api-sports.io/football/leagues/613.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,4/30/2025
+620,Cearense - 2,League,https://media.api-sports.io/football/leagues/620.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,2/9/2025
+625,Carioca - 2,League,https://media.api-sports.io/football/leagues/625.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,9/6/2025
+633,NB III - Northeast,League,https://media.api-sports.io/football/leagues/633.png,Hungary,HU,https://media.api-sports.io/flags/hu.svg,2025,7/26/2025
+634,NB III - Southwest,League,https://media.api-sports.io/football/leagues/634.png,Hungary,HU,https://media.api-sports.io/flags/hu.svg,2025,7/27/2025
+635,NB III - Northwest,League,https://media.api-sports.io/football/leagues/635.png,Hungary,HU,https://media.api-sports.io/flags/hu.svg,2025,7/27/2025
+254,NWSL Women,League,https://media.api-sports.io/football/leagues/254.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,3/15/2025
+260,Pacific Coast Soccer League,League,https://media.api-sports.io/football/leagues/260.png,Canada,CA,https://media.api-sports.io/flags/ca.svg,2025,5/3/2025
+192,New South Wales NPL,League,https://media.api-sports.io/football/leagues/192.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,2/7/2025
+194,South Australia NPL,League,https://media.api-sports.io/football/leagues/194.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,2/21/2025
+195,Victoria NPL,League,https://media.api-sports.io/football/leagues/195.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,2/6/2025
+196,Western Australia NPL,League,https://media.api-sports.io/football/leagues/196.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,3/14/2025
+357,Premier Division,League,https://media.api-sports.io/football/leagues/357.png,Ireland,IE,https://media.api-sports.io/flags/ie.svg,2025,2/14/2025
+358,First Division,League,https://media.api-sports.io/football/leagues/358.png,Ireland,IE,https://media.api-sports.io/flags/ie.svg,2025,2/14/2025
+515,U21 League 1,League,https://media.api-sports.io/football/leagues/515.png,Algeria,DZ,https://media.api-sports.io/flags/dz.svg,2024,9/19/2024
+517,Trofeo de Campeones de la Superliga,Cup,https://media.api-sports.io/football/leagues/517.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2025,12/21/2024
+518,Reserve Pro League,League,https://media.api-sports.io/football/leagues/518.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2025,8/22/2025
+523,NISA,League,https://media.api-sports.io/football/leagues/523.png,USA,US,https://media.api-sports.io/flags/us.svg,2024,3/23/2024
+525,UEFA Champions League Women,Cup,https://media.api-sports.io/football/leagues/525.png,World,,,2025,7/30/2025
+533,CAF Super Cup,Cup,https://media.api-sports.io/football/leagues/533.png,World,,,2025,10/18/2025
+534,CONCACAF Caribbean Club Shield,Cup,https://media.api-sports.io/football/leagues/534.png,World,,,2025,7/26/2025
+546,FAI President's Cup,Cup,https://media.api-sports.io/football/leagues/546.png,Ireland,IE,https://media.api-sports.io/flags/ie.svg,2024,2/7/2025
+482,Queensland NPL,League,https://media.api-sports.io/football/leagues/482.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,2/21/2025
+275,Liga 2,League,https://media.api-sports.io/football/leagues/275.png,Indonesia,ID,https://media.api-sports.io/flags/id.svg,2025,9/12/2025
+395,Liga 1,League,https://media.api-sports.io/football/leagues/395.png,Moldova,MD,https://media.api-sports.io/flags/md.svg,2025,7/25/2025
+267,Copa Chile,Cup,https://media.api-sports.io/football/leagues/267.png,Chile,CL,https://media.api-sports.io/flags/cl.svg,2025,1/26/2025
+171,FA Cup,Cup,https://media.api-sports.io/football/leagues/171.png,China,CN,https://media.api-sports.io/flags/cn.svg,2025,3/14/2025
+241,Copa Colombia,Cup,https://media.api-sports.io/football/leagues/241.png,Colombia,CO,https://media.api-sports.io/flags/co.svg,2025,5/28/2025
+147,Cup,Cup,https://media.api-sports.io/football/leagues/147.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2025,8/2/2025
+167,Cup,Cup,https://media.api-sports.io/football/leagues/167.png,Iceland,IS,https://media.api-sports.io/flags/is.svg,2025,3/28/2025
+168,League Cup,Cup,https://media.api-sports.io/football/leagues/168.png,Iceland,IS,https://media.api-sports.io/flags/is.svg,2025,2/1/2025
+359,FAI Cup,Cup,https://media.api-sports.io/football/leagues/359.png,Ireland,IE,https://media.api-sports.io/flags/ie.svg,2025,5/11/2025
+360,League Cup,Cup,https://media.api-sports.io/football/leagues/360.png,Ireland,IE,https://media.api-sports.io/flags/ie.svg,2020,3/8/2020
+385,Toto Cup Ligat Al,Cup,https://media.api-sports.io/football/leagues/385.png,Israel,IL,https://media.api-sports.io/flags/il.svg,2025,7/19/2025
+264,Copa MX,Cup,https://media.api-sports.io/football/leagues/264.png,Mexico,MX,https://media.api-sports.io/flags/mx.svg,2019,7/31/2019
+11,CONMEBOL Sudamericana,Cup,https://media.api-sports.io/football/leagues/11.png,World,,,2025,3/5/2025
+12,CAF Champions League,Cup,https://media.api-sports.io/football/leagues/12.png,World,,,2025,11/20/2286
+13,CONMEBOL Libertadores,Cup,https://media.api-sports.io/football/leagues/13.png,World,,,2025,2/5/2025
+209,Schweizer Cup,Cup,https://media.api-sports.io/football/leagues/209.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2025,8/15/2025
+115,Svenska Cupen,Cup,https://media.api-sports.io/football/leagues/115.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,5/7/2025
+375,Cup,Cup,https://media.api-sports.io/football/leagues/375.png,Slovenia,SI,https://media.api-sports.io/flags/si.svg,2025,10/21/2025
+181,FA Cup,Cup,https://media.api-sports.io/football/leagues/181.png,Scotland,GB-SCT,https://media.api-sports.io/flags/gb-sct.svg,2025,8/9/2025
+182,Challenge Cup,Cup,https://media.api-sports.io/football/leagues/182.png,Scotland,GB-SCT,https://media.api-sports.io/flags/gb-sct.svg,2025,8/12/2025
+237,Cup,Cup,https://media.api-sports.io/football/leagues/237.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2025,7/29/2025
+97,Taça da Liga,Cup,https://media.api-sports.io/football/leagues/97.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,10/28/2025
+108,Cup,Cup,https://media.api-sports.io/football/leagues/108.png,Poland,PL,https://media.api-sports.io/flags/pl.svg,2025,8/5/2025
+105,NM Cupen,Cup,https://media.api-sports.io/football/leagues/105.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2026,8/13/2025
+294,FA Cup,Cup,https://media.api-sports.io/football/leagues/294.png,South-Korea,KR,https://media.api-sports.io/flags/kr.svg,2025,3/8/2025
+325,Santosh Trophy,Cup,https://media.api-sports.io/football/leagues/325.png,India,IN,https://media.api-sports.io/flags/in.svg,2024,11/15/2024
+347,Cup,Cup,https://media.api-sports.io/football/leagues/347.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,7/20/2025
+565,Liga Primera U20,League,https://media.api-sports.io/football/leagues/565.png,Nicaragua,NI,https://media.api-sports.io/flags/ni.svg,2025,8/2/2024
+602,Baiano - 1,League,https://media.api-sports.io/football/leagues/602.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/11/2025
+603,Paraibano,League,https://media.api-sports.io/football/leagues/603.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/11/2025
+604,Catarinense - 1,League,https://media.api-sports.io/football/leagues/604.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/11/2025
+605,Paulista - A3,League,https://media.api-sports.io/football/leagues/605.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/18/2025
+606,Paranaense - 1,League,https://media.api-sports.io/football/leagues/606.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/11/2025
+607,Roraimense,League,https://media.api-sports.io/football/leagues/607.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,2/8/2025
+608,Maranhense,League,https://media.api-sports.io/football/leagues/608.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/11/2025
+609,Cearense - 1,League,https://media.api-sports.io/football/leagues/609.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/18/2025
+610,Brasiliense,League,https://media.api-sports.io/football/leagues/610.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/18/2025
+611,Capixaba,League,https://media.api-sports.io/football/leagues/611.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/18/2025
+612,Copa do Nordeste,Cup,https://media.api-sports.io/football/leagues/612.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/4/2025
+614,Paranaense - 2,League,https://media.api-sports.io/football/leagues/614.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,4/12/2025
+615,Rondoniense,League,https://media.api-sports.io/football/leagues/615.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,2/1/2025
+616,Potiguar,League,https://media.api-sports.io/football/leagues/616.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/11/2025
+617,Copa do Brasil U20,Cup,https://media.api-sports.io/football/leagues/617.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,10/22/2025
+618,São Paulo Youth Cup,Cup,https://media.api-sports.io/football/leagues/618.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/2/2025
+619,Mineiro - 2,League,https://media.api-sports.io/football/leagues/619.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,5/3/2025
+621,Piauiense,League,https://media.api-sports.io/football/leagues/621.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/11/2025
+622,Pernambucano - 1,League,https://media.api-sports.io/football/leagues/622.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/11/2025
+623,Sul-Matogrossense,League,https://media.api-sports.io/football/leagues/623.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/18/2025
+624,Carioca - 1,League,https://media.api-sports.io/football/leagues/624.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/11/2025
+626,Sergipano,League,https://media.api-sports.io/football/leagues/626.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/11/2025
+627,Paraense,League,https://media.api-sports.io/football/leagues/627.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/18/2025
+628,Goiano - 1,League,https://media.api-sports.io/football/leagues/628.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/15/2025
+629,Mineiro - 1,League,https://media.api-sports.io/football/leagues/629.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/18/2025
+630,Matogrossense,League,https://media.api-sports.io/football/leagues/630.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/11/2025
+631,Tocantinense,League,https://media.api-sports.io/football/leagues/631.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,2/4/2025
+632,Supercopa do Brasil,Cup,https://media.api-sports.io/football/leagues/632.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,2/2/2025
+636,Ýokary Liga,League,https://media.api-sports.io/football/leagues/636.png,Turkmenistan,TM,https://media.api-sports.io/flags/tm.svg,2025,3/4/2025
+637,V.League 2,League,https://media.api-sports.io/football/leagues/637.png,Vietnam,VN,https://media.api-sports.io/flags/vn.svg,2026,9/19/2025
+639,Super Cup,Cup,https://media.api-sports.io/football/leagues/639.png,Iceland,IS,https://media.api-sports.io/flags/is.svg,2025,3/31/2025
+640,Kansallinen Liiga,League,https://media.api-sports.io/football/leagues/640.png,Finland,FI,https://media.api-sports.io/flags/fi.svg,2025,4/26/2025
+641,NWSL Women - Challenge Cup,Cup,https://media.api-sports.io/football/leagues/641.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,3/8/2025
+643,3. liga - Bratislava,League,https://media.api-sports.io/football/leagues/643.png,Slovakia,SK,https://media.api-sports.io/flags/sk.svg,2021,8/7/2021
+644,3. liga - West,League,https://media.api-sports.io/football/leagues/644.png,Slovakia,SK,https://media.api-sports.io/flags/sk.svg,2025,8/2/2025
+645,3. liga - East,League,https://media.api-sports.io/football/leagues/645.png,Slovakia,SK,https://media.api-sports.io/flags/sk.svg,2025,8/2/2025
+646,3. liga - Center,League,https://media.api-sports.io/football/leagues/646.png,Slovakia,SK,https://media.api-sports.io/flags/sk.svg,2025,8/2/2025
+647,Lao League,League,https://media.api-sports.io/football/leagues/647.png,Laos,LA,https://media.api-sports.io/flags/la.svg,2025,8/16/2025
+648,Tasmania NPL,League,https://media.api-sports.io/football/leagues/648.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,3/14/2025
+649,Supreme Division Women,League,https://media.api-sports.io/football/leagues/649.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2025,3/7/2025
+650,Second League - Group 3,League,https://media.api-sports.io/football/leagues/650.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2025,3/28/2025
+651,Second League - Group 1,League,https://media.api-sports.io/football/leagues/651.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2025,3/22/2025
+652,Second League - Group 2,League,https://media.api-sports.io/football/leagues/652.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2025,3/30/2025
+653,Second League - Group 4,League,https://media.api-sports.io/football/leagues/653.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2025,4/12/2025
+654,Super Cup,Cup,https://media.api-sports.io/football/leagues/654.png,Armenia,AM,https://media.api-sports.io/flags/am.svg,2024,2/20/2025
+656,Super Cup,Cup,https://media.api-sports.io/football/leagues/656.png,Bulgaria,BG,https://media.api-sports.io/flags/bg.svg,2024,2/4/2025
+657,Cup,Cup,https://media.api-sports.io/football/leagues/657.png,Estonia,EE,https://media.api-sports.io/flags/ee.svg,2025,6/10/2025
+658,Cup,Cup,https://media.api-sports.io/football/leagues/658.png,Latvia,LV,https://media.api-sports.io/flags/lv.svg,2025,5/2/2025
+659,Super Cup,Cup,https://media.api-sports.io/football/leagues/659.png,Israel,IL,https://media.api-sports.io/flags/il.svg,2025,7/12/2025
+660,WK-League,League,https://media.api-sports.io/football/leagues/660.png,South-Korea,KR,https://media.api-sports.io/flags/kr.svg,2025,3/15/2025
+661,Cup,Cup,https://media.api-sports.io/football/leagues/661.png,Lithuania,LT,https://media.api-sports.io/flags/lt.svg,2025,4/11/2025
+662,Copa por México,Cup,https://media.api-sports.io/football/leagues/662.png,Mexico,MX,https://media.api-sports.io/flags/mx.svg,2022,12/13/2022
+663,Super Cup,Cup,https://media.api-sports.io/football/leagues/663.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2025,7/12/2025
+666,Friendlies Women,Cup,https://media.api-sports.io/football/leagues/666.png,World,,,2025,1/2/2025
+667,Friendlies Clubs,Cup,https://media.api-sports.io/football/leagues/667.png,World,,,2025,1/3/2025
+668,1. Liga U19,League,https://media.api-sports.io/football/leagues/668.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,8/6/2025
+669,1. Liga Women,League,https://media.api-sports.io/football/leagues/669.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,8/16/2025
+670,Community Shield Women,Cup,https://media.api-sports.io/football/leagues/670.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2020,8/29/2020
+671,Úrvalsdeild Women,League,https://media.api-sports.io/football/leagues/671.png,Iceland,IS,https://media.api-sports.io/flags/is.svg,2025,4/15/2025
+672,David Kipiani Cup,Cup,https://media.api-sports.io/football/leagues/672.png,Georgia,GE,https://media.api-sports.io/flags/ge.svg,2025,6/12/2025
+673,Liga MX Femenil,League,https://media.api-sports.io/football/leagues/673.png,Mexico,MX,https://media.api-sports.io/flags/mx.svg,2025,7/11/2025
+674,Cupa,Cup,https://media.api-sports.io/football/leagues/674.png,Moldova,MD,https://media.api-sports.io/flags/md.svg,2025,9/30/2025
+675,U21 Divisie 1,League,https://media.api-sports.io/football/leagues/675.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2025,8/23/2025
+676,Central Youth League,League,https://media.api-sports.io/football/leagues/676.png,Poland,PL,https://media.api-sports.io/flags/pl.svg,2025,8/9/2025
+678,Super Cup,Cup,https://media.api-sports.io/football/leagues/678.png,Ukraine,UA,https://media.api-sports.io/flags/ua.svg,2021,9/22/2021
+679,U21 League,League,https://media.api-sports.io/football/leagues/679.png,Ukraine,UA,https://media.api-sports.io/flags/ua.svg,2020,8/20/2020
+680,Cup,Cup,https://media.api-sports.io/football/leagues/680.png,Slovakia,SK,https://media.api-sports.io/flags/sk.svg,2025,7/18/2025
+681,Campeonato de Portugal Prio - Group E,League,https://media.api-sports.io/football/leagues/681.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2021,8/29/2021
+682,Campeonato de Portugal Prio - Group F,League,https://media.api-sports.io/football/leagues/682.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2021,8/29/2021
+683,Campeonato de Portugal Prio - Group G,League,https://media.api-sports.io/football/leagues/683.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2020,9/20/2020
+684,Campeonato de Portugal Prio - Group H,League,https://media.api-sports.io/football/leagues/684.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2020,9/20/2020
+685,3. liga - CFL B,League,https://media.api-sports.io/football/leagues/685.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,8/9/2025
+686,4. liga - Divizie F,League,https://media.api-sports.io/football/leagues/686.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2025,8/2/2025
+687,Regionalliga - Tirol,League,https://media.api-sports.io/football/leagues/687.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2022,7/22/2022
+688,Regionalliga - Salzburg,League,https://media.api-sports.io/football/leagues/688.png,Austria,AT,https://media.api-sports.io/flags/at.svg,2022,7/22/2022
+689,Third Amateur Division - ACFF A,League,https://media.api-sports.io/football/leagues/689.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/24/2024
+690,Third Amateur Division - ACFF B,League,https://media.api-sports.io/football/leagues/690.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/24/2024
+691,Provincial - Brabant ACFF,League,https://media.api-sports.io/football/leagues/691.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,8/31/2024
+692,Primera División RFEF - Group 5,League,https://media.api-sports.io/football/leagues/692.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2020,10/17/2020
+475,Paulista - A1,League,https://media.api-sports.io/football/leagues/475.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/15/2025
+476,Paulista - A2,League,https://media.api-sports.io/football/leagues/476.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/15/2025
+477,Gaúcho - 1,League,https://media.api-sports.io/football/leagues/477.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/22/2025
+478,Gaúcho - 2,League,https://media.api-sports.io/football/leagues/478.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,5/17/2025
+479,Canadian Premier League,League,https://media.api-sports.io/football/leagues/479.png,Canada,CA,https://media.api-sports.io/flags/ca.svg,2025,4/5/2025
+483,Copa de la Superliga,Cup,https://media.api-sports.io/football/leagues/483.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2020,3/13/2020
+500,FA Cup,Cup,https://media.api-sports.io/football/leagues/500.png,Malaysia,MY,https://media.api-sports.io/flags/my.svg,2025,8/16/2025
+693,Gamma Ethniki - Group 9,League,https://media.api-sports.io/football/leagues/693.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2020,10/11/2020
+694,Gamma Ethniki - Group 10,League,https://media.api-sports.io/football/leagues/694.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2020,10/18/2020
+695,U18 Premier League - North,League,https://media.api-sports.io/football/leagues/695.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/16/2025
+696,U18 Premier League - South,League,https://media.api-sports.io/football/leagues/696.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/16/2025
+697,WSL Cup,Cup,https://media.api-sports.io/football/leagues/697.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,9/24/2025
+699,Women's Championship,League,https://media.api-sports.io/football/leagues/699.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,9/5/2025
+700,Kakkosen Cup,Cup,https://media.api-sports.io/football/leagues/700.png,Finland,FI,https://media.api-sports.io/flags/fi.svg,2021,1/24/2021
+701,Liga Revelação U23,League,https://media.api-sports.io/football/leagues/701.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,8/10/2025
+702,Premier League 2 Division One,League,https://media.api-sports.io/football/leagues/702.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/15/2025
+703,Professional Development League,League,https://media.api-sports.io/football/leagues/703.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/8/2025
+704,Coppa Italia Primavera,Cup,https://media.api-sports.io/football/leagues/704.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,8/20/2025
+705,Campionato Primavera - 1,League,https://media.api-sports.io/football/leagues/705.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,8/16/2025
+706,Campionato Primavera - 2,League,https://media.api-sports.io/football/leagues/706.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,9/13/2025
+707,Cup,Cup,https://media.api-sports.io/football/leagues/707.png,Albania,AL,https://media.api-sports.io/flags/al.svg,2025,10/14/2025
+708,Super Cup,Cup,https://media.api-sports.io/football/leagues/708.png,Albania,AL,https://media.api-sports.io/flags/al.svg,2024,12/26/2024
+709,Cup,Cup,https://media.api-sports.io/football/leagues/709.png,Armenia,AM,https://media.api-sports.io/flags/am.svg,2024,8/20/2024
+710,Nacional B,League,https://media.api-sports.io/football/leagues/710.png,Bolivia,BO,https://media.api-sports.io/flags/bo.svg,2025,8/23/2025
+711,Segunda División,League,https://media.api-sports.io/football/leagues/711.png,Chile,CL,https://media.api-sports.io/flags/cl.svg,2025,3/1/2025
+712,Liga Femenina,League,https://media.api-sports.io/football/leagues/712.png,Colombia,CO,https://media.api-sports.io/flags/co.svg,2025,2/21/2025
+713,Superliga,Cup,https://media.api-sports.io/football/leagues/713.png,Colombia,CO,https://media.api-sports.io/flags/co.svg,2025,1/30/2025
+715,DFB Junioren Pokal,Cup,https://media.api-sports.io/football/leagues/715.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/15/2025
+717,I-League - 2nd Division,League,https://media.api-sports.io/football/leagues/717.png,India,IN,https://media.api-sports.io/flags/in.svg,2025,1/19/2025
+719,Super Cup,Cup,https://media.api-sports.io/football/leagues/719.png,Kuwait,KW,https://media.api-sports.io/flags/kw.svg,2024,1/24/2025
+720,Emir Cup,Cup,https://media.api-sports.io/football/leagues/720.png,Kuwait,KW,https://media.api-sports.io/flags/kw.svg,2025,4/10/2025
+721,Cup,Cup,https://media.api-sports.io/football/leagues/721.png,Luxembourg,LU,https://media.api-sports.io/flags/lu.svg,2025,9/19/2025
+722,Liga Premier Serie A,League,https://media.api-sports.io/football/leagues/722.png,Mexico,MX,https://media.api-sports.io/flags/mx.svg,2025,8/22/2025
+723,Cup,Cup,https://media.api-sports.io/football/leagues/723.png,Montenegro,ME,https://media.api-sports.io/flags/me.svg,2025,10/22/2025
+724,U18 Divisie 1,League,https://media.api-sports.io/football/leagues/724.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2023,9/2/2023
+726,Sultan Cup,Cup,https://media.api-sports.io/football/leagues/726.png,Oman,OM,https://media.api-sports.io/flags/om.svg,2025,10/24/2025
+727,Super Cup,Cup,https://media.api-sports.io/football/leagues/727.png,Poland,PL,https://media.api-sports.io/flags/pl.svg,2025,7/13/2025
+728,Liga 1 Feminin,League,https://media.api-sports.io/football/leagues/728.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2025,8/23/2025
+729,Coppa Titano,Cup,https://media.api-sports.io/football/leagues/729.png,San-Marino,SM,https://media.api-sports.io/flags/sm.svg,2025,9/23/2025
+730,Football League - Highland League,League,https://media.api-sports.io/football/leagues/730.png,Scotland,GB-SCT,https://media.api-sports.io/flags/gb-sct.svg,2025,7/26/2025
+731,Football League - Lowland League,League,https://media.api-sports.io/football/leagues/731.png,Scotland,GB-SCT,https://media.api-sports.io/flags/gb-sct.svg,2025,7/25/2025
+732,Cup,Cup,https://media.api-sports.io/football/leagues/732.png,Serbia,RS,https://media.api-sports.io/flags/rs.svg,2025,9/10/2025
+733,I Liga - Women,League,https://media.api-sports.io/football/leagues/733.png,Slovakia,SK,https://media.api-sports.io/flags/sk.svg,2025,8/16/2025
+734,Diski Challenge,League,https://media.api-sports.io/football/leagues/734.png,South-Africa,ZA,https://media.api-sports.io/flags/za.svg,2025,9/6/2025
+735,Copa Federacion,Cup,https://media.api-sports.io/football/leagues/735.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/10/2025
+737,Svenska Cupen - Women,Cup,https://media.api-sports.io/football/leagues/737.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,7/23/2025
+738,League Cup,Cup,https://media.api-sports.io/football/leagues/738.png,Wales,GB-WLS,https://media.api-sports.io/flags/gb-wls.svg,2025,7/18/2025
+739,AXA Women’s Super League,League,https://media.api-sports.io/football/leagues/739.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2025,8/23/2025
+740,Brasileiro U20 A,Cup,https://media.api-sports.io/football/leagues/740.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,3/10/2025
+741,Brasileiro de Aspirantes,Cup,https://media.api-sports.io/football/leagues/741.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2024,9/25/2024
+742,Copa Paulista,Cup,https://media.api-sports.io/football/leagues/742.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,6/13/2025
+744,Oberliga - Schleswig-Holstein,League,https://media.api-sports.io/football/leagues/744.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/1/2025
+745,Oberliga - Hamburg,League,https://media.api-sports.io/football/leagues/745.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,7/25/2025
+746,Oberliga - Mittelrhein,League,https://media.api-sports.io/football/leagues/746.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/29/2025
+747,Oberliga - Westfalen,League,https://media.api-sports.io/football/leagues/747.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/8/2025
+748,Oberliga - Niedersachsen,League,https://media.api-sports.io/football/leagues/748.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/8/2025
+749,Oberliga - Bremen,League,https://media.api-sports.io/football/leagues/749.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/8/2025
+750,Oberliga - Hessen,League,https://media.api-sports.io/football/leagues/750.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/1/2025
+751,Oberliga - Niederrhein,League,https://media.api-sports.io/football/leagues/751.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/15/2025
+752,Oberliga - Rheinland-Pfalz / Saar,League,https://media.api-sports.io/football/leagues/752.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/1/2025
+753,Oberliga - Baden-Württemberg,League,https://media.api-sports.io/football/leagues/753.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/1/2025
+754,Oberliga - Nordost-Nord,League,https://media.api-sports.io/football/leagues/754.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/1/2025
+755,Oberliga - Nordost-Süd,League,https://media.api-sports.io/football/leagues/755.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/1/2025
+756,Cup,Cup,https://media.api-sports.io/football/leagues/756.png,Macedonia,MK,https://media.api-sports.io/flags/mk.svg,2025,8/26/2025
+757,Irish Cup,Cup,https://media.api-sports.io/football/leagues/757.png,Northern-Ireland,GB-NIR,https://media.api-sports.io/flags/gb-nir.svg,2024,10/26/2024
+758,Premier Division,League,https://media.api-sports.io/football/leagues/758.png,Gibraltar,GI,https://media.api-sports.io/flags/gi.svg,2025,8/15/2025
+759,Liga Mayor,League,https://media.api-sports.io/football/leagues/759.png,Dominican-Republic,DO,https://media.api-sports.io/flags/do.svg,2025,8/8/2025
+760,LFA First Division,League,https://media.api-sports.io/football/leagues/760.png,Liberia,LR,https://media.api-sports.io/flags/lr.svg,2025,10/18/2025
+761,Cup,Cup,https://media.api-sports.io/football/leagues/761.png,Liechtenstein,LI,https://media.api-sports.io/flags/li.svg,2025,8/12/2025
+762,Premier League,League,https://media.api-sports.io/football/leagues/762.png,Mauritania,MR,https://media.api-sports.io/flags/mr.svg,2025,10/3/2025
+763,Mauritian League,League,https://media.api-sports.io/football/leagues/763.png,Mauritius,MU,https://media.api-sports.io/flags/mu.svg,2024,11/30/2024
+764,Premier League,League,https://media.api-sports.io/football/leagues/764.png,Mongolia,MN,https://media.api-sports.io/flags/mn.svg,2026,9/20/2025
+765,PFL,League,https://media.api-sports.io/football/leagues/765.png,Philippines,PH,https://media.api-sports.io/flags/ph.svg,2026,8/30/2025
+767,CONCACAF League,Cup,https://media.api-sports.io/football/leagues/767.png,World,,,2022,7/27/2022
+771,COSAFA U20 Championship,Cup,https://media.api-sports.io/football/leagues/771.png,World,,,2025,7/4/2025
+774,3. Division - Girone 1,League,https://media.api-sports.io/football/leagues/774.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2025,3/29/2025
+775,3. Division - Girone 2,League,https://media.api-sports.io/football/leagues/775.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2025,3/29/2025
+776,3. Division - Girone 3,League,https://media.api-sports.io/football/leagues/776.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2025,3/29/2025
+777,3. Division - Girone 4,League,https://media.api-sports.io/football/leagues/777.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2025,3/29/2025
+778,3. Division - Girone 5,League,https://media.api-sports.io/football/leagues/778.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2025,3/29/2025
+779,3. Division - Girone 6,League,https://media.api-sports.io/football/leagues/779.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2025,3/29/2025
+780,III Liga - Group 1,League,https://media.api-sports.io/football/leagues/780.png,Poland,PL,https://media.api-sports.io/flags/pl.svg,2025,8/1/2025
+781,III Liga - Group 2,League,https://media.api-sports.io/football/leagues/781.png,Poland,PL,https://media.api-sports.io/flags/pl.svg,2025,8/1/2025
+782,III Liga - Group 3,League,https://media.api-sports.io/football/leagues/782.png,Poland,PL,https://media.api-sports.io/flags/pl.svg,2025,8/2/2025
+783,III Liga - Group 4,League,https://media.api-sports.io/football/leagues/783.png,Poland,PL,https://media.api-sports.io/flags/pl.svg,2025,8/1/2025
+784,Liga III - Serie 1,League,https://media.api-sports.io/football/leagues/784.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2025,8/29/2025
+785,Liga III - Serie 2,League,https://media.api-sports.io/football/leagues/785.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2025,8/29/2025
+786,Liga III - Serie 3,League,https://media.api-sports.io/football/leagues/786.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2025,8/29/2025
+787,Liga III - Serie 4,League,https://media.api-sports.io/football/leagues/787.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2025,8/29/2025
+788,Liga III - Serie 5,League,https://media.api-sports.io/football/leagues/788.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2025,8/29/2025
+789,Liga III - Serie 6,League,https://media.api-sports.io/football/leagues/789.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2025,8/29/2025
+790,Liga III - Serie 7,League,https://media.api-sports.io/football/leagues/790.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2025,8/29/2025
+791,Liga III - Serie 8,League,https://media.api-sports.io/football/leagues/791.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2025,8/29/2025
+792,Liga III - Serie 9,League,https://media.api-sports.io/football/leagues/792.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2024,8/30/2024
+793,Liga III - Serie 10,League,https://media.api-sports.io/football/leagues/793.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2024,8/30/2024
+794,3. SNL - East,League,https://media.api-sports.io/football/leagues/794.png,Slovenia,SI,https://media.api-sports.io/flags/si.svg,2025,8/16/2025
+795,3. SNL - West,League,https://media.api-sports.io/football/leagues/795.png,Slovenia,SI,https://media.api-sports.io/flags/si.svg,2025,8/15/2025
+796,2. Liga Interregional - Group 1,League,https://media.api-sports.io/football/leagues/796.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2024,8/17/2024
+797,2. Liga Interregional - Group 2,League,https://media.api-sports.io/football/leagues/797.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2024,8/17/2024
+798,2. Liga Interregional - Group 3,League,https://media.api-sports.io/football/leagues/798.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2024,8/17/2024
+799,2. Liga Interregional - Group 4,League,https://media.api-sports.io/football/leagues/799.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2024,8/17/2024
+800,2. Liga Interregional - Group 5,League,https://media.api-sports.io/football/leagues/800.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2022,8/20/2022
+801,2. Liga Interregional - Group 6,League,https://media.api-sports.io/football/leagues/801.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2021,8/21/2021
+802,Cup,Cup,https://media.api-sports.io/football/leagues/802.png,Uzbekistan,UZ,https://media.api-sports.io/flags/uz.svg,2025,4/1/2025
+809,Super Cup,Cup,https://media.api-sports.io/football/leagues/809.png,Andorra,AD,https://media.api-sports.io/flags/ad.svg,2025,9/27/2025
+810,Super Copa,Cup,https://media.api-sports.io/football/leagues/810.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2025,9/5/2025
+811,Federation Cup,Cup,https://media.api-sports.io/football/leagues/811.png,Bangladesh,BD,https://media.api-sports.io/flags/bd.svg,2025,9/23/2025
+813,Elite Two,League,https://media.api-sports.io/football/leagues/813.png,Cameroon,CM,https://media.api-sports.io/flags/cm.svg,2025,12/13/2024
+816,Shield Cup,Cup,https://media.api-sports.io/football/leagues/816.png,Jordan,JO,https://media.api-sports.io/flags/jo.svg,2025,8/28/2025
+817,Super Cup Primavera,Cup,https://media.api-sports.io/football/leagues/817.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,
+819,Super Cup,Cup,https://media.api-sports.io/football/leagues/819.png,Kosovo,XK,https://media.api-sports.io/flags/xk.svg,2024,1/20/2024
+820,Crown Prince Cup,Cup,https://media.api-sports.io/football/leagues/820.png,Kuwait,KW,https://media.api-sports.io/flags/kw.svg,2024,3/6/2025
+821,FA Trophy,Cup,https://media.api-sports.io/football/leagues/821.png,Malta,MT,https://media.api-sports.io/flags/mt.svg,2024,12/7/2024
+822,Cup,Cup,https://media.api-sports.io/football/leagues/822.png,Morocco,MA,https://media.api-sports.io/flags/ma.svg,2024,2/26/2025
+828,Ligue 2,League,https://media.api-sports.io/football/leagues/828.png,Tunisia,TN,https://media.api-sports.io/flags/tn.svg,2025,9/20/2025
+829,Youth League,League,https://media.api-sports.io/football/leagues/829.png,Turkmenistan,TM,https://media.api-sports.io/flags/tm.svg,2020,3/5/2020
+830,Super Cup,Cup,https://media.api-sports.io/football/leagues/830.png,Uzbekistan,UZ,https://media.api-sports.io/flags/uz.svg,2024,5/26/2025
+832,Coupe de la Ligue,Cup,https://media.api-sports.io/football/leagues/832.png,Algeria,DZ,https://media.api-sports.io/flags/dz.svg,2020,4/16/2021
+837,Rock Cup,Cup,https://media.api-sports.io/football/leagues/837.png,Gibraltar,GI,https://media.api-sports.io/flags/gi.svg,2025,2/1/2025
+838,Super Cup,Cup,https://media.api-sports.io/football/leagues/838.png,Jordan,JO,https://media.api-sports.io/flags/jo.svg,2025,7/21/2025
+840,Taça Revelação U23,Cup,https://media.api-sports.io/football/leagues/840.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,5/9/2025
+841,QFA Cup,Cup,https://media.api-sports.io/football/leagues/841.png,Qatar,QA,https://media.api-sports.io/flags/qa.svg,2022,9/3/2023
+843,Copa Verde,Cup,https://media.api-sports.io/football/leagues/843.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/22/2025
+844,Ligue 1,League,https://media.api-sports.io/football/leagues/844.png,Congo,CD,https://media.api-sports.io/flags/cd.svg,2025,9/13/2025
+845,GFA League,League,https://media.api-sports.io/football/leagues/845.png,Gambia,GM,https://media.api-sports.io/flags/gm.svg,2024,11/29/2024
+847,Premier League,League,https://media.api-sports.io/football/leagues/847.png,Eswatini,SZ,https://media.api-sports.io/flags/sz.svg,2025,10/3/2025
+849,Baltic Cup,Cup,https://media.api-sports.io/football/leagues/849.png,World,,,2024,6/8/2024
+532,AFC U23 Asian Cup,Cup,https://media.api-sports.io/football/leagues/532.png,World,,,2024,4/15/2024
+536,CONCACAF Nations League,Cup,https://media.api-sports.io/football/leagues/536.png,World,,,2024,9/4/2024
+538,Africa Cup of Nations U20,Cup,https://media.api-sports.io/football/leagues/538.png,World,,,2025,4/27/2025
+540,CONMEBOL Libertadores U20,Cup,https://media.api-sports.io/football/leagues/540.png,World,,,2025,3/1/2025
+541,CONMEBOL Recopa,Cup,https://media.api-sports.io/football/leagues/541.png,World,,,2025,2/19/2025
+542,Iraqi League,League,https://media.api-sports.io/football/leagues/542.png,Iraq,IQ,https://media.api-sports.io/flags/iq.svg,2025,9/13/2025
+548,Super Cup,Cup,https://media.api-sports.io/football/leagues/548.png,Japan,JP,https://media.api-sports.io/flags/jp.svg,2025,2/8/2025
+549,Damallsvenskan,League,https://media.api-sports.io/football/leagues/549.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,3/22/2025
+558,Supercopa,Cup,https://media.api-sports.io/football/leagues/558.png,Peru,PE,https://media.api-sports.io/flags/pe.svg,2020,1/23/2020
+562,Reserve League,League,https://media.api-sports.io/football/leagues/562.png,Belarus,BY,https://media.api-sports.io/flags/by.svg,2024,3/16/2024
+863,Cup,Cup,https://media.api-sports.io/football/leagues/863.png,Jordan,JO,https://media.api-sports.io/flags/jo.svg,2025,10/16/2025
+881,Olympics Men - Qualification Concacaf,Cup,https://media.api-sports.io/football/leagues/881.png,World,,,2020,7/17/2019
+882,Olympics Women - Qualification Asia,Cup,https://media.api-sports.io/football/leagues/882.png,World,,,2024,4/1/2023
+885,Campeones Cup,Cup,https://media.api-sports.io/football/leagues/885.png,World,,,2025,10/2/2025
+851,Carioca A2,League,https://media.api-sports.io/football/leagues/851.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,5/17/2025
+852,Super Cup,Cup,https://media.api-sports.io/football/leagues/852.png,Cyprus,CY,https://media.api-sports.io/flags/cy.svg,2025,10/30/2025
+853,Supercopa de Ecuador,Cup,https://media.api-sports.io/football/leagues/853.png,Ecuador,EC,https://media.api-sports.io/flags/ec.svg,2024,2/1/2025
+854,WE League,League,https://media.api-sports.io/football/leagues/854.png,Japan,JP,https://media.api-sports.io/flags/jp.svg,2025,8/9/2025
+855,Dhivehi Premier League,League,https://media.api-sports.io/football/leagues/855.png,Maldives,MV,https://media.api-sports.io/flags/mv.svg,2023,5/8/2023
+856,CONCACAF Caribbean Club Championship,Cup,https://media.api-sports.io/football/leagues/856.png,World,,,2025,8/20/2025
+857,Campeón de Campeones,Cup,https://media.api-sports.io/football/leagues/857.png,Mexico,MX,https://media.api-sports.io/flags/mx.svg,2025,7/21/2025
+858,CONCACAF Gold Cup - Qualification,Cup,https://media.api-sports.io/football/leagues/858.png,World,,,2025,3/21/2025
+859,COSAFA Cup,Cup,https://media.api-sports.io/football/leagues/859.png,World,,,2025,6/4/2025
+860,Arab Cup,Cup,https://media.api-sports.io/football/leagues/860.png,World,,,2025,11/25/2025
+861,U20 League,League,https://media.api-sports.io/football/leagues/861.png,Mexico,MX,https://media.api-sports.io/flags/mx.svg,2022,7/1/2022
+862,3. Division,League,https://media.api-sports.io/football/leagues/862.png,Denmark,DK,https://media.api-sports.io/flags/dk.svg,2025,8/2/2025
+864,Supercopa,Cup,https://media.api-sports.io/football/leagues/864.png,Costa-Rica,CR,https://media.api-sports.io/flags/cr.svg,2024,7/8/2024
+865,Liga 3,League,https://media.api-sports.io/football/leagues/865.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,8/8/2025
+866,MLS All-Star,Cup,https://media.api-sports.io/football/leagues/866.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,7/24/2025
+891,Coppa Italia Serie C,Cup,https://media.api-sports.io/football/leagues/891.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,8/16/2025
+868,Premier League,League,https://media.api-sports.io/football/leagues/868.png,Pakistan,PK,https://media.api-sports.io/flags/pk.svg,2021,8/14/2021
+869,CECAFA Club Cup,Cup,https://media.api-sports.io/football/leagues/869.png,World,,,2025,7/9/2024
+870,Premier League,League,https://media.api-sports.io/football/leagues/870.png,Crimea,UA,https://media.api-sports.io/flags/ua.svg,2022,8/27/2022
+871,Premier League Cup,Cup,https://media.api-sports.io/football/leagues/871.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/26/2025
+872,Liga Premier Serie B,League,https://media.api-sports.io/football/leagues/872.png,Mexico,MX,https://media.api-sports.io/flags/mx.svg,2025,8/22/2025
+873,Thai Champions Cup,Cup,https://media.api-sports.io/football/leagues/873.png,Thailand,TH,https://media.api-sports.io/flags/th.svg,2023,8/5/2023
+874,Australia Cup,Cup,https://media.api-sports.io/football/leagues/874.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,5/13/2025
+875,Segunda División RFEF - Group 1,League,https://media.api-sports.io/football/leagues/875.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+876,Segunda División RFEF - Group 2,League,https://media.api-sports.io/football/leagues/876.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+877,Segunda División RFEF - Group 3,League,https://media.api-sports.io/football/leagues/877.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+878,Segunda División RFEF - Group 4,League,https://media.api-sports.io/football/leagues/878.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/6/2025
+879,Segunda División RFEF - Group 5,League,https://media.api-sports.io/football/leagues/879.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2025,9/7/2025
+880,World Cup - Women - Qualification Europe,Cup,https://media.api-sports.io/football/leagues/880.png,World,,,2021,9/16/2021
+883,Reserve League,League,https://media.api-sports.io/football/leagues/883.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2021,9/27/2021
+884,Super Cup,Cup,https://media.api-sports.io/football/leagues/884.png,San-Marino,SM,https://media.api-sports.io/flags/sm.svg,2025,
+887,Second League,League,https://media.api-sports.io/football/leagues/887.png,Egypt,EG,https://media.api-sports.io/flags/eg.svg,2025,8/22/2025
+888,Second League - Group B,League,https://media.api-sports.io/football/leagues/888.png,Egypt,EG,https://media.api-sports.io/flags/eg.svg,2022,10/14/2022
+889,Second League - Group C,League,https://media.api-sports.io/football/leagues/889.png,Egypt,EG,https://media.api-sports.io/flags/eg.svg,2022,10/12/2022
+890,U20 Elite League,Cup,https://media.api-sports.io/football/leagues/890.png,World,,,2025,9/4/2025
+892,Coppa Italia Serie D,Cup,https://media.api-sports.io/football/leagues/892.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,8/23/2025
+867,Copa Paulino Alcantara,League,https://media.api-sports.io/football/leagues/867.png,Philippines,PH,https://media.api-sports.io/flags/ph.svg,2023,7/15/2023
+895,League Cup,Cup,https://media.api-sports.io/football/leagues/895.png,Egypt,EG,https://media.api-sports.io/flags/eg.svg,2024,12/11/2024
+896,Super Cup,Cup,https://media.api-sports.io/football/leagues/896.png,United-Arab-Emirates,AE,https://media.api-sports.io/flags/ae.svg,2024,12/13/2024
+898,League Cup,Cup,https://media.api-sports.io/football/leagues/898.png,Thailand,TH,https://media.api-sports.io/flags/th.svg,2024,8/31/2024
+902,Algarve Cup,Cup,https://media.api-sports.io/football/leagues/902.png,World,,,2021,2/16/2022
+903,The Atlantic Cup,Cup,https://media.api-sports.io/football/leagues/903.png,World,,,2025,1/30/2025
+905,Super Cup,Cup,https://media.api-sports.io/football/leagues/905.png,Iran,IR,https://media.api-sports.io/flags/ir.svg,2025,
+910,Youth Viareggio Cup,Cup,https://media.api-sports.io/football/leagues/910.png,World,,,2025,3/17/2025
+36,Africa Cup of Nations - Qualification,Cup,https://media.api-sports.io/football/leagues/36.png,World,,,2025,3/20/2024
+725,Toppserien,League,https://media.api-sports.io/football/leagues/725.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2025,3/21/2025
+736,Elitettan,League,https://media.api-sports.io/football/leagues/736.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,4/11/2025
+743,UEFA Championship - Women,Cup,https://media.api-sports.io/football/leagues/743.png,World,,,2025,7/2/2025
+812,Super Cup,Cup,https://media.api-sports.io/football/leagues/812.png,Belarus,BY,https://media.api-sports.io/flags/by.svg,2025,2/22/2025
+814,Reykjavik Cup,Cup,https://media.api-sports.io/football/leagues/814.png,Iceland,IS,https://media.api-sports.io/flags/is.svg,2025,1/4/2025
+815,Fotbolti.net Cup A,Cup,https://media.api-sports.io/football/leagues/815.png,Iceland,IS,https://media.api-sports.io/flags/is.svg,2025,7/15/2025
+818,Super Cup,Cup,https://media.api-sports.io/football/leagues/818.png,Kazakhstan,KZ,https://media.api-sports.io/flags/kz.svg,2025,2/22/2025
+823,Nasjonal U19 Champions League,Cup,https://media.api-sports.io/football/leagues/823.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2025,1/24/2025
+824,Emir Cup,Cup,https://media.api-sports.io/football/leagues/824.png,Qatar,QA,https://media.api-sports.io/flags/qa.svg,2025,4/21/2025
+825,Qatar Cup,Cup,https://media.api-sports.io/football/leagues/825.png,Qatar,QA,https://media.api-sports.io/flags/qa.svg,2024,4/22/2025
+826,Super Cup,Cup,https://media.api-sports.io/football/leagues/826.png,Saudi-Arabia,SA,https://media.api-sports.io/flags/sa.svg,2026,8/19/2025
+831,Super Cup,Cup,https://media.api-sports.io/football/leagues/831.png,Vietnam,VN,https://media.api-sports.io/flags/vn.svg,2026,8/9/2025
+833,Queensland Premier League,League,https://media.api-sports.io/football/leagues/833.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,2/21/2025
+834,South Australia State League 1,League,https://media.api-sports.io/football/leagues/834.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,2/22/2025
+835,New South Wales NPL 2,League,https://media.api-sports.io/football/leagues/835.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,2/8/2025
+836,Victoria NPL 2,League,https://media.api-sports.io/football/leagues/836.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,2/7/2025
+839,Super Cup,Cup,https://media.api-sports.io/football/leagues/839.png,Lithuania,LT,https://media.api-sports.io/flags/lt.svg,2025,2/22/2025
+842,Super Copa,Cup,https://media.api-sports.io/football/leagues/842.png,Uruguay,UY,https://media.api-sports.io/flags/uy.svg,2025,1/26/2025
+846,Somali Premier League,League,https://media.api-sports.io/football/leagues/846.png,Somalia,SO,https://media.api-sports.io/flags/so.svg,2024,12/6/2024
+848,UEFA Europa Conference League,Cup,https://media.api-sports.io/football/leagues/848.png,World,,,2025,7/8/2025
+893,UEFA U19 Championship - Qualification,Cup,https://media.api-sports.io/football/leagues/893.png,World,,,2026,10/8/2025
+894,Asian Cup Women - Qualification,Cup,https://media.api-sports.io/football/leagues/894.png,World,,,2026,6/23/2025
+897,Asian Cup Women,Cup,https://media.api-sports.io/football/leagues/897.png,World,,,2022,1/20/2022
+899,League Cup,Cup,https://media.api-sports.io/football/leagues/899.png,Finland,FI,https://media.api-sports.io/flags/fi.svg,2025,1/11/2025
+900,Tipsport Malta Cup,Cup,https://media.api-sports.io/football/leagues/900.png,World,,,2024,1/10/2024
+901,Ykköscup,Cup,https://media.api-sports.io/football/leagues/901.png,Finland,FI,https://media.api-sports.io/flags/fi.svg,2025,2/1/2025
+904,SheBelieves Cup,Cup,https://media.api-sports.io/football/leagues/904.png,World,,,2025,2/20/2025
+906,Reserve League,League,https://media.api-sports.io/football/leagues/906.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2025,2/18/2025
+907,Primera Division,League,https://media.api-sports.io/football/leagues/907.png,Cuba,CU,https://media.api-sports.io/flags/cu.svg,2025,3/8/2025
+908,ASEAN Championship U23,Cup,https://media.api-sports.io/football/leagues/908.png,World,,,2025,7/14/2025
+909,MLS Next Pro,League,https://media.api-sports.io/football/leagues/909.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,3/7/2025
+911,Southeast Asian Games,Cup,https://media.api-sports.io/football/leagues/911.png,World,,,2023,4/29/2023
+912,CONCACAF Women U17,Cup,https://media.api-sports.io/football/leagues/912.png,World,,,2026,1/27/2025
+913,CONMEBOL - UEFA Finalissima,Cup,https://media.api-sports.io/football/leagues/913.png,World,,,2022,6/1/2022
+914,Tournoi Maurice Revello,Cup,https://media.api-sports.io/football/leagues/914.png,World,,,2025,6/3/2025
+915,1. Division Women,League,https://media.api-sports.io/football/leagues/915.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2025,3/22/2025
+916,Kirin Cup,Cup,https://media.api-sports.io/football/leagues/916.png,World,,,2022,6/10/2022
+917,Copa Ecuador,Cup,https://media.api-sports.io/football/leagues/917.png,Ecuador,EC,https://media.api-sports.io/flags/ec.svg,2024,4/30/2025
+918,UEFA U19 Championship - Women,Cup,https://media.api-sports.io/football/leagues/918.png,World,,,2025,6/15/2025
+919,Mediterranean Games,Cup,https://media.api-sports.io/football/leagues/919.png,World,,,2022,6/26/2022
+920,World Cup - U20 - Women,Cup,https://media.api-sports.io/football/leagues/920.png,World,,,2024,8/31/2024
+921,UEFA U17 Championship,Cup,https://media.api-sports.io/football/leagues/921.png,World,,,2025,5/19/2025
+922,Africa Cup of Nations - Women,Cup,https://media.api-sports.io/football/leagues/922.png,World,,,2024,7/5/2025
+923,League 1 Ontario,League,https://media.api-sports.io/football/leagues/923.png,Canada,CA,https://media.api-sports.io/flags/ca.svg,2025,4/19/2025
+924,Piala Presiden,Cup,https://media.api-sports.io/football/leagues/924.png,Indonesia,ID,https://media.api-sports.io/flags/id.svg,2025,7/6/2025
+926,Copa America Femenina,Cup,https://media.api-sports.io/football/leagues/926.png,World,,,2025,7/12/2025
+927,World Cup - Women - Qualification Concacaf,Cup,https://media.api-sports.io/football/leagues/927.png,World,,,2022,2/16/2022
+928,ASEAN Championship U19,Cup,https://media.api-sports.io/football/leagues/928.png,World,,,2024,7/17/2024
+929,League Two,League,https://media.api-sports.io/football/leagues/929.png,China,CN,https://media.api-sports.io/flags/cn.svg,2025,3/22/2025
+930,Copa Uruguay,Cup,https://media.api-sports.io/football/leagues/930.png,Uruguay,UY,https://media.api-sports.io/flags/uy.svg,2025,8/5/2025
+886,UEFA U17 Championship - Qualification,Cup,https://media.api-sports.io/football/leagues/886.png,World,,,2026,10/1/2025
+961,Supercopa,Cup,https://media.api-sports.io/football/leagues/961.png,Paraguay,PY,https://media.api-sports.io/flags/py.svg,2024,1/23/2025
+962,Premier League,League,https://media.api-sports.io/football/leagues/962.png,Lesotho,LS,https://media.api-sports.io/flags/ls.svg,2025,9/13/2025
+966,Cup,Cup,https://media.api-sports.io/football/leagues/966.png,Ghana,GH,https://media.api-sports.io/flags/gh.svg,2024,11/29/2024
+967,Cup,Cup,https://media.api-sports.io/football/leagues/967.png,Lebanon,LB,https://media.api-sports.io/flags/lb.svg,2024,8/10/2024
+968,Championnat D1,League,https://media.api-sports.io/football/leagues/968.png,Gabon,GA,https://media.api-sports.io/flags/ga.svg,2024,11/23/2024
+971,Shield Cup,Cup,https://media.api-sports.io/football/leagues/971.png,Kenya,KE,https://media.api-sports.io/flags/ke.svg,2025,3/8/2025
+975,Serie C - Relegation - Play-offs,League,https://media.api-sports.io/football/leagues/975.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2024,5/10/2025
+976,Serie C - Promotion - Play-offs,League,https://media.api-sports.io/football/leagues/976.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2024,5/4/2025
+974,Serie C - Supercoppa Lega Finals,League,https://media.api-sports.io/football/leagues/974.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2024,5/3/2025
+977,Tercera División RFEF - Promotion - Play-offs,League,https://media.api-sports.io/football/leagues/977.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2024,5/17/2025
+978,2nd Division - Play-offs,League,https://media.api-sports.io/football/leagues/978.png,Albania,AL,https://media.api-sports.io/flags/al.svg,2024,4/12/2025
+979,Provincial - Play-offs VV,League,https://media.api-sports.io/football/leagues/979.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,5/1/2025
+980,Provincial - Play-offs ACFF,League,https://media.api-sports.io/football/leagues/980.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,4/26/2025
+981,Third Amateur Division - Play-offs,League,https://media.api-sports.io/football/leagues/981.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,5/3/2025
+982,Denmark Series - Promotion Round,League,https://media.api-sports.io/football/leagues/982.png,Denmark,DK,https://media.api-sports.io/flags/dk.svg,2024,4/12/2025
+983,Denmark Series - Relegation Round,League,https://media.api-sports.io/football/leagues/983.png,Denmark,DK,https://media.api-sports.io/flags/dk.svg,2024,4/11/2025
+984,National League - North - Play-offs,League,https://media.api-sports.io/football/leagues/984.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2024,4/29/2025
+985,National League - South - Play-offs,League,https://media.api-sports.io/football/leagues/985.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2024,4/29/2025
+986,Non League Div One - Play-offs,League,https://media.api-sports.io/football/leagues/986.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2024,4/29/2025
+987,U18 Premier League - Championship,League,https://media.api-sports.io/football/leagues/987.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/16/2025
+988,Oberliga - Promotion Round,League,https://media.api-sports.io/football/leagues/988.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2024,5/28/2025
+989,Oberliga - Relegation Round,League,https://media.api-sports.io/football/leagues/989.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2024,5/21/2025
+990,Gamma Ethniki - Promotion Group,League,https://media.api-sports.io/football/leagues/990.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2022,5/13/2023
+991,Campeonato de Portugal Prio - Promotion Round,League,https://media.api-sports.io/football/leagues/991.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2024,4/27/2025
+992,Football League - Championship,League,https://media.api-sports.io/football/leagues/992.png,Scotland,GB-SCT,https://media.api-sports.io/flags/gb-sct.svg,2024,4/26/2025
+993,Non League Premier - Isthmian - Play-offs,League,https://media.api-sports.io/football/leagues/993.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2024,4/30/2025
+994,Non League Premier - Northern - Play-offs,League,https://media.api-sports.io/football/leagues/994.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2024,4/29/2025
+995,Non League Premier - Southern South - Play-offs,League,https://media.api-sports.io/football/leagues/995.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2024,4/30/2025
+996,Non League Premier - Southern Central - Play-offs,League,https://media.api-sports.io/football/leagues/996.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2024,4/30/2025
+997,Serie D - Promotion - Play-offs,League,https://media.api-sports.io/football/leagues/997.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2024,5/11/2025
+998,Serie D - Relegation - Play-offs,League,https://media.api-sports.io/football/leagues/998.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2024,5/11/2025
+999,Serie D - Championship Round,League,https://media.api-sports.io/football/leagues/999.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2024,5/11/2025
+1000,Segunda División RFEF - Play-offs,League,https://media.api-sports.io/football/leagues/1000.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2024,5/10/2025
+1002,Regionalliga - Promotion Play-offs,League,https://media.api-sports.io/football/leagues/1002.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2024,5/28/2025
+1003,Regionalliga - Relegation Round,League,https://media.api-sports.io/football/leagues/1003.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2024,5/23/2025
+1004,Derde Divisie - Relegation Round,League,https://media.api-sports.io/football/leagues/1004.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2024,5/28/2025
+1005,1. Liga Classic - Play-offs,League,https://media.api-sports.io/football/leagues/1005.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2024,5/28/2025
+1006,Primera División RFEF - Play Offs,League,https://media.api-sports.io/football/leagues/1006.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2024,5/28/2025
+1007,3. Lig - Play-offs,League,https://media.api-sports.io/football/leagues/1007.png,Turkey,TR,https://media.api-sports.io/flags/tr.svg,2024,4/30/2025
+1009,Liga III - Play-offs,League,https://media.api-sports.io/football/leagues/1009.png,Romania,RO,https://media.api-sports.io/flags/ro.svg,2024,5/21/2025
+1010,3. liga - Promotion Play-off,League,https://media.api-sports.io/football/leagues/1010.png,Czech-Republic,CZ,https://media.api-sports.io/flags/cz.svg,2024,
+1011,Second Amateur Division - Play-offs ,League,https://media.api-sports.io/football/leagues/1011.png,Belgium,BE,https://media.api-sports.io/flags/be.svg,2024,5/3/2025
+1014,Second League - Play-offs,League,https://media.api-sports.io/football/leagues/1014.png,Egypt,EG,https://media.api-sports.io/flags/eg.svg,2023,5/22/2024
+1016,CAC Games,Cup,https://media.api-sports.io/football/leagues/1016.png,World,,,2022,6/28/2023
+931,Non League Premier - Southern Central,League,https://media.api-sports.io/football/leagues/931.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+932,Non League Div One - Northern East,League,https://media.api-sports.io/football/leagues/932.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+933,Non League Div One - Southern Central,League,https://media.api-sports.io/football/leagues/933.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,1/25/2025
+934,Arab Championship - U20,Cup,https://media.api-sports.io/football/leagues/934.png,World,,,2022,7/20/2022
+935,Diski Shield,Cup,https://media.api-sports.io/football/leagues/935.png,South-Africa,ZA,https://media.api-sports.io/flags/za.svg,2022,7/9/2022
+936,Catarinense - 2,League,https://media.api-sports.io/football/leagues/936.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,5/31/2025
+937,Emirates Cup,Cup,https://media.api-sports.io/football/leagues/937.png,World,,,2025,8/9/2025
+938,Oberliga - Bayern Nord,League,https://media.api-sports.io/football/leagues/938.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,7/18/2025
+939,Oberliga - Bayern Süd,League,https://media.api-sports.io/football/leagues/939.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,7/18/2025
+940,COTIF Tournament,Cup,https://media.api-sports.io/football/leagues/940.png,World,,,2025,7/20/2025
+941,Islamic Solidarity Games,Cup,https://media.api-sports.io/football/leagues/941.png,World,,,2022,8/8/2022
+944,Super Cup,Cup,https://media.api-sports.io/football/leagues/944.png,Oman,OM,https://media.api-sports.io/flags/om.svg,2025,7/26/2025
+945,International Champions Cup - Women,Cup,https://media.api-sports.io/football/leagues/945.png,World,,,2022,8/18/2022
+946,Second NL,League,https://media.api-sports.io/football/leagues/946.png,Croatia,HR,https://media.api-sports.io/flags/hr.svg,2025,8/22/2025
+947,DFB Pokal - Women,Cup,https://media.api-sports.io/football/leagues/947.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/16/2025
+948,1a Divisão - Women,League,https://media.api-sports.io/football/leagues/948.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,9/14/2025
+949,CONMEBOL Libertadores Femenina,Cup,https://media.api-sports.io/football/leagues/949.png,World,,,2025,10/2/2025
+950,World Cup - U17 - Women,Cup,https://media.api-sports.io/football/leagues/950.png,World,,,2025,1/27/2025
+951,South American Youth Games,Cup,https://media.api-sports.io/football/leagues/951.png,World,,,2022,10/4/2022
+952,AFC U23 Asian Cup - Qualification,Cup,https://media.api-sports.io/football/leagues/952.png,World,,,2026,9/3/2025
+953,Africa U23 Cup of Nations - Qualification,Cup,https://media.api-sports.io/football/leagues/953.png,World,,,2022,9/21/2022
+954,National League - Central,League,https://media.api-sports.io/football/leagues/954.png,New-Zealand,NZ,https://media.api-sports.io/flags/nz.svg,2025,3/28/2025
+955,National League - National,League,https://media.api-sports.io/football/leagues/955.png,New-Zealand,NZ,https://media.api-sports.io/flags/nz.svg,2025,9/27/2025
+956,National League - Northern,League,https://media.api-sports.io/football/leagues/956.png,New-Zealand,NZ,https://media.api-sports.io/flags/nz.svg,2025,3/15/2025
+957,National League - Southern,League,https://media.api-sports.io/football/leagues/957.png,New-Zealand,NZ,https://media.api-sports.io/flags/nz.svg,2025,3/29/2025
+958,Copa Costa Rica,Cup,https://media.api-sports.io/football/leagues/958.png,Costa-Rica,CR,https://media.api-sports.io/flags/cr.svg,2025,8/6/2025
+959,Cup,Cup,https://media.api-sports.io/football/leagues/959.png,Singapore,SG,https://media.api-sports.io/flags/sg.svg,2025,11/1/2025
+960,Euro Championship - Qualification,Cup,https://media.api-sports.io/football/leagues/960.png,World,,,2023,3/23/2023
+963,CONCACAF U17,Cup,https://media.api-sports.io/football/leagues/963.png,World,,,2025,2/7/2025
+964,Copa de la División Profesional,Cup,https://media.api-sports.io/football/leagues/964.png,Bolivia,BO,https://media.api-sports.io/flags/bo.svg,2025,4/29/2025
+965,AFC U20 Asian Cup,Cup,https://media.api-sports.io/football/leagues/965.png,World,,,2025,2/12/2025
+969,Primeira Divisão,League,https://media.api-sports.io/football/leagues/969.png,Macao,MO,https://media.api-sports.io/flags/mo.svg,2025,2/19/2025
+970,CONMEBOL - U17,Cup,https://media.api-sports.io/football/leagues/970.png,World,,,2025,3/27/2025
+972,Super Cup,Cup,https://media.api-sports.io/football/leagues/972.png,China,CN,https://media.api-sports.io/flags/cn.svg,2025,2/7/2025
+973,CAF Cup of Nations - U17,Cup,https://media.api-sports.io/football/leagues/973.png,World,,,2025,3/30/2025
+1008,CAFA Nations Cup,Cup,https://media.api-sports.io/football/leagues/1008.png,World,,,2025,8/29/2025
+1012,AFC U17 Asian Cup,Cup,https://media.api-sports.io/football/leagues/1012.png,World,,,2025,4/3/2025
+1013,All-Island Cup - Women,Cup,https://media.api-sports.io/football/leagues/1013.png,World,,,2025,4/25/2025
+1015,CAF U23 Cup of Nations,Cup,https://media.api-sports.io/football/leagues/1015.png,World,,,2023,6/24/2023
+1017,U23 League,League,https://media.api-sports.io/football/leagues/1017.png,Mexico,MX,https://media.api-sports.io/flags/mx.svg,2024,7/5/2024
+1018,Federation Cup,Cup,https://media.api-sports.io/football/leagues/1018.png,Lebanon,LB,https://media.api-sports.io/flags/lb.svg,2023,7/1/2023
+1019,Charity Shield,Cup,https://media.api-sports.io/football/leagues/1019.png,Northern-Ireland,GB-NIR,https://media.api-sports.io/flags/gb-nir.svg,2025,7/4/2025
+1020,Calcutta Premier Division,League,https://media.api-sports.io/football/leagues/1020.png,India,IN,https://media.api-sports.io/flags/in.svg,2025,6/25/2025
+1021,Super Cup,Cup,https://media.api-sports.io/football/leagues/1021.png,Croatia,HR,https://media.api-sports.io/flags/hr.svg,2023,7/15/2023
+1022,Premier League - Summer Series,League,https://media.api-sports.io/football/leagues/1022.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2024,7/26/2025
+1023,NB III - Southeast,League,https://media.api-sports.io/football/leagues/1023.png,Hungary,HU,https://media.api-sports.io/flags/hu.svg,2025,7/27/2025
+1024,UEFA - CONMEBOL - Club Challenge,Cup,https://media.api-sports.io/football/leagues/1024.png,World,,,2023,7/19/2023
+1025,Second League A - Fall Season Gold,League,https://media.api-sports.io/football/leagues/1025.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2025,7/20/2025
+1026,Second League A - Fall Season Silver,League,https://media.api-sports.io/football/leagues/1026.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2025,7/19/2025
+1027,3. Lig - Group 4,League,https://media.api-sports.io/football/leagues/1027.png,Turkey,TR,https://media.api-sports.io/flags/tr.svg,2025,9/7/2025
+1028,Concacaf Central American Cup,Cup,https://media.api-sports.io/football/leagues/1028.png,World,,,2025,7/30/2025
+1029,National 3 - Group G,League,https://media.api-sports.io/football/leagues/1029.png,France,FR,https://media.api-sports.io/flags/fr.svg,2025,8/23/2025
+1030,Goiano - 2,League,https://media.api-sports.io/football/leagues/1030.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,5/21/2025
+1031,Premier League,League,https://media.api-sports.io/football/leagues/1031.png,Bhutan,BT,https://media.api-sports.io/flags/bt.svg,2025,4/19/2025
+1032,Copa de la Liga Profesional,League,https://media.api-sports.io/football/leagues/1032.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2024,1/25/2024
+1033,Ekstraliga Women,League,https://media.api-sports.io/football/leagues/1033.png,Poland,PL,https://media.api-sports.io/flags/pl.svg,2025,8/9/2025
+1034,2. Frauen Bundesliga,League,https://media.api-sports.io/football/leagues/1034.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,8/23/2025
+1035,Copa Rio,Cup,https://media.api-sports.io/football/leagues/1035.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,6/25/2025
+1036,Copa Santa Catarina,Cup,https://media.api-sports.io/football/leagues/1036.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,9/7/2025
+1037,Paraibano 2,League,https://media.api-sports.io/football/leagues/1037.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,8/23/2025
+1038,King's Cup,Cup,https://media.api-sports.io/football/leagues/1038.png,World,,,2025,9/4/2025
+1039,Premier League International Cup,Cup,https://media.api-sports.io/football/leagues/1039.png,World,,,2025,8/27/2025
+1040,UEFA Nations League - Women,Cup,https://media.api-sports.io/football/leagues/1040.png,World,,,2025,2/21/2025
+1041,Júniores U19,League,https://media.api-sports.io/football/leagues/1041.png,Portugal,PT,https://media.api-sports.io/flags/pt.svg,2025,8/9/2025
+1042,Super Cup,Cup,https://media.api-sports.io/football/leagues/1042.png,Gibraltar,GI,https://media.api-sports.io/flags/gi.svg,2025,
+1043,African Football League,Cup,https://media.api-sports.io/football/leagues/1043.png,World,,,2023,10/20/2023
+1044,Erste Liga Cup,Cup,https://media.api-sports.io/football/leagues/1044.png,Switzerland,CH,https://media.api-sports.io/flags/ch.svg,2025,9/10/2025
+1045,Pan American Games,Cup,https://media.api-sports.io/football/leagues/1045.png,World,,,2023,10/23/2023
+1048,Premier Division,League,https://media.api-sports.io/football/leagues/1048.png,Antigua-And-Barbuda,AG,https://media.api-sports.io/flags/ag.svg,2025,10/25/2025
+1049,King's Cup,Cup,https://media.api-sports.io/football/leagues/1049.png,Bahrain,BH,https://media.api-sports.io/flags/bh.svg,2024,1/24/2025
+1050,Super Cup,Cup,https://media.api-sports.io/football/leagues/1050.png,Malta,MT,https://media.api-sports.io/flags/mt.svg,2024,12/13/2024
+1052,Kakkonen - Play-offs,League,https://media.api-sports.io/football/leagues/1052.png,Finland,FI,https://media.api-sports.io/flags/fi.svg,2025,8/29/2025
+1053,Division 2 - Play-offs,League,https://media.api-sports.io/football/leagues/1053.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2025,10/25/2025
+1054,2. Division - Play-offs,League,https://media.api-sports.io/football/leagues/1054.png,Norway,NO,https://media.api-sports.io/flags/no.svg,2024,11/3/2024
+1055,Ettan - Relegation Round,League,https://media.api-sports.io/football/leagues/1055.png,Sweden,SE,https://media.api-sports.io/flags/se.svg,2024,11/16/2024
+1056,National League - Championship - Final,League,https://media.api-sports.io/football/leagues/1056.png,New-Zealand,NZ,https://media.api-sports.io/flags/nz.svg,2024,12/1/2024
+1058,Supercopa Femenina,Cup,https://media.api-sports.io/football/leagues/1058.png,Spain,ES,https://media.api-sports.io/flags/es.svg,2024,1/22/2025
+1061,Second League A - Spring Season Gold,League,https://media.api-sports.io/football/leagues/1061.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2024,3/2/2025
+1064,Second League A - Spring Season Silver,League,https://media.api-sports.io/football/leagues/1064.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2024,3/1/2025
+1065,U19 League,League,https://media.api-sports.io/football/leagues/1065.png,Ukraine,UA,https://media.api-sports.io/flags/ua.svg,2025,7/31/2025
+1068,FA Youth Cup,Cup,https://media.api-sports.io/football/leagues/1068.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2024,11/29/2024
+1072,All Africa Games,Cup,https://media.api-sports.io/football/leagues/1072.png,World,,,2023,3/7/2024
+1074,SWPL Cup,Cup,https://media.api-sports.io/football/leagues/1074.png,Scotland,GB-SCT,https://media.api-sports.io/flags/gb-sct.svg,2025,9/7/2025
+1078,SWF Scottish Cup,Cup,https://media.api-sports.io/football/leagues/1078.png,Scotland,GB-SCT,https://media.api-sports.io/flags/gb-sct.svg,2023,11/5/2023
+1079,Yemeni League,League,https://media.api-sports.io/football/leagues/1079.png,Yemen,YE,https://media.api-sports.io/flags/ye.svg,2023,10/1/2023
+1080,Premier Division,League,https://media.api-sports.io/football/leagues/1080.png,Grenada,GD,https://media.api-sports.io/flags/gd.svg,2025,5/24/2025
+1084,Championnat National,League,https://media.api-sports.io/football/leagues/1084.png,Togo,TG,https://media.api-sports.io/flags/tg.svg,2024,12/15/2024
+1099,Gamma Ethniki - Relegation Play-offs,League,https://media.api-sports.io/football/leagues/1099.png,Greece,GR,https://media.api-sports.io/flags/gr.svg,2023,5/12/2024
+1109,Super Cup,Cup,https://media.api-sports.io/football/leagues/1109.png,Bahrain,BH,https://media.api-sports.io/flags/bh.svg,2025,12/15/2025
+1111,NB III - Promotion Play-offs,League,https://media.api-sports.io/football/leagues/1111.png,Hungary,HU,https://media.api-sports.io/flags/hu.svg,2024,6/1/2025
+1121,Second League A - Promotion Play-offs,League,https://media.api-sports.io/football/leagues/1121.png,Russia,RU,https://media.api-sports.io/flags/ru.svg,2024,11/20/2024
+850,UEFA U21 Championship - Qualification,Cup,https://media.api-sports.io/football/leagues/850.png,World,,,2027,6/5/2025
+1060,CONMEBOL - Pre-Olympic Tournament,Cup,https://media.api-sports.io/football/leagues/1060.png,World,,,2024,1/20/2024
+1062,Paulista - A4,League,https://media.api-sports.io/football/leagues/1062.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/22/2025
+1063,Copa Alagoas,Cup,https://media.api-sports.io/football/leagues/1063.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,1/22/2025
+1066,CONCACAF U20 - Qualification,Cup,https://media.api-sports.io/football/leagues/1066.png,World,,,2024,2/23/2024
+1067,Torneo Promocional Amateur,League,https://media.api-sports.io/football/leagues/1067.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2025,8/15/2025
+1069,Goiano U20,League,https://media.api-sports.io/football/leagues/1069.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,2/21/2025
+1070,AFC U20 Asian Cup - Women,Cup,https://media.api-sports.io/football/leagues/1070.png,World,,,2025,8/6/2025
+1071,Paranaense U20,League,https://media.api-sports.io/football/leagues/1071.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,3/29/2025
+1073,Baiano U20,League,https://media.api-sports.io/football/leagues/1073.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,3/29/2025
+1075,Pro League A,League,https://media.api-sports.io/football/leagues/1075.png,Uzbekistan,UZ,https://media.api-sports.io/flags/uz.svg,2025,4/3/2025
+1076,Catarinense U20,League,https://media.api-sports.io/football/leagues/1076.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,4/5/2025
+1077,WAFF Championship U23,Cup,https://media.api-sports.io/football/leagues/1077.png,World,,,2025,3/19/2025
+1081,CONMEBOL - U17 Femenino,Cup,https://media.api-sports.io/football/leagues/1081.png,World,,,2025,4/30/2025
+1082,Copa Rio U20,Cup,https://media.api-sports.io/football/leagues/1082.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,3/15/2025
+1085,CONMEBOL U20 Femenino,Cup,https://media.api-sports.io/football/leagues/1085.png,World,,,2024,4/11/2024
+1086,Paulista - U20,League,https://media.api-sports.io/football/leagues/1086.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,4/25/2025
+1087,Ykkösliiga,League,https://media.api-sports.io/football/leagues/1087.png,Finland,FI,https://media.api-sports.io/flags/fi.svg,2025,4/21/2025
+1088,Pernambucano - U20,League,https://media.api-sports.io/football/leagues/1088.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,9/13/2025
+1089,UAE-Qatar - Super Shield,Cup,https://media.api-sports.io/football/leagues/1089.png,World,,,2025,1/18/2025
+1090,NNSW League 1,League,https://media.api-sports.io/football/leagues/1090.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,3/14/2025
+1091,Tasmania Northern Championship,League,https://media.api-sports.io/football/leagues/1091.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,3/15/2025
+1092,Capital Territory NPL 2,League,https://media.api-sports.io/football/leagues/1092.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,4/5/2025
+1093,Tasmania Southern Championship,League,https://media.api-sports.io/football/leagues/1093.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,3/14/2025
+1094,Western Australia State League 1,League,https://media.api-sports.io/football/leagues/1094.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,3/21/2025
+1095,USL League One Cup,League,https://media.api-sports.io/football/leagues/1095.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,4/25/2025
+1096,Matogrossense 2,League,https://media.api-sports.io/football/leagues/1096.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,6/6/2025
+1097,Copa Espírito Santo,Cup,https://media.api-sports.io/football/leagues/1097.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,4/19/2025
+1098,Paulista Série B,League,https://media.api-sports.io/football/leagues/1098.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,4/18/2025
+1100,Brasiliense U20,League,https://media.api-sports.io/football/leagues/1100.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,5/10/2025
+1101,AFC U17 Asian Cup - Women,Cup,https://media.api-sports.io/football/leagues/1101.png,World,,,2024,5/6/2024
+1102,UEFA U17 Championship - Women,Cup,https://media.api-sports.io/football/leagues/1102.png,World,,,2025,5/4/2025
+1103,Premiership Women,League,https://media.api-sports.io/football/leagues/1103.png,Northern-Ireland,GB-NIR,https://media.api-sports.io/flags/gb-nir.svg,2025,5/9/2025
+1104,Liga 3,League,https://media.api-sports.io/football/leagues/1104.png,Georgia,GE,https://media.api-sports.io/flags/ge.svg,2025,3/26/2025
+1105,Olympics - Intercontinental Play-offs,Cup,https://media.api-sports.io/football/leagues/1105.png,World,,,2024,5/9/2024
+1106,Carioca C,League,https://media.api-sports.io/football/leagues/1106.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,5/25/2025
+1107,Mineiro U20,League,https://media.api-sports.io/football/leagues/1107.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,5/17/2025
+1108,Sergipano U20,League,https://media.api-sports.io/football/leagues/1108.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,4/17/2025
+1110,Alagoano U20,League,https://media.api-sports.io/football/leagues/1110.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,5/17/2025
+1112,Cearense U20,League,https://media.api-sports.io/football/leagues/1112.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,5/30/2025
+1113,Copa Venezuela,Cup,https://media.api-sports.io/football/leagues/1113.png,Venezuela,VE,https://media.api-sports.io/flags/ve.svg,2025,6/4/2025
+1114,Carioca U20,League,https://media.api-sports.io/football/leagues/1114.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,8/2/2025
+1115,Paraense A3,League,https://media.api-sports.io/football/leagues/1115.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,9/27/2025
+1116,WPSL,League,https://media.api-sports.io/football/leagues/1116.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,5/10/2025
+1117,USL W League,League,https://media.api-sports.io/football/leagues/1117.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,5/4/2025
+1118,NPSL,League,https://media.api-sports.io/football/leagues/1118.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,3/23/2025
+1119,NWSL - Liga MXF Summer Cup,League,https://media.api-sports.io/football/leagues/1119.png,USA,US,https://media.api-sports.io/flags/us.svg,2024,7/20/2024
+1120,Paraibano U20,League,https://media.api-sports.io/football/leagues/1120.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,6/15/2025
+1122,OFC U19 Championship,Cup,https://media.api-sports.io/football/leagues/1122.png,World,,,2024,7/4/2024
+1123,Qatar-UAE Super Cup,Cup,https://media.api-sports.io/football/leagues/1123.png,World,,,2025,1/17/2025
+1124,Cearense - 3,League,https://media.api-sports.io/football/leagues/1124.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,6/28/2025
+1125,Pernambucano - 2,League,https://media.api-sports.io/football/leagues/1125.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,8/30/2025
+1126,Esiliiga B,League,https://media.api-sports.io/football/leagues/1126.png,Estonia,EE,https://media.api-sports.io/flags/ee.svg,2025,2/27/2025
+1127,Chatham Cup,Cup,https://media.api-sports.io/football/leagues/1127.png,New-Zealand,NZ,https://media.api-sports.io/flags/nz.svg,2025,4/22/2025
+1001,CONCACAF Women U20,Cup,https://media.api-sports.io/football/leagues/1001.png,World,,,2025,5/29/2025
+1170,MFL Cup,Cup,https://media.api-sports.io/football/leagues/1170.png,Malaysia,MY,https://media.api-sports.io/flags/my.svg,2024,5/20/2024
+1171,Coppa Italia Women,Cup,https://media.api-sports.io/football/leagues/1171.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,8/31/2025
+1173,Challenge Cup,Cup,https://media.api-sports.io/football/leagues/1173.png,Malta,MT,https://media.api-sports.io/flags/mt.svg,2024,2/25/2025
+1174,Hun Sen Cup,Cup,https://media.api-sports.io/football/leagues/1174.png,Cambodia,KH,https://media.api-sports.io/flags/kh.svg,2024,1/15/2025
+1178,Super Copa International,Cup,https://media.api-sports.io/football/leagues/1178.png,Argentina,AR,https://media.api-sports.io/flags/ar.svg,2025,7/5/2025
+1190,Super Cup Women,Cup,https://media.api-sports.io/football/leagues/1190.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2024,8/23/2025
+1046,CONCACAF Gold Cup - Qualification - Women,Cup,https://media.api-sports.io/football/leagues/1046.png,World,,,2024,9/20/2023
+1047,Olympics Women - Qualification CAF,Cup,https://media.api-sports.io/football/leagues/1047.png,World,,,2024,7/10/2023
+1051,HKPL Cup,Cup,https://media.api-sports.io/football/leagues/1051.png,Hong-Kong,HK,https://media.api-sports.io/flags/hk.svg,2024,12/28/2023
+1057,CONCACAF Gold Cup - Women,Cup,https://media.api-sports.io/football/leagues/1057.png,World,,,2024,2/21/2024
+1059,Recopa Catarinense,Cup,https://media.api-sports.io/football/leagues/1059.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2024,1/17/2024
+1128,Brasileiro U17,League,https://media.api-sports.io/football/leagues/1128.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,5/13/2025
+1129,ASEAN Club Championship,Cup,https://media.api-sports.io/football/leagues/1129.png,World,,,2025,8/8/2025
+1130,USL Super League,League,https://media.api-sports.io/football/leagues/1130.png,USA,US,https://media.api-sports.io/flags/us.svg,2025,8/23/2025
+1131,Super Cup,League,https://media.api-sports.io/football/leagues/1131.png,Mongolia,MN,https://media.api-sports.io/flags/mn.svg,2024,8/11/2024
+1132,AFC Challenge League,Cup,https://media.api-sports.io/football/leagues/1132.png,World,,,2025,8/12/2025
+1133,Goiano - 3,League,https://media.api-sports.io/football/leagues/1133.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,9/6/2025
+1134,Amazonense - 2,League,https://media.api-sports.io/football/leagues/1134.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,5/23/2025
+1135,Sergipano - 2,League,https://media.api-sports.io/football/leagues/1135.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,9/11/2025
+1136,CONCACAF W Champions Cup,Cup,https://media.api-sports.io/football/leagues/1136.png,World,,,2025,8/20/2025
+1137,Supercup der Frauen,League,https://media.api-sports.io/football/leagues/1137.png,Germany,DE,https://media.api-sports.io/flags/de.svg,2025,
+1138,Paranaense - 3,League,https://media.api-sports.io/football/leagues/1138.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,8/30/2025
+1139,Potiguar - U20,League,https://media.api-sports.io/football/leagues/1139.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,8/2/2025
+1140,AFC Women's Champions League,Cup,https://media.api-sports.io/football/leagues/1140.png,World,,,2025,8/25/2025
+1141,Brasiliense B,League,https://media.api-sports.io/football/leagues/1141.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,8/30/2025
+1142,Mineiro - 3,League,https://media.api-sports.io/football/leagues/1142.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,8/29/2025
+1143,Estadual Junior U20,League,https://media.api-sports.io/football/leagues/1143.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,4/19/2025
+1144,Super Cup,Cup,https://media.api-sports.io/football/leagues/1144.png,Ghana,GH,https://media.api-sports.io/flags/gh.svg,2025,
+1168,FIFA Intercontinental Cup,Cup,https://media.api-sports.io/football/leagues/1168.png,World,,,2025,9/14/2025
+1145,Paraense B1,League,https://media.api-sports.io/football/leagues/1145.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,6/6/2025
+1146,Alagoano - 2,Cup,https://media.api-sports.io/football/leagues/1146.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,8/13/2025
+1148,Maranhense - 2,League,https://media.api-sports.io/football/leagues/1148.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,9/13/2025
+1149,Potiguar - 2,League,https://media.api-sports.io/football/leagues/1149.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,10/5/2025
+1150,Gaúcho - 3,League,https://media.api-sports.io/football/leagues/1150.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,9/27/2025
+1151,Pernambucano - 3,League,https://media.api-sports.io/football/leagues/1151.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2024,9/21/2024
+1152,U19 Divisie 1,League,https://media.api-sports.io/football/leagues/1152.png,Netherlands,NL,https://media.api-sports.io/flags/nl.svg,2025,8/30/2025
+1153,AFC U20 Asian Cup - Qualification,Cup,https://media.api-sports.io/football/leagues/1153.png,World,,,2024,9/21/2024
+1154,Catarinense - 3,League,https://media.api-sports.io/football/leagues/1154.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,9/7/2025
+1155,Carioca B2,League,https://media.api-sports.io/football/leagues/1155.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,9/21/2025
+1156,National League Cup,Cup,https://media.api-sports.io/football/leagues/1156.png,England,GB-ENG,https://media.api-sports.io/flags/gb-eng.svg,2025,8/9/2025
+1157,Paraense U20,League,https://media.api-sports.io/football/leagues/1157.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,8/15/2025
+1158,Copa Gaúcha,Cup,https://media.api-sports.io/football/leagues/1158.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,9/17/2025
+1159,CECAFA U20 Championship,Cup,https://media.api-sports.io/football/leagues/1159.png,World,,,2024,10/6/2024
+1160,Sapling Cup,Cup,https://media.api-sports.io/football/leagues/1160.png,Hong-Kong,HK,https://media.api-sports.io/flags/hk.svg,2024,10/12/2024
+1161,AFC U17 Asian Cup - Qualification,Cup,https://media.api-sports.io/football/leagues/1161.png,World,,,2024,10/19/2024
+1162,AGCFF Gulf Champions League,Cup,https://media.api-sports.io/football/leagues/1162.png,World,,,2025,9/30/2025
+1163,African Nations Championship - Qualification,Cup,https://media.api-sports.io/football/leagues/1163.png,World,,,2024,10/25/2024
+1164,CAF Women's Champions League,Cup,https://media.api-sports.io/football/leagues/1164.png,World,,,2025,11/8/2025
+1165,Copa Fares Lopes,Cup,https://media.api-sports.io/football/leagues/1165.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,10/25/2025
+1166,Super Cup,Cup,https://media.api-sports.io/football/leagues/1166.png,Cameroon,CM,https://media.api-sports.io/flags/cm.svg,2024,11/24/2024
+1167,Recopa,Cup,https://media.api-sports.io/football/leagues/1167.png,Costa-Rica,CR,https://media.api-sports.io/flags/cr.svg,2025,
+1147,Capixaba B,League,https://media.api-sports.io/football/leagues/1147.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2026,8/9/2025
+1169,EAFF E-1 Football Championship - Qualification,Cup,https://media.api-sports.io/football/leagues/1169.png,World,,,2025,12/8/2024
+1180,Copa LDF,Cup,https://media.api-sports.io/football/leagues/1180.png,Dominican-Republic,DO,https://media.api-sports.io/flags/do.svg,2025,2/21/2025
+1172,Torneo Amistoso de Verano,Cup,https://media.api-sports.io/football/leagues/1172.png,Bolivia,BO,https://media.api-sports.io/flags/bo.svg,2025,2/12/2025
+1175,Women's President's Cup,Cup,https://media.api-sports.io/football/leagues/1175.png,Ireland,IE,https://media.api-sports.io/flags/ie.svg,2025,3/1/2025
+1176,Super Cup,Cup,https://media.api-sports.io/football/leagues/1176.png,Latvia,LV,https://media.api-sports.io/flags/lv.svg,2025,3/1/2025
+1177,Super Cup,Cup,https://media.api-sports.io/football/leagues/1177.png,Faroe-Islands,FO,https://media.api-sports.io/flags/fo.svg,2025,3/1/2025
+1179,Copa do Brasil U17,Cup,https://media.api-sports.io/football/leagues/1179.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,3/11/2025
+1181,Supercopa,Cup,https://media.api-sports.io/football/leagues/1181.png,Venezuela,VE,https://media.api-sports.io/flags/ve.svg,2025,3/22/2025
+1182,Northern Super League,League,https://media.api-sports.io/football/leagues/1182.png,Canada,CA,https://media.api-sports.io/flags/ca.svg,2025,4/16/2025
+1183,Brasileiro U20 B,Cup,https://media.api-sports.io/football/leagues/1183.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,3/26/2025
+1184,Copa Grão Pará,Cup,https://media.api-sports.io/football/leagues/1184.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,4/2/2025
+1185,3. liga - Play-offs,League,https://media.api-sports.io/football/leagues/1185.png,Slovakia,SK,https://media.api-sports.io/flags/sk.svg,2025,6/7/2025
+1186,FIFA Club World Cup - Play-In,Cup,https://media.api-sports.io/football/leagues/1186.png,World,,,2025,6/1/2025
+1187,Copa Nicaragua,Cup,https://media.api-sports.io/football/leagues/1187.png,Nicaragua,NI,https://media.api-sports.io/flags/ni.svg,2025,2/19/2025
+1188,EAFF E-1 Football Championship - Women,Cup,https://media.api-sports.io/football/leagues/1188.png,World,,,2025,11/30/2023
+1083,UEFA Championship - Women - Qualification,Cup,https://media.api-sports.io/football/leagues/1083.png,World,,,2025,4/5/2024
+1189,Asean Championship Women,Cup,https://media.api-sports.io/football/leagues/1189.png,World,,,2025,8/6/2025
+1191,UEFA Europa Cup - Women,Cup,https://media.api-sports.io/football/leagues/1191.png,World,,,2025,9/10/2025
+1192,Super Cup,Cup,https://media.api-sports.io/football/leagues/1192.png,Angola,AO,https://media.api-sports.io/flags/ao.svg,2025,9/13/2025
+1193,Super Cup,Cup,https://media.api-sports.io/football/leagues/1193.png,Kenya,KE,https://media.api-sports.io/flags/ke.svg,2025,9/14/2025
+1194,Super Cup,Cup,https://media.api-sports.io/football/leagues/1194.png,Tunisia,TN,https://media.api-sports.io/flags/tn.svg,2025,7/27/2025
+1195,Liga E Pare,League,https://media.api-sports.io/football/leagues/1195.png,Kosovo,XK,https://media.api-sports.io/flags/xk.svg,2025,8/16/2025
+1196,Division One League,League,https://media.api-sports.io/football/leagues/1196.png,Ghana,GH,https://media.api-sports.io/flags/gh.svg,2025,9/26/2025
+1197,FA Cup,Cup,https://media.api-sports.io/football/leagues/1197.png,Oman,OM,https://media.api-sports.io/flags/om.svg,2025,8/23/2025
+1198,Serie A Cup Women,Cup,https://media.api-sports.io/football/leagues/1198.png,Italy,IT,https://media.api-sports.io/flags/it.svg,2025,8/22/2025
+1199,League Cup,Cup,https://media.api-sports.io/football/leagues/1199.png,Hong-Kong,HK,https://media.api-sports.io/flags/hk.svg,2025,9/6/2025
+1200,Liga MX U21,League,https://media.api-sports.io/football/leagues/1200.png,Mexico,MX,https://media.api-sports.io/flags/mx.svg,2025,7/11/2025
+1201,IFA Shield,Cup,https://media.api-sports.io/football/leagues/1201.png,India,IN,https://media.api-sports.io/flags/in.svg,2025,10/8/2025
+1202,Australian Championship,Cup,https://media.api-sports.io/football/leagues/1202.png,Australia,AU,https://media.api-sports.io/flags/au.svg,2025,10/10/2025
+1203,Piauiense - 2,League,https://media.api-sports.io/football/leagues/1203.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,9/27/2025
+1204,Rondoniense - 2,League,https://media.api-sports.io/football/leagues/1204.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,10/8/2025
+1205,Kings Cup,Cup,https://media.api-sports.io/football/leagues/1205.png,Brazil,BR,https://media.api-sports.io/flags/br.svg,2025,10/17/2025
+1206,CONMEBOL Nations League Women,Cup,https://media.api-sports.io/football/leagues/1206.png,World,,,2025,10/24/2025
+1207,CONCACAF Series,Cup,https://media.api-sports.io/football/leagues/1207.png,World,,,2026,11/12/2025
