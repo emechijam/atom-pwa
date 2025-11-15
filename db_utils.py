@@ -1,16 +1,20 @@
-# db_utils.py v1.6 - Centralized DB connection and utilities
+# db_utils.py v1.7 - Centralized DB connection and utilities
 """
 Centralized module for PostgreSQL connection pool management and common utilities.
 
-WHAT'S NEW (v1.6 - CRITICAL APP FIXES): 
-- CRITICAL FIX 1 (TypeError/Naming): Renamed `get_filtered_fixtures` to 
-  `get_filtered_matches` and updated arguments to accept timezone-aware 
-  `datetime` objects (`date_from`, `date_to`) to match the Streamlit app's call signature.
-- CRITICAL FIX 2 (UI Data): Added `t_home.emblem` and `t_away.emblem` to the SQL 
-  `SELECT` query to provide team crests, which are essential for `widgets.py`.
-- FEATURE: Added necessary JSONB extraction helper functions (H2H, tags) 
-  from the old 'db.py' for use by 'widgets.py'.
-- SQL FIX: Confirmed all SQL queries now correctly reference `fixtures` and `standings`.
+WHAT'S NEW (v1.7 - CRITICAL SCHEMA FIX): 
+- CRITICAL FIX 1 (Schema): All SQL queries updated to match the new schema.
+  - `fixtures.league_season_id` -> `fixtures.league_id` (and removed `league_seasons` join)
+  - `teams.emblem` -> `teams.logo_url`
+  - `fixtures.utc_date` -> `fixtures.date`
+  - `fixtures.status` -> `fixtures.status_short`
+  - `fixtures.home_score` -> `fixtures.goals_home`
+  - `fixtures.away_score` -> `fixtures.goals_away`
+- CRITICAL FIX 2 (Naming): Renamed `get_filtered_fixtures` to 
+  `get_filtered_matches` for consistency with `db.py`.
+- CRITICAL FIX 3 (DB Stats): `get_db_stats` now queries `MAX(date)` from 
+  `fixtures` instead of the non-existent `last_updated` column.
+- RETAINED: All helper functions for widgets, connection pooling, and index creation.
 """
 
 import os
@@ -82,6 +86,7 @@ def init_connection_pool():
 def init_db_indexes():
     """
     Creates necessary indexes for performance if they do not already exist.
+    (v1.7: Schema-aligned)
     """
     conn = None
     try:
@@ -97,7 +102,7 @@ def init_db_indexes():
             ("idx_standings_league_season", "CREATE INDEX IF NOT EXISTS idx_standings_league_season ON public.standings (league_id, season_year, rank)"),
             ("idx_predictions_fixture_id", "CREATE UNIQUE INDEX IF NOT EXISTS idx_predictions_fixture_id ON public.predictions (fixture_id)"),
             ("idx_predictions_data_gin", "CREATE INDEX IF NOT EXISTS idx_predictions_data_gin ON public.predictions USING gin (prediction_data)"),
-            ("idx_teams_name", "CREATE INDEX IF NOT EXISTS idx_teams_name ON public.teams (name)"),
+            ("idx_teams_name", "CREATE INDEX IF NOT EXISTS idx_teams_name ON public.teams (name)"), # Removed UNIQUE, names not always unique
             ("idx_league_seasons_key", "CREATE UNIQUE INDEX IF NOT EXISTS idx_league_seasons_key ON public.league_seasons (league_id, season_year)"),
         ]
         
@@ -177,11 +182,9 @@ def get_filtered_matches(
     status: str
 ) -> List[Dict[str, Any]]:
     """
+    v1.7: Corrected to use new schema.
     Fetches fixture data with team names, crests, and prediction data for a given 
     date range, league IDs, and status.
-
-    NOTE: The Streamlit app expects league ID (int) input for filtering 
-    and timezone-aware datetime objects for the date range.
     """
     conn = None
     try:
@@ -193,30 +196,28 @@ def get_filtered_matches(
             sql = """
                 SELECT
                     f.fixture_id,
-                    f.utc_date,
-                    f.status,
-                    f.home_score,
-                    f.away_score,
+                    f.date as utc_date, -- Alias for compatibility
+                    f.status_short as status, -- Alias for compatibility
+                    f.goals_home as home_score, -- Alias
+                    f.goals_away as away_score, -- Alias
                     p.prediction_data,
-                    l.code AS competition_code,
+                    l.league_id AS competition_code, -- Use league_id
                     t_home.name AS home_team_name,
-                    t_home.emblem AS home_team_crest, -- CRITICAL for UI
+                    t_home.logo_url AS home_team_crest, -- FIX: Use logo_url
                     t_away.name AS away_team_name,
-                    t_away.emblem AS away_team_crest, -- CRITICAL for UI
-                    l.name AS league_name,
-                    l.fd_code
+                    t_away.logo_url AS away_team_crest, -- FIX: Use logo_url
+                    l.name AS league_name
                 FROM public.fixtures f
                 JOIN public.teams t_home ON f.home_team_id = t_home.team_id
                 JOIN public.teams t_away ON f.away_team_id = t_away.team_id
                 LEFT JOIN public.predictions p ON f.fixture_id = p.fixture_id
-                -- Join on league_seasons to get the league object
-                JOIN public.league_seasons ls ON f.league_season_id = ls.id 
-                JOIN public.leagues l ON ls.league_id = l.league_id 
+                -- FIX: Join directly on fixtures.league_id
+                JOIN public.leagues l ON f.league_id = l.league_id 
                 WHERE 
                     l.league_id = ANY(%s) AND 
-                    f.utc_date BETWEEN %s AND %s AND 
-                    f.status = %s
-                ORDER BY f.utc_date ASC;
+                    f.date BETWEEN %s AND %s AND -- FIX: Use 'date'
+                    f.status_short = %s -- FIX: Use 'status_short'
+                ORDER BY f.date ASC; -- FIX: Use 'date'
             """
             # Ensure datetime objects are UTC before passing to SQL
             start_utc_aware = date_from.astimezone(timezone.utc)
@@ -233,6 +234,7 @@ def get_filtered_matches(
 
 def get_match_counts(league_ids: List[int], date_from: datetime, date_to: datetime) -> Dict[str, int]:
     """
+    v1.7: Corrected to use new schema.
     Counts the number of matches by status for filtering.
     """
     conn = None
@@ -244,15 +246,15 @@ def get_match_counts(league_ids: List[int], date_from: datetime, date_to: dateti
         with conn.cursor() as cur:
             sql = """
                 SELECT 
-                    f.status, 
+                    f.status_short, -- FIX: Use 'status_short'
                     COUNT(*)
                 FROM public.fixtures f
-                JOIN public.league_seasons ls ON f.league_season_id = ls.id 
-                JOIN public.leagues l ON ls.league_id = l.league_id
+                -- FIX: Join directly on fixtures.league_id
+                JOIN public.leagues l ON f.league_id = l.league_id
                 WHERE 
                     l.league_id = ANY(%s) AND 
-                    f.utc_date BETWEEN %s AND %s
-                GROUP BY f.status;
+                    f.date BETWEEN %s AND %s -- FIX: Use 'date'
+                GROUP BY f.status_short; -- FIX: Use 'status_short'
             """
             # Ensure datetime objects are UTC before passing to SQL
             start_utc_aware = date_from.astimezone(timezone.utc)
@@ -269,6 +271,7 @@ def get_match_counts(league_ids: List[int], date_from: datetime, date_to: dateti
 
 def get_db_stats() -> Tuple[Optional[str], Optional[int]]:
     """
+    v1.7: Corrected to use new schema.
     Fetches the last updated time from the fixtures table and the count
     from the standings table.
     """
@@ -284,7 +287,8 @@ def get_db_stats() -> Tuple[Optional[str], Optional[int]]:
         with conn.cursor() as cur:
             # Get last updated time from the 'fixtures' table
             try:
-                cur.execute("SELECT MAX(last_updated) as last_update FROM fixtures")
+                # FIX: Query max date from finished matches
+                cur.execute("SELECT MAX(date) as last_update FROM fixtures WHERE status_short = 'FT'")
                 result = cur.fetchone()
                 if result and result[0]:
                     # Format the datetime object to a readable string (in UTC)

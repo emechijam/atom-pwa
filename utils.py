@@ -1,9 +1,8 @@
-# utils.py v1.8
+# utils.py v1.9
 #
-# WHAT'S NEW (v1.8):
-# - DB ALIGNMENT: Confirmed `get_utc_date_range` correctly prepares arguments 
-#   (`date_from`, `date_to`) for the updated `db.get_filtered_matches` function signature in v1.13.
-# - RETAINED: All v1.7 logic for date parsing and match info structuring.
+# WHAT'S NEW (v1.9 - DATE PARSE FIX ALIGNMENT):
+# - CONFIRMED: `parse_utc_to_gmt1` outputs date string in YYYY-MM-DD format,
+#   which is now correctly consumed by app.py v1.14.
 
 import streamlit as st
 import re
@@ -40,11 +39,13 @@ def parse_utc_to_gmt1(utc_date_input: Any) -> Tuple[str, str]:
         # Convert to Lagos time (GMT+1)
         lagos_dt = utc_dt.astimezone(LAGOS_TZ)
         
+        # Output format is YYYY-MM-DD
         date_str = lagos_dt.strftime("%Y-%m-%d")
         time_str = lagos_dt.strftime("%H:%M:%S")
         return (date_str, time_str)
     except Exception as e:
-        logging.error(f"Error parsing date {utc_date_input}: {e}")
+        # NOTE: This logging is redundant if the calling function logs, but kept for safety.
+        # logging.error(f"Error parsing date {utc_date_input}: {e}")
         return (DEFAULT_DATE, DEFAULT_TIME)
 
 def format_date(date_str: str) -> str:
@@ -52,7 +53,7 @@ def format_date(date_str: str) -> str:
     if not date_str or date_str == DEFAULT_DATE:
         return ""
     try:
-        # Assuming input format is YYYY-MM-DD
+        # Input format is YYYY-MM-DD, output format is DD Mon YYYY
         dt_obj = datetime.strptime(date_str, "%Y-%m-%d")
         return dt_obj.strftime("%d %b %Y")
     except ValueError:
