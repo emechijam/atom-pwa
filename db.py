@@ -1,11 +1,10 @@
-# db.py v1.20
+# db.py v1.21
 #
-# WHAT'S NEW (v1.20 - CRITICAL UI FIX):
-# - CRITICAL FIX 1: Changed all INNER JOINs for leagues and teams in
-#   `get_filtered_matches` to **LEFT JOINs**. This ensures that fixture
-#   data is returned even if the corresponding league or team data is
-#   missing, resolving the "no matches" issue when data is only partially
-#   synced.
+# WHAT'S NEW (v1.21 - CRITICAL JOIN FIX):
+# - CRITICAL FIX 1: Corrected the typo in the SQL LEFT JOIN for the away team
+#   in `get_filtered_matches`. Changed `at.away_team_id` to the correct
+#   database column name, `at.team_id`. This resolves the "no matches" issue
+#   when data exists in the database.
 
 import os
 import json
@@ -218,7 +217,7 @@ def get_filtered_matches(
     competition_code: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """
-    v1.20: Uses LEFT JOIN for leagues and teams to ensure fixtures are always returned.
+    v1.21: Fixed critical typo in SQL LEFT JOIN for the away team.
     Fetches fixture data with dynamic filters for date, predictions, search,
     competition, and pagination.
     """
@@ -253,7 +252,8 @@ def get_filtered_matches(
         -- FIX: Use LEFT JOINs to prevent fixtures from being dropped if league/team data is missing
         LEFT JOIN leagues hl ON f.league_id = hl.league_id
         LEFT JOIN teams ht ON f.home_team_id = ht.team_id
-        LEFT JOIN teams at ON f.away_team_id = at.away_team_id
+        -- CRITICAL FIX: Changed at.away_team_id to at.team_id
+        LEFT JOIN teams at ON f.away_team_id = at.team_id 
         LEFT JOIN predictions p ON f.fixture_id = p.fixture_id
     """
 
