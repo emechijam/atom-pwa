@@ -1,10 +1,9 @@
-# db.py v1.21
+# db.py v1.22
 #
-# WHAT'S NEW (v1.21 - CRITICAL JOIN FIX):
-# - CRITICAL FIX 1: Corrected the typo in the SQL LEFT JOIN for the away team
-#   in `get_filtered_matches`. Changed `at.away_team_id` to the correct
-#   database column name, `at.team_id`. This resolves the "no matches" issue
-#   when data exists in the database.
+# WHAT'S NEW (v1.22 - CRITICAL NAME ERROR FIX):
+# - CRITICAL FIX 1: Added the missing definition for `close_all_connections()`.
+#   This resolves the fatal `NameError` that prevented the Streamlit app from 
+#   fully initializing and fetching fixtures.
 
 import os
 import json
@@ -252,7 +251,7 @@ def get_filtered_matches(
         -- FIX: Use LEFT JOINs to prevent fixtures from being dropped if league/team data is missing
         LEFT JOIN leagues hl ON f.league_id = hl.league_id
         LEFT JOIN teams ht ON f.home_team_id = ht.team_id
-        -- CRITICAL FIX: Changed at.away_team_id to at.team_id
+        -- CRITICAL FIX: Corrected typo from at.away_team_id to at.team_id
         LEFT JOIN teams at ON f.away_team_id = at.team_id 
         LEFT JOIN predictions p ON f.fixture_id = p.fixture_id
     """
@@ -320,8 +319,6 @@ def get_filtered_matches(
 
 # ============ DB MANIPULATION FUNCTIONS (For populator/predictor) ============
 
-# v1.18: This function is not used by predictor.py (which uses db_utils.py)
-# but is corrected here to match the schema for future-proofing.
 def store_predictions_db(conn, predictions_to_store: List[Dict[str, Any]]):
     """
     Stores or updates predictions in the database.
@@ -396,6 +393,16 @@ def get_tags(prediction_data: dict, team_type: str) -> list:
         elif team_type == 'away':
             return prediction_data.get('away_tags', ["Let's learn"])
     return ["Let's learn"]
+
+# ============ CRITICAL CLEANUP FUNCTION ============
+
+def close_all_connections():
+    """Closes all connections in the pool."""
+    global db_pool
+    if db_pool:
+        db_pool.closeall()
+        db_pool = None
+        logging.info("Database connection pool closed.")
 
 # Register the cleanup function
 import atexit
