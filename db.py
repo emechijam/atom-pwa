@@ -1,9 +1,11 @@
-# db.py v1.19
+# db.py v1.20
 #
-# WHAT'S NEW (v1.19 - Widget Support):
-# - FIX: Added `ht.team_id as home_team_id` and `at.team_id as away_team_id`
-#   to the `get_filtered_matches` query. This is critical for the
-#   "View Team" buttons in widgets.py to function.
+# WHAT'S NEW (v1.20 - CRITICAL UI FIX):
+# - CRITICAL FIX 1: Changed all INNER JOINs for leagues and teams in
+#   `get_filtered_matches` to **LEFT JOINs**. This ensures that fixture
+#   data is returned even if the corresponding league or team data is
+#   missing, resolving the "no matches" issue when data is only partially
+#   synced.
 
 import os
 import json
@@ -94,6 +96,7 @@ def get_last_updated_time() -> Optional[datetime]:
 def get_match_counts() -> Dict[str, int]:
     """
     Fetches the count of matches grouped by status.
+    This function correctly queries only the fixtures table, which is why your counts work.
     """
     conn = None
     counts = {}
@@ -215,14 +218,14 @@ def get_filtered_matches(
     competition_code: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """
-    v1.19: Added team_id fields for widget support.
+    v1.20: Uses LEFT JOIN for leagues and teams to ensure fixtures are always returned.
     Fetches fixture data with dynamic filters for date, predictions, search,
     competition, and pagination.
     """
     conn = None
     params = []
     
-    # Base query with corrected column names and joins
+    # Base query with corrected column names and LEFT JOINs
     sql = """
         SELECT
             f.fixture_id,
@@ -232,25 +235,25 @@ def get_filtered_matches(
             f.goals_away as away_score, -- Alias
             p.prediction_data,
             
-            hl.league_id as competition_code,
+            COALESCE(hl.league_id, f.league_id) as competition_code,
             
-            -- v1.19: Add Team IDs for widgets
             ht.team_id as home_team_id,
             at.team_id as away_team_id,
             
-            ht.name as home_team_name,
+            COALESCE(ht.name, 'N/A') as home_team_name,
             ht.logo_url as home_team_crest, 
-            at.name as away_team_name,
+            COALESCE(at.name, 'N/A') as away_team_name,
             at.logo_url as away_team_crest,
             
-            hl.name as competition_name,
+            COALESCE(hl.name, 'Unknown League') as competition_name,
             hl.logo_url as competition_crest,
-            hl.country_name as competition_country
+            COALESCE(hl.country_name, 'Unknown') as competition_country
             
         FROM fixtures f
-        JOIN leagues hl ON f.league_id = hl.league_id
-        JOIN teams ht ON f.home_team_id = ht.team_id
-        JOIN teams at ON f.away_team_id = at.team_id
+        -- FIX: Use LEFT JOINs to prevent fixtures from being dropped if league/team data is missing
+        LEFT JOIN leagues hl ON f.league_id = hl.league_id
+        LEFT JOIN teams ht ON f.home_team_id = ht.team_id
+        LEFT JOIN teams at ON f.away_team_id = at.away_team_id
         LEFT JOIN predictions p ON f.fixture_id = p.fixture_id
     """
 
@@ -273,13 +276,14 @@ def get_filtered_matches(
 
     # 3. Competition Filter
     if competition_code:
-        where_clauses.append("hl.league_id = %s")
+        where_clauses.append("f.league_id = %s")
         params.append(competition_code)
 
     # 4. Search Query Filter
     if search_query:
-        where_clauses.append("(ht.name ILIKE %s OR at.name ILIKE %s OR hl.name ILIKE %s)")
-        search_term = f"%{search_key}%"
+        # Search against team names and competition name (using COALESCE to check for NULL joined names)
+        where_clauses.append("(COALESCE(ht.name, '') ILIKE %s OR COALESCE(at.name, '') ILIKE %s OR COALESCE(hl.name, '') ILIKE %s)")
+        search_term = f"%{search_query}%"
         params.extend([search_term, search_term, search_term])
 
     # Assemble final query
@@ -367,21 +371,25 @@ def store_predictions_db(conn, predictions_to_store: List[Dict[str, Any]]):
 # ============ HELPER FUNCTIONS FOR WIDGETS (JSONB Extraction) ============
 
 def get_h2h_data(prediction_data: dict) -> list:
+    """Extracts the H2H list from the prediction JSONB."""
     if prediction_data:
         return prediction_data.get('h2h', [])
     return []
 
 def get_last_7_home_data(prediction_data: dict) -> list:
+    """Extracts the Home Last 7 list from the prediction JSONB."""
     if prediction_data:
         return prediction_data.get('home_last7', [])
     return []
 
 def get_last_7_away_data(prediction_data: dict) -> list:
+    """Extracts the Away Last 7 list from the prediction JSONB."""
     if prediction_data:
         return prediction_data.get('away_last7', [])
     return []
 
 def get_tags(prediction_data: dict, team_type: str) -> list:
+    """Extracts the tags (home_tags or away_tags) from the prediction JSONB."""
     if prediction_data:
         if team_type == 'home':
             return prediction_data.get('home_tags', ["Let's learn"])
@@ -389,11 +397,6 @@ def get_tags(prediction_data: dict, team_type: str) -> list:
             return prediction_data.get('away_tags', ["Let's learn"])
     return ["Let's learn"]
 
-# =======================================================================
-def close_pool():
-    global db_pool
-    if db_pool:
-        db_pool.closeall()
-        db_pool = None
+# Register the cleanup function
 import atexit
-atexit.register(close_pool)
+atexit.register(close_all_connections)
