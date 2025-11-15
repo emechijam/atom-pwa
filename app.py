@@ -1,11 +1,11 @@
-# app.py v1.9
+# app.py v1.14
 #
-# WHAT'S NEW (v1.9):
-# - PAGINATION: Added "Load More" functionality for matches using an in-memory limit increase
-#   in the 'All Matches', Search, and Competition views. Resets limit when switching primary views.
-# - VERSION DISPLAY: Added st.info("Atom v3") in sidebar.
-# - RETAINED: All v1.8 features (ultra-responsive tabs, modal, sticky header on list views, 7-day load window).
-# - FIX (v1.9.1): Removed invalid import 'count_table' from utils and corrected usage to db.count_standings_lists().
+# WHAT'S NEW (v1.14 - CRITICAL DATE PARSING FIX):
+# - CRITICAL FIX 1: Corrected date parsing format string from "%d-%m-%Y" to 
+#   "%Y-%m-%d" in the main data loops (Tabs and Search Views) to align with 
+#   the output of utils.parse_utc_to_gmt1. This resolves the persistent 
+#   'time data does not match format' error and will allow fixtures to display.
+# - RETAINED: All fixes and debug logging from v1.13.
 
 # Standard Library Imports
 import json
@@ -36,9 +36,9 @@ from utils import (
     parse_utc_to_gmt1,
 )
 from widgets import (
-    match_card_component,
-    open_competition_page,
-    open_match_details,
+    fixture_card_component, 
+    open_league_page,
+    open_fixture_details, 
     open_team_page,
     show_fixture_details,
 )
@@ -658,12 +658,18 @@ with st.container():
             limit = st.session_state.fixtures_limit
             fixtures_to_display = all_filtered_fixtures[:limit]
 
-            # Match grouping logic (kept for search results)
-            matches_by_date = {}
-            for match in matches_to_display:
-                date_gmt1, _ = parse_utc_to_gmt1(match["utc_date"])
-                mdate = datetime.strptime(date_gmt1, "%d-%m-%Y").date()
-                matches_by_date.setdefault(mdate, []).append(match)
+            # Fixture grouping logic (kept for search results)
+            fixtures_by_date = {}
+            for fixture in fixtures_to_display:
+                try:
+                    date_gmt1, _ = parse_utc_to_gmt1(fixture["utc_date"])
+                    # CRITICAL FIX 1: Change format string to YYYY-MM-DD
+                    fdate = datetime.strptime(date_gmt1, "%Y-%m-%d").date()
+                    fixtures_by_date.setdefault(fdate, []).append(fixture)
+                except Exception as e:
+                    # CRITICAL DEBUG: Print the source of the data dropping issue
+                    print(f"DEBUG ERROR (Search View): Failed to parse date for fixture: {fixture.get('fixture_id')}. UTC Date: {fixture.get('utc_date')}. Error: {e}", file=sys.stderr)
+                    continue
 
             # Sort the dates for display
             sorted_dates = sorted(fixtures_by_date.keys(), reverse=True)
@@ -759,11 +765,17 @@ with st.container():
             limit = st.session_state.fixtures_limit
             fixtures_to_display = fixtures[:limit]
 
-            matches_by_date = {}
-            for match in matches_to_display:
-                date_gmt1, _ = parse_utc_to_gmt1(match["utc_date"])
-                mdate = datetime.strptime(date_gmt1, "%d-%m-%Y").date()
-                matches_by_date.setdefault(mdate, []).append(match)
+            fixtures_by_date = {}
+            for fixture in fixtures_to_display:
+                try:
+                    date_gmt1, _ = parse_utc_to_gmt1(fixture["utc_date"])
+                    # CRITICAL FIX 1: Change format string to YYYY-MM-DD
+                    fdate = datetime.strptime(date_gmt1, "%Y-%m-%d").date()
+                    fixtures_by_date.setdefault(fdate, []).append(fixture)
+                except Exception as e:
+                    # CRITICAL DEBUG: Print the source of the data dropping issue
+                    print(f"DEBUG ERROR (League View): Failed to parse date for fixture: {fixture.get('fixture_id')}. UTC Date: {fixture.get('utc_date')}. Error: {e}", file=sys.stderr)
+                    continue
 
             sorted_dates = sorted(fixtures_by_date.keys())
             sorted_dates.sort(
@@ -851,11 +863,18 @@ with st.container():
     fixtures_by_date = {d: [] for d in tab_dates}
     for fixture in all_tab_fixtures:
         try:
-            date_str, _ = parse_utc_to_gmt1(match.get("utc_date"))
-            mdate = datetime.strptime(date_str, "%d-%m-%Y").date()
-            if mdate in matches_by_date:
-                matches_by_date[mdate].append(match)
-        except Exception:
+            # FIX: Ensure fixture["utc_date"] is present before trying to access it
+            if "utc_date" not in fixture or fixture["utc_date"] is None:
+                raise ValueError("UTC date missing from fixture data.")
+                
+            date_str, _ = parse_utc_to_gmt1(fixture.get("utc_date"))
+            # CRITICAL FIX 1: Change format string to YYYY-MM-DD to match utils.py output
+            fdate = datetime.strptime(date_str, "%Y-%m-%d").date()
+            if fdate in fixtures_by_date:
+                fixtures_by_date[fdate].append(fixture)
+        except Exception as e:
+            # CRITICAL DEBUG: Print the source of the data dropping issue
+            print(f"DEBUG ERROR (Main Tabs): Failed to parse date for fixture: {fixture.get('fixture_id')}. UTC Date: {fixture.get('utc_date')}. Error: {e}", file=sys.stderr)
             continue
 
     with st.container(border=True):
@@ -915,8 +934,9 @@ with st.container():
 
                 # v1.8: Check if *any* fixture in this group has a prediction
                 if (
-                    m.get("prediction_data")
-                    and m.get("prediction_data").get("h2h") != []
+                    f.get("prediction_data")
+                    and f.get("prediction_data").get("h2h")
+                    and f.get("prediction_data").get("h2h") != []
                 ):
                     league_dict[code]["has_prediction"] = True
 
@@ -937,11 +957,12 @@ with st.container():
 
                 # Count *only* fixtures with predictions if toggle is on
                 if predictions_only:
-                    matches_to_show = [
-                        m
-                        for m in data["matches"]
-                        if m.get("prediction_data")
-                        and m.get("prediction_data").get("h2h") != []
+                    fixtures_to_show = [
+                        f
+                        for f in data["fixtures"]
+                        if f.get("prediction_data")
+                        and f.get("prediction_data").get("h2h")
+                        and f.get("prediction_data").get("h2h") != []
                     ]
                     fixture_count = len(fixtures_to_show)
                 else:

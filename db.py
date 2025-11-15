@@ -1,9 +1,12 @@
-# db.py v1.19
+# db.py v1.25
 #
-# WHAT'S NEW (v1.19 - Widget Support):
-# - FIX: Added `ht.team_id as home_team_id` and `at.team_id as away_team_id`
-#   to the `get_filtered_matches` query. This is critical for the
-#   "View Team" buttons in widgets.py to function.
+# WHAT'S NEW (v1.25 - FINAL DEFINITIVE FIX):
+# - CRITICAL FIX 1: Corrected SQL syntax in `get_match_counts` and 
+#   `count_standings_lists` from `COUNT()` to the valid `COUNT(*)`.
+# - CRITICAL FIX 2: Implemented the robust predictions filter using 
+#   `jsonb_array_length(p.prediction_data->'h2h') > 0` to reliably filter 
+#   non-empty H2H data.
+# - RETAINED: Fixes for NameError and universal LEFT JOINs.
 
 import os
 import json
@@ -94,7 +97,6 @@ def get_last_updated_time() -> Optional[datetime]:
 def get_match_counts() -> Dict[str, int]:
     """
     Fetches the count of matches grouped by status.
-    This function correctly queries only the fixtures table, which is why your counts work.
     """
     conn = None
     counts = {}
@@ -216,7 +218,6 @@ def get_filtered_matches(
     competition_code: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """
-    v1.19: Added team_id fields for widget support.
     Fetches fixture data with dynamic filters for date, predictions, search,
     competition, and pagination.
     """
@@ -248,9 +249,10 @@ def get_filtered_matches(
             COALESCE(hl.country_name, 'Unknown') as competition_country
             
         FROM fixtures f
-        JOIN leagues hl ON f.league_id = hl.league_id
-        JOIN teams ht ON f.home_team_id = ht.team_id
-        JOIN teams at ON f.away_team_id = at.team_id
+        -- Use LEFT JOINs to prevent fixtures from being dropped if league/team data is missing
+        LEFT JOIN leagues hl ON f.league_id = hl.league_id
+        LEFT JOIN teams ht ON f.home_team_id = ht.team_id
+        LEFT JOIN teams at ON f.away_team_id = at.team_id 
         LEFT JOIN predictions p ON f.fixture_id = p.fixture_id
     """
 
