@@ -1,9 +1,9 @@
-# db.py v1.18
+# db.py v1.19
 #
-# WHAT'S NEW (v1.18 - Code Cleanup):
-# - FIX: Corrected the `store_predictions_db` function (which was unused)
-#   to use `fixture_id` instead of the old `match_id`.
-#   This makes it consistent with the database schema and predictor.py.
+# WHAT'S NEW (v1.19 - Widget Support):
+# - FIX: Added `ht.team_id as home_team_id` and `at.team_id as away_team_id`
+#   to the `get_filtered_matches` query. This is critical for the
+#   "View Team" buttons in widgets.py to function.
 
 import os
 import json
@@ -215,7 +215,7 @@ def get_filtered_matches(
     competition_code: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """
-    v1.17: Corrected 'hl.code' to 'hl.league_id' to match schema.
+    v1.19: Added team_id fields for widget support.
     Fetches fixture data with dynamic filters for date, predictions, search,
     competition, and pagination.
     """
@@ -232,15 +232,17 @@ def get_filtered_matches(
             f.goals_away as away_score, -- Alias
             p.prediction_data,
             
-            -- v1.17 FIX: Use league_id as the competition_code
             hl.league_id as competition_code,
             
-            ht.name as home_team_name,
-            ht.logo_url as home_team_crest, -- Use logo_url
-            at.name as away_team_name,
-            at.logo_url as away_team_crest, -- Use logo_url
+            -- v1.19: Add Team IDs for widgets
+            ht.team_id as home_team_id,
+            at.team_id as away_team_id,
             
-            -- v1.16: Add competition data directly
+            ht.name as home_team_name,
+            ht.logo_url as home_team_crest, 
+            at.name as away_team_name,
+            at.logo_url as away_team_crest,
+            
             hl.name as competition_name,
             hl.logo_url as competition_crest,
             hl.country_name as competition_country
@@ -271,14 +273,13 @@ def get_filtered_matches(
 
     # 3. Competition Filter
     if competition_code:
-        # v1.17 FIX: Filter on hl.league_id, not hl.code
         where_clauses.append("hl.league_id = %s")
         params.append(competition_code)
 
     # 4. Search Query Filter
     if search_query:
         where_clauses.append("(ht.name ILIKE %s OR at.name ILIKE %s OR hl.name ILIKE %s)")
-        search_term = f"%{search_query}%"
+        search_term = f"%{search_key}%"
         params.extend([search_term, search_term, search_term])
 
     # Assemble final query

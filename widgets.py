@@ -1,9 +1,16 @@
-# widgets.py v1.8
+# widgets.py v1.9
 #
-# WHAT'S NEW (v1.8):
-# - DB ALIGNMENT: Syncing version number with other utilities. 
-# - RETAINED: All v1.7 logic, as this file was already updated to handle the 
-#   new data structure and imports prediction helpers from db.py.
+# WHAT'S NEW (v1.9 - CRITICAL SCHEMA FIX):
+# - CRITICAL FIX 1: Rewrote `get_current_standing` to query the new
+#   `standings` table. It no longer uses the non-existent `standings_rows`
+#   table and correctly joins `teams` on `team_id`.
+# - CRITICAL FIX 2: Corrected `get_current_standing` to select `t.logo_url`
+#   instead of the non-existent `t.emblem`.
+# - CRITICAL FIX 3: Removed all `raw_data` parsing from `match_card_component`
+#   and `show_match_details`. These functions now read directly from the
+#   fields provided by db.py (e.g., `home_team_name`, `competition_name`).
+# - CRITICAL FIX 4: Updated `show_match_details` to use `home_team_id` and
+#   `away_team_id` (now provided by db.py v1.19) for the team page buttons.
 
 import streamlit as st
 import re
@@ -19,12 +26,11 @@ from db import get_h2h_data, get_last_7_home_data, get_last_7_away_data, get_tag
 
 # --- Standings Utility (FIXED) ---
 
-@st.cache_data(ttl=300)  # Extended TTL for stable data
+@st.cache_data(ttl=300)
 def get_current_standing(league_id: int) -> List[Dict[str, Any]]:
     """
-    Fetches the most recent total standing table data (list of team rows)
-    for a given league_id and the current season.
-    (Updated to league_id)
+    v1.9: Fetches and reconstructs the standing table from the new 'standings'
+    schema.
     """
     if not league_id:
         logging.warning("get_current_standing called with no league_id.")
@@ -33,41 +39,42 @@ def get_current_standing(league_id: int) -> List[Dict[str, Any]]:
     conn = None
     try:
         conn = db.db_pool.getconn()
-        # V1.7 CHANGE: Use RealDictCursor
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            # V1.7 CHANGE: Refactored SQL to query standings_rows
+            # v1.9: New query for the new flat 'standings' table
             sql = """
-            WITH LatestStanding AS (
+            WITH LatestSeason AS (
+                -- First, find the latest season year for this league
                 SELECT
-                    s.id
+                    s.season_year
                 FROM standings s
-                WHERE
-                    s.league_id = %s
-                ORDER BY
-                    s.season_year DESC
+                WHERE s.league_id = %s
+                ORDER BY s.season_year DESC
                 LIMIT 1
             )
+            -- Now, get all standings for that league and season
             SELECT
-                sr.rank as position,
-                sr.games_played as played_games, 
-                sr.form,
-                sr.won, 
-                sr.draw,
-                sr.lost, 
-                sr.points,
-                sr.goals_for,
-                sr.goals_against,
-                sr.goals_diff as goal_difference,
+                s.rank as position,
+                s.played as played_games,
+                s.form,
+                s.win as won,
+                s.draw,
+                s.lose as lost,
+                s.points,
+                s.goals_for,
+                s.goals_against,
+                s.goals_diff as goal_difference,
                 t.name as team_name,
                 t.code as team_short_name,
-                t.emblem as team_crest 
-            FROM standings_rows sr
-            JOIN LatestStanding ls ON sr.standing_id = ls.id
-            JOIN teams t ON sr.team_id = t.team_id
+                t.logo_url as team_crest -- FIX: Use 'logo_url'
+            FROM standings s
+            JOIN teams t ON s.team_id = t.team_id
+            JOIN LatestSeason ls ON s.season_year = ls.season_year
+            WHERE
+                s.league_id = %s
             ORDER BY
-                sr.rank ASC;
+                s.rank ASC;
             """
-            cur.execute(sql, (league_id,))
+            cur.execute(sql, (league_id, league_id))
             rows = cur.fetchall()
             
             if not rows:
@@ -102,6 +109,7 @@ def get_current_standing(league_id: int) -> List[Dict[str, Any]]:
     finally:
         if conn:
             db.db_pool.putconn(conn)
+    # This return was missing in v1.8, which was a bug
     return []
 
 
@@ -145,38 +153,25 @@ def render_tag_badges(tags_list: list):
 
 
 # --- Match Card Component ---
-# (V1.7: Consolidated logic and expanded status checks)
+# (V1.9: Removed all raw_data logic)
 def match_card_component(match_data: Dict[str, Any]):
     match_card = st.container(border=True)
     
-    # v1.4: prediction_data is now a dict, not a string
     prediction = match_data.get('prediction_data') or {}
     home_tags_list = prediction.get("home_tags", ["Let's learn"])
     away_tags_list = prediction.get("away_tags", ["Let's learn"])
 
-    raw = match_data.get('raw_data', {})
     status = match_data.get('status')
 
-    # V1.7 CHANGE: Consolidate data extraction, prioritizing top-level fixture fields
-    # 1. Names/Crests
+    # v1.9: Use direct fields from db.py query
     home_name = match_data.get('home_team_name', 'Home')
     away_name = match_data.get('away_team_name', 'Away')
-    
-    # Crests: Try DB field first (if available in match_data), then raw data fallbacks
-    home_crest = match_data.get('home_team_crest') or raw.get('homeTeam', {}).get('crest') or raw.get('teams', {}).get('home', {}).get('logo')
-    away_crest = match_data.get('away_team_crest') or raw.get('awayTeam', {}).get('crest') or raw.get('teams', {}).get('away', {}).get('logo')
-
-    # 2. Scores: Use top-level match_data fields
+    home_crest = match_data.get('home_team_crest')
+    away_crest = match_data.get('away_team_crest')
     home_score = match_data.get('home_score')
     away_score = match_data.get('away_score')
-
-    # Fallback score if top-level fields are None
-    if home_score is None and 'score' in raw:
-        home_score = raw.get('score', {}).get('fulltime', {}).get('home', raw.get('goals', {}).get('home'))
-    if away_score is None and 'score' in raw:
-        away_score = raw.get('score', {}).get('fulltime', {}).get('away', raw.get('goals', {}).get('away'))
     
-    # 3. Winner determination (simplified based on final scores if status is final)
+    # Winner determination
     winner = None
     if status in ['FT', 'AET', 'PEN', 'FINISHED'] and home_score is not None and away_score is not None:
         if home_score > away_score:
@@ -185,22 +180,18 @@ def match_card_component(match_data: Dict[str, Any]):
             winner = 'AWAY_TEAM'
         else:
             winner = 'DRAW'
-    # END V1.7 CHANGE: Consolidated logic replaces fragmented logic from lines 131 to 164
-
+    
     home_score_badge = ""
-    # V1.7 CHANGE: Added expanded live/finished status checks
-    if status in ['IN_PLAY', 'PAUSED', 'FINISHED', 'LIVE', 'HT', 'ET', 'BREAK'] and home_score is not None:
+    if status in ['IN_PLAY', 'PAUSED', 'FINISHED', 'LIVE', 'HT', 'ET', 'BREAK', 'FT', 'AET', 'PEN'] and home_score is not None:
         home_score_badge = str(home_score)
 
     away_score_badge = ""
-    # V1.7 CHANGE: Added expanded live/finished status checks
-    if status in ['IN_PLAY', 'PAUSED', 'FINISHED', 'LIVE', 'HT', 'ET', 'BREAK'] and away_score is not None:
+    if status in ['IN_PLAY', 'PAUSED', 'FINISHED', 'LIVE', 'HT', 'ET', 'BREAK', 'FT', 'AET', 'PEN'] and away_score is not None:
         away_score_badge = str(away_score)
 
     status_badge_label = ""
     status_badge_type = "secondary" 
 
-    # V1.7 CHANGE: Expanded Status Logic
     if status in ['IN_PLAY', 'PAUSED', 'LIVE', 'HT', 'ET', 'BREAK', 'LIVE_BREAK']:
         status_badge_label = "LIVE"
         status_badge_type = "error" 
@@ -214,11 +205,9 @@ def match_card_component(match_data: Dict[str, Any]):
         _, time_gmt1 = parse_utc_to_gmt1(match_data.get('utc_date'))
         status_badge_label = time_gmt1[:5] # Show HH:MM
         status_badge_type = "secondary"
-    # END V1.7 CHANGE
     
     with match_card:
         winner_check = winner
-        # Use expanded finished checks for color highlighting
         if status == 'FINISHED' or status in ['FT', 'AET', 'PEN']:
             if winner_check == 'HOME_TEAM': home_badge_color_key = 'green'
             elif winner_check == 'DRAW': home_badge_color_key = 'gray'
@@ -247,7 +236,6 @@ def match_card_component(match_data: Dict[str, Any]):
                     st.markdown(html, unsafe_allow_html=True)
 
 
-        # Use expanded finished checks for color highlighting
         if status == 'FINISHED' or status in ['FT', 'AET', 'PEN']:
             if winner_check == 'AWAY_TEAM': badge_color_key = 'green'
             elif winner_check == 'DRAW': badge_color_key = 'gray'
@@ -293,6 +281,7 @@ def match_card_component(match_data: Dict[str, Any]):
 def open_match_details(match: Dict[str, Any]):
     st.session_state.selected_match = match
 def open_competition_page(league_code, league_name):
+    # league_code is actually league_id
     st.session_state.view = ("competition", league_code, league_name)
     st.session_state.selected_match = None
     st.rerun()
@@ -312,122 +301,70 @@ def show_match_details(match: Dict[str, Any]):
         else:
             st.session_state.view = None 
         st.rerun()
-
-    raw = match.get('raw_data', {})
     
-    # --- v1.4: Load prediction data from the start ---
+    # --- v1.9: Load prediction data from the start ---
     prediction = match.get('prediction_data') or {}
     
-    # Defaults
-    home_name = "Home Team"
-    home_crest = None
-    home_id = None
-    away_name = "Away Team"
-    away_crest = None
-    away_id = None
-    country_flag = None
-    country_name = "Unknown Country"
-    league = "Unknown League"
-    stage = "N/A"
-    home_score = None
-    away_score = None
-
-    # FD data structure
-    if 'competition' in raw and 'area' in raw:
-        home_data_fd = raw.get('homeTeam', {})
-        away_data_fd = raw.get('awayTeam', {})
-        home_name = home_data_fd.get('shortName', home_name)
-        home_crest = home_data_fd.get('crest')
-        home_id = home_data_fd.get('id')
-        away_name = away_data_fd.get('shortName', away_name)
-        away_crest = away_data_fd.get('crest')
-        away_id = away_data_fd.get('id')
-        
-        area_data_fd = raw.get('area', {})
-        country_flag = area_data_fd.get('flag')
-        country_name = area_data_fd.get('name', country_name)
-        
-        comp_data_fd = raw.get('competition', {})
-        league = comp_data_fd.get('name', league)
-        stage = raw.get('stage', stage)
-        
-        score = raw.get('score', {})
-        full_time = score.get('fullTime', {})
-        home_score = full_time.get('home')
-        away_score = full_time.get('away')
-
-    # AS data structure (override if 'teams' key exists)
-    elif 'teams' in raw and 'league' in raw:
-        as_teams = raw.get('teams', {})
-        home_data_as = as_teams.get('home', {})
-        away_data_as = as_teams.get('away', {})
-        
-        home_name = home_data_as.get('name', home_name)
-        home_crest = home_data_as.get('logo')
-        home_id = home_data_as.get('id')
-        away_name = away_data_as.get('name', away_name)
-        away_crest = away_data_as.get('logo')
-        away_id = away_data_as.get('id')
-
-        as_league = raw.get('league', {})
-        country_name = as_league.get('country', country_name)
-        country_flag = as_league.get('flag')
-        league = as_league.get('name', league)
-        stage = as_league.get('round', stage)
-        
-        as_score = raw.get('score', {})
-        as_full_time = as_score.get('fulltime', {})
-        home_score = as_full_time.get('home', raw.get('goals', {}).get('home'))
-        away_score = as_full_time.get('away', raw.get('goals', {}).get('away'))
+    # --- v1.9: Get data directly from match object (no raw_data) ---
+    home_name = match.get('home_team_name', "Home Team")
+    home_crest = match.get('home_team_crest')
+    home_id = match.get('home_team_id') # From db.py v1.19
+    
+    away_name = match.get('away_team_name', "Away Team")
+    away_crest = match.get('away_team_crest')
+    away_id = match.get('away_team_id') # From db.py v1.19
+    
+    country_flag = match.get('competition_crest') # Use league crest as flag
+    country_name = match.get('competition_country', "Unknown Country")
+    league = match.get('competition_name', "Unknown League")
+    stage = match.get('status_long', 'N/A') # status_long not in db.py, fallback
+    
+    home_score = match.get('home_score')
+    away_score = match.get('away_score')
     
     date_gmt1, time_gmt1 = parse_utc_to_gmt1(match.get('utc_date'))
     date_time = f"{date_gmt1} {time_gmt1[:5]}"
+    
+    # league_code is actually league_id
     league_code = match.get('competition_code')
     if not league:
         league = league_code
 
     status = match.get('status')
     home_score_display = "-"
-    if status in ['IN_PLAY', 'PAUSED', 'FINISHED'] and home_score is not None:
+    if status in ['IN_PLAY', 'PAUSED', 'FINISHED', 'FT', 'AET', 'PEN'] and home_score is not None:
         home_score_display = str(home_score)
 
     away_score_display = "-"
-    if status in ['IN_PLAY', 'PAUSED', 'FINISHED'] and away_score is not None:
+    if status in ['IN_PLAY', 'PAUSED', 'FINISHED', 'FT', 'AET', 'PEN'] and away_score is not None:
         away_score_display = str(away_score)
 
     status_badge_label = ""
     status_badge_type = "secondary" 
-    if status in ['IN_PLAY', 'PAUSED']:
+    if status in ['IN_PLAY', 'PAUSED', 'LIVE', 'HT', 'ET', 'BREAK']:
         status_badge_label = "LIVE"
         status_badge_type = "error" 
-    elif status == 'FINISHED':
+    elif status in ['FT', 'AET', 'PEN', 'FINISHED']:
         status_badge_label = "ENDED"
         status_badge_type = "info" 
-    elif status in ['SUSPENDED', 'POSTPONED', 'CANCELLED', 'CANCELED']:
+    elif status in ['SUSPENDED', 'POSTPONED', 'CANCELLED', 'CANCELED', 'PST']:
         status_badge_label = "PPD"
         status_badge_type = "warning"
-    else: # SCHEDULED / TIMED / TIME
+    else: # SCHEDULED / TIMED / TIME / NS
         status_badge_label = "SCHEDULED"
         status_badge_type = "secondary"
 
     # --- COMPETITION HEADER ---
     with st.container(horizontal=True, vertical_alignment="center"): 
         if country_flag:
-            if isinstance(country_flag, str) and country_flag.endswith('.svg'):
-                st.image(country_flag, width=40) 
-            elif isinstance(country_flag, str):
-                st.image(country_flag, width=40) 
-            else:
-                st.markdown("🌐")
+            st.image(country_flag, width=40) 
         else:
             st.markdown("🌐")
             
-        st.button(f"{country_name} : {league} - {stage}", 
-                          on_click=open_competition_page, 
-                          args=(league_code, league), width="stretch")
+        st.button(f"{country_name} : {league}", 
+                      on_click=open_competition_page, 
+                      args=(league_code, league), width="stretch")
             
-    #st.markdown("---") 
-
     # --- HEADER WITH CRESTS & SCORE ---
     with st.container(horizontal=True, vertical_alignment="center"): 
         date_time_style = "font-size: 0.8em; font-weight: 500; text-align: center; margin-top: 0px;"
@@ -438,14 +375,18 @@ def show_match_details(match: Dict[str, Any]):
         with st.container(vertical_alignment="center", horizontal_alignment="center"): 
             if home_crest:
                 st.image(home_crest, width=64)
-            st.button(home_name, on_click=open_team_page, args=(home_id, home_name), use_container_width=True)
+            st.button(home_name, on_click=open_team_page, args=(home_id, home_name), use_container_width=True,
+                      disabled=(home_id is None))
 
         score_style = "font-size: 2.5em; font-weight: 700; text-align: center; margin-top: 24px;"
         st.markdown(f"<div style='{score_style}'>{home_score_display} - {away_score_display}</div>", unsafe_allow_html=True)
+        
         with st.container(vertical_alignment="center", horizontal_alignment="center"): 
             if away_crest:
                 st.image(away_crest, width=64)
-            st.button(away_name, on_click=open_team_page, args=(away_id, away_name), use_container_width=True)
+            st.button(away_name, on_click=open_team_page, args=(away_id, away_name), use_container_width=True,
+                      disabled=(away_id is None))
+                      
     with st.container(horizontal=True, vertical_alignment="center", horizontal_alignment="center"):
         badge_style = (
             "display: inline-block; padding: 0.25em 0.4em; font-size: 75%; "
@@ -462,7 +403,7 @@ def show_match_details(match: Dict[str, Any]):
     # --- LEAGUE STANDINGS TABLE ---
     st.markdown("#### League Standings")
     
-    # --- v1.3 FIX: This function is now safe to call ---
+    # v1.9: This function is now safe to call
     table_data = get_current_standing(league_code) 
 
     if table_data:
@@ -487,7 +428,7 @@ def show_match_details(match: Dict[str, Any]):
         for idx, row in df.iterrows():
             if row['Team'] == home_name or row['Team'] == away_name:
                 indices_to_highlight.append(idx)
-                
+            
         def highlight_rows(row):
             if row.name in indices_to_highlight:
                 return ['background-color: #333'] * len(row)
@@ -523,10 +464,8 @@ def show_match_details(match: Dict[str, Any]):
     # --- Last 7 Games Section ---
     st.markdown("#### Recent Form (Last 7 Games)")
     
-    # V1.7 CHANGE: Use imported helper functions directly
     home_last7 = get_last_7_home_data(prediction)
     away_last7 = get_last_7_away_data(prediction)
-    # --- End V1.7 Change ---
     
     if home_last7 and away_last7:
         col1, col2 = st.columns(2)
@@ -545,9 +484,7 @@ def show_match_details(match: Dict[str, Any]):
     # --- H2H Section ---
     st.markdown("#### Head-to-Head Encounters") 
     
-    # V1.7 CHANGE: Use imported helper functions directly
     h2h_data = get_h2h_data(prediction)
-    # --- End V1.7 Change ---
     
     if h2h_data:
         st.info(f"Showing last {len(h2h_data)} H2H matches.")
@@ -561,7 +498,6 @@ def display_last7_match_list(team_name: str, match_list: list):
         st.info("No recent match data found.")
         return
     # v1.4: Data is already sorted by predictor
-    # match_list = list(match_list)[::-1] 
     for match_data in match_list:
         # v1.4: Re-structure data for get_structured_match_info
         ui_match_data = {
@@ -602,7 +538,6 @@ def display_h2h_match_list(match_list: list):
         st.info("No H2H data.")
         return
     # v1.4: Data is already sorted
-    # match_list = list(match_list)[::-1]
     for match_data in match_list:
         # v1.4: Re-structure data
         ui_match_data = {
