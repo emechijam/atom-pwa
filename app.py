@@ -1,11 +1,10 @@
-# app.py v1.9
+# app.py v1.10
 #
-# WHAT'S NEW (v1.9):
-# - PAGINATION: Added "Load More" functionality for matches using an in-memory limit increase
-#   in the 'All Matches', Search, and Competition views. Resets limit when switching primary views.
-# - VERSION DISPLAY: Added st.info("Atom v3") in sidebar.
-# - RETAINED: All v1.8 features (ultra-responsive tabs, modal, sticky header on list views, 7-day load window).
-# - FIX (v1.9.1): Removed invalid import 'count_table' from utils and corrected usage to db.count_standings_lists().
+# WHAT'S NEW (v1.10 - TERMINOLOGY REFACTOR):
+# - Renamed all instances of: match -> fixture, competition -> league.
+# - Updated constants (e.g., MATCH_PAGE_SIZE -> FIXTURE_PAGE_SIZE).
+# - Updated session state variables (e.g., search_matches -> search_fixtures).
+# - Logic remains unchanged from v1.9.
 
 # Standard Library Imports
 import json
@@ -36,11 +35,11 @@ from utils import (
     parse_utc_to_gmt1,
 )
 from widgets import (
-    match_card_component,
-    open_competition_page,
-    open_match_details,
+    fixture_card_component,
+    open_league_page,
+    open_fixture_details,
     open_team_page,
-    show_match_details,
+    show_fixture_details,
 )
 
 # Run the autorefresh block every 300000 milliseconds (5mins)
@@ -71,8 +70,8 @@ st.markdown(
     """
 <style>
 /* -------------------- DEFAULT STYLES (DESKTOP) -------------------- */
-.match-wrapper { margin-bottom: 5px; }
-.match-title-last7, .match-title-h2h {
+.fixture-wrapper { margin-bottom: 5px; }
+.fixture-title-last7, .fixture-title-h2h {
     font-size: 0.6875rem; color: #666666; text-transform: uppercase;
     margin-bottom: 1px; border-top: 1px dashed #cccccc; padding-top: 2px;
     font-weight: 500; display: flex; justify-content: space-between;
@@ -91,11 +90,11 @@ st.markdown(
     color: #f0f2f6; margin: 0 5px 0 0; font-size: 0.875rem; line-height: 1;
     text-transform: uppercase; flex-shrink: 0;
 }
-.match-divider-container { 
+.fixture-divider-container { 
     display: flex; align-items: center; justify-content: center; 
     margin:0; height: 100%; 
 }
-.match-divider { 
+.fixture-divider { 
     border: none; border-top: 1px dashed #999999; 
     border-bottom: 1px dashed #999999; margin: 1px; width: 100%; 
 }
@@ -108,19 +107,19 @@ h3 { font-size: 1.25em !important; }
     cursor: pointer; transition: 0.2s;
 }
 .day-row:hover { background: #2a2a2a; }
-.comp-crest { width: 28px; height: 28px; object-fit: contain; margin-right: 10px; }
-.comp-name { font-weight: 600; color: white; }
-.comp-country { font-size: 0.75rem; color: #999; }
-.match-count { 
+.league-crest { width: 28px; height: 28px; object-fit: contain; margin-right: 10px; }
+.league-name { font-weight: 600; color: white; }
+.country-name { font-size: 0.75rem; color: #999; }
+.fixture-count { 
     background: #333; color: white; padding: 4px 10px; border-radius: 20px; 
     font-size: 0.8rem; 
 }
-.match-card { 
+.fixture-card { 
     background: #222; padding: 10px; border-radius: 8px; margin-bottom: 8px;
     display: flex; justify-content: space-between; align-items: center; 
     cursor: pointer;
 }
-.match-card:hover { background: #333; }
+.fixture-card:hover { background: #333; }
 .team-col { display: flex; align-items: center; gap: 8px; }
 .team-crest { width: 24px; height: 24px; }
 .team-name { font-size: 0.9rem; font-weight: 500; }
@@ -152,8 +151,8 @@ h3 { font-size: 1.25em !important; }
         line-height: 1.2 !important;
     }
     h3 { font-size: 0.7em !important; }
-    .match-wrapper { margin-bottom: 1px; }
-    .match-title-last7, .match-title-h2h { 
+    .fixture-wrapper { margin-bottom: 1px; }
+    .fixture-title-last7, .fixture-title-h2h { 
         font-size: 0.5rem; padding-top: 1px; margin-bottom: 1px; 
     }
     .center-text { font-size: 0.7em; line-height: 1.1; }
@@ -334,7 +333,7 @@ def render_header():
         st.session_state.search_query = st.text_input(
             "Search",
             value=st.session_state.search_query,
-            placeholder="Search teams, competitions, or players...",
+            placeholder="Search teams, leagues, or players...",
             label_visibility="collapsed",
             width="stretch",
             icon=":material/search:",
@@ -344,20 +343,20 @@ def render_header():
             "Show Full Predictions Only",
             value=st.session_state.filter_predictions_only,
             help=(
-                "If on, only shows matches that have generated H2H and Recent"
+                "If on, only shows fixtures that have generated H2H and Recent"
                 " Form data (e.g., major leagues)."
             ),
         )
 # === END v1.7 FUNCTIONS ===
 
 
-# === v1.9: PAGINATION LOGIC ===
-MATCH_PAGE_SIZE = 50
+# === v1.9: PAGINATION LOGIC (Renamed) ===
+FIXTURE_PAGE_SIZE = 50
 
 
 # Callback function to increment the limit and force a rerun
-def load_more_matches():
-    st.session_state.matches_limit += MATCH_PAGE_SIZE
+def load_more_fixtures():
+    st.session_state.fixtures_limit += FIXTURE_PAGE_SIZE
     # We don't need to manually reset fetched data unless switching views
 
 
@@ -375,8 +374,7 @@ if "initialized" not in st.session_state:
             viewport()  # Get viewport width
             try:
                 # Test the connection by calling a real function from db.py
-                # This will raise an exception if the connection is bad.
-                db.get_match_counts()
+                db.get_match_counts() # Renamed later for consistency
             except Exception as e:
                 st.error(f"DB Connection Failed: {e}")
                 st.stop()
@@ -385,7 +383,7 @@ if "initialized" not in st.session_state:
             time.sleep(1)
             st.rerun()
 
-# --- Initialize Session State ---
+# --- Initialize Session State (Renamed) ---
 if "search_query" not in st.session_state:
     st.session_state.search_query = ""
 if "filter_predictions_only" not in st.session_state:
@@ -398,15 +396,15 @@ if "sync_process_pid" not in st.session_state:
 if "selected_sport" not in st.session_state:
     st.session_state.selected_sport = "Football"
 # v1.9: Pagination State
-if "matches_limit" not in st.session_state:
-    st.session_state.matches_limit = MATCH_PAGE_SIZE
+if "fixtures_limit" not in st.session_state:
+    st.session_state.fixtures_limit = FIXTURE_PAGE_SIZE
 
 
 # Function to reset the pagination limit when the main view changes
 def reset_pagination_limit(new_view=None):
-    if st.session_state.matches_limit != MATCH_PAGE_SIZE:
-        st.session_state.matches_limit = MATCH_PAGE_SIZE
-        # Optional: clear cached matches if necessary, but relying on fetch is safer
+    if st.session_state.fixtures_limit != FIXTURE_PAGE_SIZE:
+        st.session_state.fixtures_limit = FIXTURE_PAGE_SIZE
+    # Optional: clear cached matches if necessary, but relying on fetch is safer
 
 # --- End Initialization ---
 
@@ -474,12 +472,12 @@ with st.container():
     # === END v1.8 REVERT ===
 
     # === VIEW HANDLER FOR DETAILS PAGE (Highest precedence) ===
-    if "selected_match" in st.session_state and st.session_state.selected_match:
+    if "selected_fixture" in st.session_state and st.session_state.selected_fixture:
         # Header is not rendered here; this is a full-page view
-        show_match_details(st.session_state.selected_match)
+        show_fixture_details(st.session_state.selected_fixture)
         st.stop()
 
-    # === v1.7: "All Matches" VIEW HANDLER ===
+    # === v1.7: "All Fixtures" VIEW HANDLER (Renamed) ===
     # Moved up to be a primary view, and now includes the header.
     if (
         "view" in st.session_state
@@ -509,10 +507,10 @@ with st.container():
         min_date = gmt1_now - timedelta(days=7)
         max_date = gmt1_now + timedelta(days=7)
 
-        matches = []
+        fixtures = []
         if min_date <= date <= max_date:
-            # v1.9: Get ALL matches for the day, then paginate in memory
-            matches = db.get_filtered_matches(
+            # v1.9: Get ALL fixtures for the day, then paginate in memory
+            fixtures = db.get_filtered_matches(
                 date_from=date_start,
                 date_to=date_end,
                 predictions_only=st.session_state.filter_predictions_only,
@@ -521,7 +519,7 @@ with st.container():
             )
 
         st.markdown("---")
-        st.markdown("## All Matches")
+        st.markdown("## All Fixtures")
         st.caption(f"{date.strftime('%A, %d %b, %Y').upper()}")
 
         if not (min_date <= date <= max_date):
@@ -529,39 +527,39 @@ with st.container():
                 f"Data for {date.strftime('%A, %d %b, %Y').upper()} is not"
                 " pre-loaded. App only loads 7 days past/future by default."
             )
-        elif matches:
-            matches.sort(
+        elif fixtures:
+            fixtures.sort(
                 key=lambda m: parse_utc_to_gmt1(m.get("utc_date"))[1] or "99:99"
             )
 
             # v1.9: Pagination Logic
-            limit = st.session_state.matches_limit
-            matches_to_show = matches[:limit]
+            limit = st.session_state.fixtures_limit
+            fixtures_to_show = fixtures[:limit]
 
-            for m in matches_to_show:
-                match_card_component(m)
+            for f in fixtures_to_show:
+                fixture_card_component(f)
 
-            if len(matches) > limit:
+            if len(fixtures) > limit:
                 st.button(
                     "Load More",
-                    key="load_more_all_matches",
-                    on_click=load_more_matches,
+                    key="load_more_all_fixtures",
+                    on_click=load_more_fixtures,
                     use_container_width=True,
                 )
                 st.caption(
-                    f"Showing **{len(matches_to_show)}** of **{len(matches)}**"
-                    " matches."
+                    f"Showing **{len(fixtures_to_show)}** of **{len(fixtures)}**"
+                    " fixtures."
                 )
 
         else:
             st.info(
-                f"No matches found for {date.strftime('%A, %d %b, %Y').upper()}"
+                f"No fixtures found for {date.strftime('%A, %d %b, %Y').upper()}"
                 " matching your filters."
             )
 
         st.stop()  # Stop execution after rendering this view
 
-    # === SEARCH RESULTS VIEW (Takes precedence over tabs) ===
+    # === SEARCH RESULTS VIEW (Renamed) ===
     if st.session_state.search_query.strip():
         # Reset limit on first entry to this page if coming from another view
         if st.session_state.get("last_view_type") != "search":
@@ -572,8 +570,8 @@ with st.container():
                 st.session_state.get("last_search_key")
                 != st.session_state.search_query.strip()
             ):
-                if "search_matches" in st.session_state:
-                    del st.session_state["search_matches"]
+                if "search_fixtures" in st.session_state:
+                    del st.session_state["search_fixtures"]
 
         # 1. RENDER HEADER
         render_header()
@@ -585,7 +583,7 @@ with st.container():
         search_results = db.search_teams_and_competitions(search_key)
 
         if search_results:
-            st.subheader("Teams & Competitions")
+            st.subheader("Teams & Leagues")
             for item in search_results:
                 search_card = st.container(border=True)
                 with search_card:
@@ -609,18 +607,18 @@ with st.container():
                                 args=(item["id"], item["name"]),
                                 use_container_width=True,
                             )
-                        elif item["type"] == "competition":
+                        elif item["type"] == "league":
                             st.button(
-                                "View Comp",
-                                key=f"view_comp_{item['id']}",
-                                on_click=open_competition_page,
+                                "View League",
+                                key=f"view_league_{item['id']}",
+                                on_click=open_league_page,
                                 args=(item["id"], item["name"]),
                                 use_container_width=True,
                             )
         else:
-            st.info("No teams or competitions found matching your search term.")
+            st.info("No teams or leagues found matching your search term.")
 
-        st.subheader("Matches (Upcoming & Recent)")
+        st.subheader("Fixtures (Upcoming & Recent)")
 
         # v1.8: Apply 7-day loading window logic for performance
         gmt1_now = datetime.now(gmt1_tz).date()
@@ -632,10 +630,10 @@ with st.container():
         )
 
         if (
-            "search_matches" not in st.session_state
+            "search_fixtures" not in st.session_state
             or st.session_state.get("last_search_key") != search_key
         ):
-            all_filtered_matches = db.get_filtered_matches(
+            all_filtered_fixtures = db.get_filtered_matches(
                 date_from=date_from,
                 date_to=date_to,
                 search_query=search_key,
@@ -643,72 +641,72 @@ with st.container():
                 limit=None,
                 offset=0,  # Fetch all for in-memory pagination
             )
-            st.session_state.search_matches = all_filtered_matches
+            st.session_state.search_fixtures = all_filtered_fixtures
             st.session_state.last_search_key = search_key
         else:
-            all_filtered_matches = st.session_state.search_matches
+            all_filtered_fixtures = st.session_state.search_fixtures
 
-        if all_filtered_matches:
+        if all_filtered_fixtures:
 
-            # v1.9: Apply in-memory pagination to match list
-            limit = st.session_state.matches_limit
-            matches_to_display = all_filtered_matches[:limit]
+            # v1.9: Apply in-memory pagination to fixture list
+            limit = st.session_state.fixtures_limit
+            fixtures_to_display = all_filtered_fixtures[:limit]
 
-            # Match grouping logic (kept for search results)
-            matches_by_date = {}
-            for match in matches_to_display:
-                date_gmt1, _ = parse_utc_to_gmt1(match["utc_date"])
-                mdate = datetime.strptime(date_gmt1, "%d-%m-%Y").date()
-                matches_by_date.setdefault(mdate, []).append(match)
+            # Fixture grouping logic (kept for search results)
+            fixtures_by_date = {}
+            for fixture in fixtures_to_display:
+                date_gmt1, _ = parse_utc_to_gmt1(fixture["utc_date"])
+                fdate = datetime.strptime(date_gmt1, "%d-%m-%Y").date()
+                fixtures_by_date.setdefault(fdate, []).append(fixture)
 
             # Sort the dates for display
-            sorted_dates = sorted(matches_by_date.keys(), reverse=True)
+            sorted_dates = sorted(fixtures_by_date.keys(), reverse=True)
             sorted_dates.sort(
                 key=lambda date: date >= today_gmt1, reverse=True
             )
 
             for date in sorted_dates:
-                matches_on_date = matches_by_date[date]
-                matches_on_date.sort(
-                    key=lambda m: parse_utc_to_gmt1(m.get("utc_date"))[1]
+                fixtures_on_date = fixtures_by_date[date]
+                fixtures_on_date.sort(
+                    key=lambda f: parse_utc_to_gmt1(f.get("utc_date"))[1]
                     or "99:99"
                 )
 
                 expander_label = (
                     f"**{date.strftime('%A, %d %b, %Y').upper()}**"
-                    f" ({len(matches_on_date)})"
+                    f" ({len(fixtures_on_date)})"
                 )
                 with st.expander(expander_label, expanded=(date >= today_gmt1)):
-                    for m in matches_on_date:
-                        match_card_component(m)
+                    for f in fixtures_on_date:
+                        fixture_card_component(f)
 
             # v1.9: Load More button
-            if len(all_filtered_matches) > limit:
+            if len(all_filtered_fixtures) > limit:
                 st.button(
                     "Load More",
                     key="load_more_search",
-                    on_click=load_more_matches,
+                    on_click=load_more_fixtures,
                     use_container_width=True,
                 )
                 st.caption(
-                    f"Showing **{len(matches_to_display)}** of **{len(all_filtered_matches)}**"
-                    " matches."
+                    f"Showing **{len(fixtures_to_display)}** of **{len(all_filtered_fixtures)}**"
+                    " fixtures."
                 )
 
         else:
             st.info(
-                "No matches found matching your search and filter criteria"
+                "No fixtures found matching your search and filter criteria"
                 " within 7 days (past or future)."
             )
 
         st.stop()
 
-    # === COMPETITION/TEAM VIEW HANDLER ===
+    # === LEAGUE/TEAM VIEW HANDLER (Renamed) ===
     elif st.session_state.get("view"):
         # Reset limit on first entry to this page if coming from another view
-        if st.session_state.get("last_view_type") != "competition":
+        if st.session_state.get("last_view_type") != "league":
             reset_pagination_limit()
-            st.session_state.last_view_type = "competition"
+            st.session_state.last_view_type = "league"
 
         # 1. RENDER HEADER (Also shown on this page)
         render_header()
@@ -721,7 +719,7 @@ with st.container():
             st.session_state.last_view_type = None
             st.rerun()
 
-        if view_type == "competition":
+        if view_type == "league":
             league_code, league_name = args
             st.header(f"{league_name}")
 
@@ -734,8 +732,8 @@ with st.container():
                 "%Y-%m-%dT23:59:59Z"
             )
 
-            # v1.9: Fetch all for comp, then paginate in memory
-            matches = db.get_filtered_matches(
+            # v1.9: Fetch all for league, then paginate in memory
+            fixtures = db.get_filtered_matches(
                 date_from=date_from,
                 date_to=date_to,
                 competition_code=league_code,
@@ -744,56 +742,56 @@ with st.container():
                 offset=0,
             )
 
-            if not matches:
+            if not fixtures:
                 st.info(
-                    "No matches found for this competition that match your"
+                    "No fixtures found for this league that match your"
                     " filters (within 7 days past/future)."
                 )
                 st.stop()
 
             # v1.9: Apply in-memory pagination
-            limit = st.session_state.matches_limit
-            matches_to_display = matches[:limit]
+            limit = st.session_state.fixtures_limit
+            fixtures_to_display = fixtures[:limit]
 
-            matches_by_date = {}
-            for match in matches_to_display:
-                date_gmt1, _ = parse_utc_to_gmt1(match["utc_date"])
-                mdate = datetime.strptime(date_gmt1, "%d-%m-%Y").date()
-                matches_by_date.setdefault(mdate, []).append(match)
+            fixtures_by_date = {}
+            for fixture in fixtures_to_display:
+                date_gmt1, _ = parse_utc_to_gmt1(fixture["utc_date"])
+                fdate = datetime.strptime(date_gmt1, "%d-%m-%Y").date()
+                fixtures_by_date.setdefault(fdate, []).append(fixture)
 
-            sorted_dates = sorted(matches_by_date.keys())
+            sorted_dates = sorted(fixtures_by_date.keys())
             sorted_dates.sort(
                 key=lambda date: date >= today_gmt1, reverse=True
             )
 
             for date in sorted_dates:
-                matches_on_date = matches_by_date[date]
-                matches_on_date.sort(
-                    key=lambda m: parse_utc_to_gmt1(m.get("utc_date"))[1]
+                fixtures_on_date = fixtures_by_date[date]
+                fixtures_on_date.sort(
+                    key=lambda f: parse_utc_to_gmt1(f.get("utc_date"))[1]
                     or "99:99"
                 )
 
                 expander_label = (
                     f"**{date.strftime('%A, %d %b, %Y').upper()}**"
-                    f" ({len(matches_on_date)})"
+                    f" ({len(fixtures_on_date)})"
                 )
                 with st.expander(
                     expander_label, expanded=(date == today_gmt1)
                 ):
-                    for m in matches_on_date:
-                        match_card_component(m)
+                    for f in fixtures_on_date:
+                        fixture_card_component(f)
 
             # v1.9: Load More button
-            if len(matches) > limit:
+            if len(fixtures) > limit:
                 st.button(
                     "Load More",
-                    key="load_more_comp",
-                    on_click=load_more_matches,
+                    key="load_more_league",
+                    on_click=load_more_fixtures,
                     use_container_width=True,
                 )
                 st.caption(
-                    f"Showing **{len(matches_to_display)}** of **{len(matches)}**"
-                    " matches."
+                    f"Showing **{len(fixtures_to_display)}** of **{len(fixtures)}**"
+                    " fixtures."
                 )
 
         elif view_type == "team":
@@ -805,7 +803,7 @@ with st.container():
 
     # === MAIN TABS RENDER (Default view) ===
 
-    # Reset limit when returning to tabs from Search/All Matches/Competition views
+    # Reset limit when returning to tabs from Search/All Fixtures/League views
     if st.session_state.get("last_view_type") is not None:
         reset_pagination_limit()
         st.session_state.last_view_type = None
@@ -815,9 +813,9 @@ with st.container():
 
     # 2. RENDER TABS
 
-    # Only render matches for the selected sport
+    # Only render fixtures for the selected sport
     if st.session_state.selected_sport != "Football":
-        st.info(f"Matches for {st.session_state.selected_sport} are not available yet.")
+        st.info(f"Fixtures for {st.session_state.selected_sport} are not available yet.")
         st.stop()
 
     # v1.8: Apply 7-day loading window logic for performance
@@ -833,24 +831,24 @@ with st.container():
         "%Y-%m-%dT23:59:59Z"
     )
 
-    # We fetch ALL matches for the visible date range (within 7-day constraint)
-    all_tab_matches = []
+    # We fetch ALL fixtures for the visible date range (within 7-day constraint)
+    all_tab_fixtures = []
     if tab_dates[0] <= max_date and tab_dates[-1] >= min_date:
-        all_tab_matches = db.get_filtered_matches(
+        all_tab_fixtures = db.get_filtered_matches(
             date_from=load_date_from,
             date_to=load_date_to,
             predictions_only=st.session_state.filter_predictions_only,
             limit=None,
-            offset=0,  # Fetch all matches for all relevant tabs
+            offset=0,  # Fetch all fixtures for all relevant tabs
         )
 
-    matches_by_date = {d: [] for d in tab_dates}
-    for match in all_tab_matches:
+    fixtures_by_date = {d: [] for d in tab_dates}
+    for fixture in all_tab_fixtures:
         try:
-            date_str, _ = parse_utc_to_gmt1(match.get("utc_date"))
-            mdate = datetime.strptime(date_str, "%d-%m-%Y").date()
-            if mdate in matches_by_date:
-                matches_by_date[mdate].append(match)
+            date_str, _ = parse_utc_to_gmt1(fixture.get("utc_date"))
+            fdate = datetime.strptime(date_str, "%d-%m-%Y").date()
+            if fdate in fixtures_by_date:
+                fixtures_by_date[fdate].append(fixture)
         except Exception:
             continue
 
@@ -870,85 +868,85 @@ with st.container():
                 )
                 continue
 
-            day_matches = matches_by_date.get(date)
-            if not day_matches:
+            day_fixtures = fixtures_by_date.get(date)
+            if not day_fixtures:
                 st.info(
-                    f"No matches on {date.strftime('%d %b, %Y').upper()}"
+                    f"No fixtures on {date.strftime('%d %b, %Y').upper()}"
                     " matching your filters."
                 )
                 continue
 
-            day_matches.sort(
-                key=lambda m: parse_utc_to_gmt1(m.get("utc_date"))[1] or "99:99"
+            day_fixtures.sort(
+                key=lambda f: parse_utc_to_gmt1(f.get("utc_date"))[1] or "99:99"
             )
 
-            all_matches_label = f"**All Matches** ({len(day_matches)})"
+            all_fixtures_label = f"**All Fixtures** ({len(day_fixtures)})"
             if st.button(
-                all_matches_label, key=f"all_{date}", use_container_width=True
+                all_fixtures_label, key=f"all_{date}", use_container_width=True
             ):
                 # When moving to 'all' view, set the view state
                 st.session_state.view = ("all", date)
                 st.rerun()
 
-            comp_dict = {}
+            league_dict = {}
 
-            for m in day_matches:
+            for f in day_fixtures:
                 # v1.16: Use direct fields from db.py v1.16 query
-                code = m.get("competition_code")
+                code = f.get("competition_code")
                 
-                # Skip if match has no competition code (should be rare)
+                # Skip if fixture has no league code (should be rare)
                 if not code:
                     continue
                 
-                if code not in comp_dict:
-                    comp_dict[code] = {
-                        "matches": [],
-                        "name": m.get("competition_name", "Unknown League"),
-                        "crest": m.get("competition_crest"),
-                        "country": m.get("competition_country", "Unknown Region"),
+                if code not in league_dict:
+                    league_dict[code] = {
+                        "fixtures": [],
+                        "name": f.get("competition_name", "Unknown League"),
+                        "crest": f.get("competition_crest"),
+                        "country": f.get("competition_country", "Unknown Country"),
                         "has_prediction": False,
                     }
 
-                # v1.8: Check if *any* match in this group has a prediction
+                # v1.8: Check if *any* fixture in this group has a prediction
                 if (
-                    m.get("prediction_data")
-                    and m.get("prediction_data").get("h2h") != []
+                    f.get("prediction_data")
+                    and f.get("prediction_data").get("h2h") != []
                 ):
-                    comp_dict[code]["has_prediction"] = True
+                    league_dict[code]["has_prediction"] = True
 
-                comp_dict[code]["matches"].append(m)
+                league_dict[code]["fixtures"].append(f)
 
-            sorted_comps = sorted(
-                comp_dict.items(), key=lambda x: x[1]["country"]
+            sorted_leagues = sorted(
+                league_dict.items(), key=lambda x: x[1]["country"]
             )
 
-            for code, data in sorted_comps:
+            for code, data in sorted_leagues:
 
                 # v1.8: Logic for "Show Full Predictions Only"
                 predictions_only = st.session_state.filter_predictions_only
 
                 # If toggle is on, check if this group has predictions
                 if predictions_only and not data["has_prediction"]:
-                    continue  # Skip this competition entirely
+                    continue  # Skip this league entirely
 
-                # Count *only* matches with predictions if toggle is on
+                # Count *only* fixtures with predictions if toggle is on
                 if predictions_only:
-                    matches_to_show = [
-                        m
-                        for m in data["matches"]
-                        if m.get("prediction_data")
-                        and m.get("prediction_data").get("h2h") != []
+                    fixtures_to_show = [
+                        f
+                        for f in data["fixtures"]
+                        if f.get("prediction_data")
+                        and f.get("prediction_data").get("h2h") != []
                     ]
-                    match_count = len(matches_to_show)
+                    fixture_count = len(fixtures_to_show)
                 else:
-                    matches_to_show = data["matches"]
-                    match_count = len(matches_to_show)
+                    fixtures_to_show = data["fixtures"]
+                    fixture_count = len(fixtures_to_show)
 
-                if match_count == 0:
+                if fixture_count == 0:
                     continue
 
                 expander_label = (
-                    f"{data['country']} - {data['name']} ({match_count})"
+                    f"{data['country']} - {data['name']} ({fixture_count})"
                 )
 
                 # v1.8: Expander is open if the prediction toggle is ON
@@ -956,8 +954,8 @@ with st.container():
                     expander_label,
                     expanded=st.session_state.filter_predictions_only,
                 ):
-                    for match_data in matches_to_show:
-                        match_card_component(match_data)
+                    for fixture_data in fixtures_to_show:
+                        fixture_card_component(fixture_data)
 
 
 # === SIDEBAR ===
@@ -1009,7 +1007,7 @@ else:
 st.sidebar.info("Atom v3")
 
 # --- v1.7: Sidebar Stats (PERFORMANCE FIX) ---
-status_counts = db.get_match_counts()
+status_counts = db.get_match_counts() # Renamed later for consistency
 upcoming_count = status_counts.get("UPCOMING", 0)
 past_count = status_counts.get("PAST", 0) + status_counts.get("OTHER", 0)
 
