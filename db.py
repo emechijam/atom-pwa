@@ -1,12 +1,9 @@
-# db.py v1.17
+# db.py v1.18
 #
-# WHAT'S NEW (v1.17 - CRITICAL SCHEMA FIX):
-# - CRITICAL FIX 1 (Schema): Corrected `get_filtered_matches` SELECT.
-#   The `leagues` table (hl) does not have a 'code' column.
-#   Changed `hl.code as competition_code` to `hl.league_id as competition_code`.
-# - CRITICAL FIX 2 (Schema): Corrected `get_filtered_matches` WHERE.
-#   Changed the filter for `competition_code` to use `hl.league_id`
-#   instead of the non-existent `hl.code`.
+# WHAT'S NEW (v1.18 - Code Cleanup):
+# - FIX: Corrected the `store_predictions_db` function (which was unused)
+#   to use `fixture_id` instead of the old `match_id`.
+#   This makes it consistent with the database schema and predictor.py.
 
 import os
 import json
@@ -156,8 +153,6 @@ def get_all_leagues(conn=None) -> List[Dict[str, Any]]:
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            # v1.17: Note: This query is not used by app.py, but if it were,
-            # it would need to select 'league_id' instead of 'code'.
             sql = "SELECT league_id, name FROM leagues ORDER BY name"
             cur.execute(sql)
             return cur.fetchall()
@@ -320,6 +315,8 @@ def get_filtered_matches(
 
 # ============ DB MANIPULATION FUNCTIONS (For populator/predictor) ============
 
+# v1.18: This function is not used by predictor.py (which uses db_utils.py)
+# but is corrected here to match the schema for future-proofing.
 def store_predictions_db(conn, predictions_to_store: List[Dict[str, Any]]):
     """
     Stores or updates predictions in the database.
@@ -328,26 +325,22 @@ def store_predictions_db(conn, predictions_to_store: List[Dict[str, Any]]):
         return
 
     insert_data = []
+    
+    # Local JSON encoder for datetime
+    class DateTimeEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, datetime):
+                return obj.isoformat()
+            return json.JSONEncoder.default(self, obj)
+
     for pred in predictions_to_store:
-        # v1.17: This must match what predictor.py v1.17 sends.
-        # predictor.py (line 303) sends 'fixture_id'
-        match_id = pred['fixture_id']
-        
-        class DateTimeEncoder(json.JSONEncoder):
-            def default(self, obj):
-                if isinstance(obj, datetime):
-                    return obj.isoformat()
-                return json.JSONEncoder.default(self, obj)
-        
-        # predictor.py (line 304) sends 'predictions'
+        # v1.18 FIX: Use 'fixture_id' and 'predictions'
+        fixture_id = pred['fixture_id']
         prediction_json = json.dumps(pred['predictions'], cls=DateTimeEncoder)
         generated_at = datetime.now(timezone.utc)
-        
-        # v1.17: Ensure tuple matches table definition
-        # Table: fixture_id (INT), prediction_data (JSONB), generated_at (TIMESTAMPTZ)
-        insert_data.append((match_id, prediction_json, generated_at))
+        insert_data.append((fixture_id, prediction_json, generated_at))
 
-    # v1.17: This query must match the 'predictions' table schema
+    # v1.18 FIX: Use 'fixture_id' in the query
     query = """
     INSERT INTO predictions (fixture_id, prediction_data, generated_at)
     VALUES (%s, %s::jsonb, %s)
